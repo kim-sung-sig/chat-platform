@@ -1,0 +1,51 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.5.6'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+repositories {
+	mavenCentral()
+}
+
+bootJar { enabled = false }
+jar { enabled = false }
+
+subprojects {
+	apply plugin: 'java'
+	apply plugin: 'io.spring.dependency-management'
+
+	repositories {
+		mavenCentral()
+	}
+
+	dependencies {
+		implementation 'org.projectlombok:lombok'
+		implementation 'org.slf4j:slf4j-api'
+		testImplementation 'org.junit.jupiter:junit-jupiter-api'
+		testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+	}
+
+	test {
+		useJUnitPlatform()
+	}
+}
+
+//project(':chat-message-server') {
+//	dependencies {
+//		implementation project(':chat-common')
+//		implementation project(':chat-storage')
+//		implementation 'org.springframework.boot:spring-boot-starter-web'
+//		implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+//		implementation 'com.fasterxml.jackson.core:jackson-databind'
+//	}
+//}
+//
+//project(':chat-websocket-server') {
+//	dependencies {
+//		implementation project(':chat-common')
+//		implementation 'org.springframework.boot:spring-boot-starter-websocket'
+//		implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+//		implementation 'com.fasterxml.jackson.core:jackson-databind'
+//	}
+//}

@@ -1,0 +1,51 @@
+services:
+  ms-postgres-source:
+    image: postgres:17.6
+    restart: unless-stopped
+    container_name: postgres-source
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "15432:5432"
+    volumes:
+      - ./data/postgres-source:/var/lib/postgresql/data
+      - ./init-scripts-source:/docker-entrypoint-initdb.d
+
+  ms-postgres-replica:
+    image: postgres:17.6
+    restart: unless-stopped
+    container_name: postgres-replica
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "15433:5432"
+    volumes:
+      - ./data/postgres-replica:/var/lib/postgresql/data
+      - ./init-scripts-replica:/docker-entrypoint-initdb.d
+    depends_on:
+      ms-postgres-source:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${REPLICA_USER} -h ms-postgres-source || exit 1" ]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+
+  ms-redis:
+    image: redis:7.4.1
+    restart: unless-stopped
+    ports:
+      - "16379:6379"
+    volumes:
+      - ./data/redis:/data
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
