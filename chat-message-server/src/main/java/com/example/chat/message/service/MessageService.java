@@ -1,5 +1,6 @@
 package com.example.chat.message.service;
 
+import com.example.chat.common.dto.ChatMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,6 @@ public class MessageService {
 
 		// 메시지 이벤트 발행
 		final String topic = "chat.room." + "roomId"; // roomId는 실제 채팅방 ID로 대체
-		messagePublisher.publish(topic, null);
+		messagePublisher.publish(topic, ChatMessage.builder().content("asfasf").build());
 	}
 }

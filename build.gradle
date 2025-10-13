@@ -21,7 +21,6 @@ subprojects {
 
 	dependencies {
 		implementation 'org.projectlombok:lombok'
-		implementation 'org.slf4j:slf4j-api'
 		testImplementation 'org.junit.jupiter:junit-jupiter-api'
 		testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 	}
@@ -30,22 +29,3 @@ subprojects {
 		useJUnitPlatform()
 	}
 }
-
-//project(':chat-message-server') {
-//	dependencies {
-//		implementation project(':chat-common')
-//		implementation project(':chat-storage')
-//		implementation 'org.springframework.boot:spring-boot-starter-web'
-//		implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-//		implementation 'com.fasterxml.jackson.core:jackson-databind'
-//	}
-//}
-//
-//project(':chat-websocket-server') {
-//	dependencies {
-//		implementation project(':chat-common')
-//		implementation 'org.springframework.boot:spring-boot-starter-websocket'
-//		implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-//		implementation 'com.fasterxml.jackson.core:jackson-databind'
-//	}
-//}
