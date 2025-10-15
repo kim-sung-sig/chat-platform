@@ -13,4 +13,7 @@ dependencies {
 
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	testImplementation 'org.springframework.security:spring-security-test'
+
+	// Add postgres driver to ensure it's available at runtime for the boot application
+	implementation 'org.postgresql:postgresql'
 }
