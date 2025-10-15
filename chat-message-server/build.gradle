@@ -16,4 +16,7 @@ dependencies {
 
 	// Add postgres driver to ensure it's available at runtime for the boot application
 	implementation 'org.postgresql:postgresql'
+
+	// Ensure JPA and Spring Data JPA are present so repositories from chat-storage are initialized
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 }

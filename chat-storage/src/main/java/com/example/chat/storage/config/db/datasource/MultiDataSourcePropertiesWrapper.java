@@ -13,13 +13,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class MultiDataSourcePropertiesWrapper {
 
+	private final MultiDataSourceProperties multiDataSourceProperties;
+	private final DataSourceProperties source;
+	private final DataSourceProperties replica;
+
 	public MultiDataSourcePropertiesWrapper(MultiDataSourceProperties multiDataSourceProperties) {
+		this.multiDataSourceProperties = multiDataSourceProperties;
 		this.source = multiDataSourceProperties.getSource().toDataSourceProperties();
 		this.replica = multiDataSourceProperties.getReplica().toDataSourceProperties();
 	}
-
-	private DataSourceProperties source;
-	private DataSourceProperties replica;
 
 	@PostConstruct
 	public void init() {

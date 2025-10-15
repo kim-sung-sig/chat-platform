@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -18,6 +19,7 @@ import java.util.Map;
 public class DataSourceConfig {
 
 	@Bean
+	@Primary
 	public DataSource routingDataSource(MultiDataSourcePropertiesWrapper wrapper) throws SQLException {
 		HikariDataSource source = wrapper.getSource().initializeDataSourceBuilder()
 				.type(HikariDataSource.class)
