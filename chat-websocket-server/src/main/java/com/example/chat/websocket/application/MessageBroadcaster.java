@@ -14,7 +14,9 @@ public class MessageBroadcaster {
 	private final SimpMessagingTemplate messageTemplate;
 
 	public void broadcast(String roomId, ChatMessage chatMessage) {
-		messageTemplate.convertAndSend(roomId, chatMessage);
+		// 표준 topic 경로 사용: /topic/channel/{roomId}
+		String destination = "/topic/channel/" + roomId;
+		messageTemplate.convertAndSend(destination, chatMessage);
 	}
 
 }

@@ -7,6 +7,7 @@ plugins {
 dependencies {
 	implementation project(':chat-common')
 	implementation project(':chat-storage')
+	implementation project(':domain')
 
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
@@ -19,4 +20,7 @@ dependencies {
 
 	// Ensure JPA and Spring Data JPA are present so repositories from chat-storage are initialized
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+	// Structured logging encoder (json) - used by logback configuration
+	implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
 }

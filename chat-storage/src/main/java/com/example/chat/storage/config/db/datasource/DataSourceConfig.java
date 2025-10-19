@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,20 +23,26 @@ public class DataSourceConfig {
 		HikariDataSource source = wrapper.getSource().initializeDataSourceBuilder()
 				.type(HikariDataSource.class)
 				.build();
+		source.setPoolName("HikariCP-Source");
+		source.setConnectionTestQuery("SELECT 1");
 
 		HikariDataSource replica = wrapper.getReplica().initializeDataSourceBuilder()
 				.type(HikariDataSource.class)
 				.build();
-		RoutingDataSource routingDataSource = new RoutingDataSource();
+		replica.setPoolName("HikariCP-Replica");
+		replica.setConnectionTestQuery("SELECT 1");
+
 		Map<Object, Object> targetDataSources = new HashMap<>();
 		targetDataSources.put(DataSourceType.SOURCE.getKey(), source);
 		targetDataSources.put(DataSourceType.REPLICA.getKey(), replica);
+
+		RoutingDataSource routingDataSource = new RoutingDataSource();
 		routingDataSource.setTargetDataSources(targetDataSources);
 		routingDataSource.setDefaultTargetDataSource(source);
 
-		try (Connection ignored = replica.getConnection()) {
-			log.info("Init ReplicaConnectionPool.");
-		}
+//		try (Connection ignored = replica.getConnection()) {
+//			log.info("Init ReplicaConnectionPool.");
+//		}
 		return routingDataSource;
 	}
 

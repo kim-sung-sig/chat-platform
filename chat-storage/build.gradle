@@ -4,13 +4,26 @@ plugins {
 	id 'io.spring.dependency-management'
 }
 
+ext {
+	querydslVersion = '5.0.0'
+}
+
 dependencies {
 	implementation project(':chat-common')
+	implementation project(':domain')
 
 	// DB
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.postgresql:postgresql'
 
+	// QueryDSL
+	implementation "com.querydsl:querydsl-jpa:${querydslVersion}:jakarta"
+	annotationProcessor "com.querydsl:querydsl-apt:${querydslVersion}:jakarta"
+	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
+
 	implementation 'org.flywaydb:flyway-core'
 	implementation 'org.flywaydb:flyway-database-postgresql'
+
 }

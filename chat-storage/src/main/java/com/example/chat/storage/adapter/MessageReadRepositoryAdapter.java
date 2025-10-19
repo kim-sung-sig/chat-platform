@@ -1,45 +1,43 @@
 package com.example.chat.storage.adapter;
 
+import com.example.chat.common.dto.UserId;
 import com.example.chat.common.port.MessageReadRepository;
-import com.example.chat.storage.entity.MessageReadEntity;
-import com.example.chat.storage.repository.SpringDataMessageReadRepository;
+import com.example.chat.storage.repository.JpaMessageReadRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Component
-@Transactional
+@Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class MessageReadRepositoryAdapter implements MessageReadRepository {
 
-    private final SpringDataMessageReadRepository repo;
-
-    public MessageReadRepositoryAdapter(SpringDataMessageReadRepository repo) {
-        this.repo = repo;
-    }
+    private final JpaMessageReadRepository repo;
 
     @Override
-    public boolean markRead(Long messageId, Long userId) {
-        int affected = repo.insertIfNotExists(messageId, userId);
+    @Transactional
+    public boolean markRead(Long messageId, UserId userId) {
+        int affected = repo.insertIfNotExists(messageId, userId.get());
         return affected > 0;
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public boolean isReadBy(Long messageId, Long userId) {
-        return repo.findByMessageIdAndUserId(messageId, userId).isPresent();
+    public boolean isReadBy(Long messageId, UserId userId) {
+        return repo.findByMessageIdAndUserId(messageId, userId.get()).isPresent();
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<Long> findReaders(Long messageId) {
         return repo.findUserIdsByMessageId(messageId);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Optional<Long> findReadId(Long messageId, Long userId) {
-        return repo.findIdByMessageIdAndUserId(messageId, userId);
+    public Optional<Long> findReadId(Long messageId, UserId userId) {
+        return repo.findIdByMessageIdAndUserId(messageId, userId.get());
     }
 }

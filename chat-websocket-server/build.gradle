@@ -6,7 +6,14 @@ plugins {
 
 dependencies {
 	implementation project(':chat-common')
+	implementation project(':domain')
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+	// Structured logging encoder used by logback-spring.xml
+	implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
+
+	// RabbitMQ listener for message events
+	implementation 'org.springframework.boot:spring-boot-starter-amqp'
 }

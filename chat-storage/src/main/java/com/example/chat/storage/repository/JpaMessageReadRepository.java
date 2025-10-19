@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface SpringDataMessageReadRepository extends JpaRepository<MessageReadEntity, Long> {
+public interface JpaMessageReadRepository extends JpaRepository<MessageReadEntity, Long> {
 
     Optional<MessageReadEntity> findByMessageIdAndUserId(Long messageId, Long userId);
 
