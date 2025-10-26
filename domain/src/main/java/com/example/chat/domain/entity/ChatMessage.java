@@ -1,6 +1,11 @@
 package com.example.chat.domain.entity;
 
 import com.example.chat.common.dto.UserId;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.OffsetDateTime;
 

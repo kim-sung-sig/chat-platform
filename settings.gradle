@@ -1,7 +1,8 @@
 rootProject.name = 'chat-platform'
 
+include("domain")
 include("chat-common")
 include("chat-storage")
 include("chat-message-server")
 include("chat-websocket-server")
-include("domain")
+include("chat-system-server")

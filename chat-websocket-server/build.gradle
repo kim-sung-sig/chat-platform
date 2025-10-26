@@ -4,16 +4,36 @@ plugins {
 	id 'io.spring.dependency-management'
 }
 
+group = 'com.example.chat'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
 dependencies {
 	implementation project(':chat-common')
 	implementation project(':domain')
+
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'org.springframework.boot:spring-boot-starter-amqp'
 
 	// Structured logging encoder used by logback-spring.xml
 	implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
 
-	// RabbitMQ listener for message events
-	implementation 'org.springframework.boot:spring-boot-starter-amqp'
+	// Lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testCompileOnly 'org.projectlombok:lombok'
+	testAnnotationProcessor 'org.projectlombok:lombok'
 }
