@@ -8,8 +8,11 @@ import com.example.chat.system.service.ScheduleRuleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
+import org.quartz.JobDataMap;
+import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.quartz.JobKey;
 import org.springframework.stereotype.Component;
 
 /**
@@ -30,8 +33,14 @@ public class MessagePublishJob implements Job {
     public void execute(JobExecutionContext context) throws JobExecutionException {
         try {
             // JobDataMap에서 데이터 추출
-            Long messageId = context.getJobDetail().getJobDataMap().getLong("messageId");
-            Long scheduleRuleId = context.getJobDetail().getJobDataMap().getLong("scheduleRuleId");
+            JobDetail jobDetail = context.getJobDetail();
+            JobKey jobKey = jobDetail.getKey();
+            String description = jobDetail.getDescription();
+            log.debug("Executing Job: {} - {}", jobKey, description);
+
+            JobDataMap jobDataMap = jobDetail.getJobDataMap();
+            Long messageId = jobDataMap.getLong("messageId");
+            Long scheduleRuleId = jobDataMap.getLong("scheduleRuleId");
 
             log.info("Executing MessagePublishJob - messageId: {}, scheduleRuleId: {}",
                     messageId, scheduleRuleId);
