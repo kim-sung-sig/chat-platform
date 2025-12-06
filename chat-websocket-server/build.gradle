@@ -23,6 +23,9 @@ dependencies {
 	implementation project(':common-auth')
 	implementation project(':common-logging')
 
+	// Storage 모듈 (도메인 모델)
+	implementation project(':chat-storage')
+
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
