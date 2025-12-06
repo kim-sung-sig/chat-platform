@@ -27,20 +27,20 @@ subprojects {
 		mavenCentral()
 	}
 
-//	dependencyManagement {
-//		imports {
-//			mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
-//		}
-//	}
+	dependencyManagement {
+		imports {
+			mavenBom "org.springframework.boot:spring-boot-dependencies:3.5.6"
+		}
+	}
 
 	dependencies {
-		compileOnly 'org.projectlombok:lombok'
-		annotationProcessor 'org.projectlombok:lombok'
+		compileOnly 'org.projectlombok:lombok:1.18.36'
+		annotationProcessor 'org.projectlombok:lombok:1.18.36'
 
 		testImplementation 'org.junit.jupiter:junit-jupiter-api'
 		testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-		testCompileOnly 'org.projectlombok:lombok'
-		testAnnotationProcessor 'org.projectlombok:lombok'
+		testCompileOnly 'org.projectlombok:lombok:1.18.36'
+		testAnnotationProcessor 'org.projectlombok:lombok:1.18.36'
 	}
 
 	test {

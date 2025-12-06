@@ -1,0 +1,52 @@
+plugins {
+    id 'java-library'
+    id 'io.spring.dependency-management'
+}
+
+group = 'com.example.chat'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // common-util 의존
+    api project(':common-util')
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // Spring Security
+    implementation 'org.springframework.boot:spring-boot-starter-security:3.5.6'
+
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+
+    // Jakarta Servlet
+    implementation 'jakarta.servlet:jakarta.servlet-api:6.1.0'
+
+    // Test
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+    testImplementation 'org.assertj:assertj-core:3.27.3'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:3.5.6'
+}
+
+test {
+    useJUnitPlatform()
+}

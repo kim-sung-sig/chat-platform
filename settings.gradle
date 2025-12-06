@@ -1,8 +1,14 @@
 rootProject.name = 'chat-platform'
 
-include("domain")
-include("chat-common")
+// Common 서브 모듈 (세분화)
+include("common-util")
+include("common-auth")
+include("common-logging")
+
+// Storage 모듈
 include("chat-storage")
+
+// 실행 모듈
 include("chat-message-server")
-include("chat-websocket-server")
 include("chat-system-server")
+include("chat-websocket-server")

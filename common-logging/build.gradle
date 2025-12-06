@@ -1,0 +1,50 @@
+plugins {
+    id 'java-library'
+    id 'io.spring.dependency-management'
+}
+
+group = 'com.example.chat'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // common-util 의존
+    api project(':common-util')
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // SLF4J, Logback
+    implementation 'org.slf4j:slf4j-api:2.0.16'
+    implementation 'ch.qos.logback:logback-classic:1.5.16'
+
+    // Spring Web (Filter 용)
+    implementation 'org.springframework:spring-web:6.2.1'
+
+    // Jakarta Servlet
+    compileOnly 'jakarta.servlet:jakarta.servlet-api:6.1.0'
+
+    // Test
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+    testImplementation 'org.assertj:assertj-core:3.27.3'
+}
+
+test {
+    useJUnitPlatform()
+}

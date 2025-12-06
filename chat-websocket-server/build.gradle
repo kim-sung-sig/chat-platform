@@ -18,8 +18,10 @@ repositories {
 }
 
 dependencies {
-	implementation project(':chat-common')
-	implementation project(':domain')
+	// Common 모듈 (세분화)
+	implementation project(':common-util')
+	implementation project(':common-auth')
+	implementation project(':common-logging')
 
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'

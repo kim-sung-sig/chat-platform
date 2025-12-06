@@ -1,7 +1,7 @@
 package com.example.chat.storage.adapter;
 
-import com.example.chat.common.dto.UserId;
-import com.example.chat.common.port.MessageReadRepository;
+import com.example.chat.common.auth.model.UserId;
+import com.example.chat.storage.domain.message.MessageReadRepository;
 import com.example.chat.storage.repository.JpaMessageReadRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,13 +22,13 @@ public class MessageReadRepositoryAdapter implements MessageReadRepository {
     @Override
     @Transactional
     public boolean markRead(Long messageId, UserId userId) {
-        int affected = repo.insertIfNotExists(messageId, userId.get());
+        int affected = repo.insertIfNotExists(messageId, userId.getValue());
         return affected > 0;
     }
 
     @Override
     public boolean isReadBy(Long messageId, UserId userId) {
-        return repo.findByMessageIdAndUserId(messageId, userId.get()).isPresent();
+        return repo.findByMessageIdAndUserId(messageId, userId.getValue()).isPresent();
     }
 
     @Override
@@ -38,6 +38,6 @@ public class MessageReadRepositoryAdapter implements MessageReadRepository {
 
     @Override
     public Optional<Long> findReadId(Long messageId, UserId userId) {
-        return repo.findIdByMessageIdAndUserId(messageId, userId.get());
+        return repo.findIdByMessageIdAndUserId(messageId, userId.getValue());
     }
 }
