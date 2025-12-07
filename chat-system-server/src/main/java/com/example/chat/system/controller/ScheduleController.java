@@ -1,9 +1,10 @@
 package com.example.chat.system.controller;
 
-import com.example.chat.system.dto.request.ScheduleCreateRequest;
+import com.example.chat.system.dto.request.CreateOneTimeScheduleRequest;
+import com.example.chat.system.dto.request.CreateRecurringScheduleRequest;
 import com.example.chat.system.dto.response.ApiResponse;
-import com.example.chat.system.dto.response.ScheduleRuleResponse;
-import com.example.chat.system.service.ScheduleRuleService;
+import com.example.chat.system.dto.response.ScheduleResponse;
+import com.example.chat.system.service.ScheduleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,7 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 스케줄 관리 API 컨트롤러
+ * 스케줄 컨트롤러
+ * 예약 메시지 관리 API
  */
 @Slf4j
 @RestController
@@ -28,80 +31,106 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ScheduleController {
 
-    private final ScheduleRuleService scheduleRuleService;
+    private final ScheduleService scheduleService;
 
     /**
-     * 스케줄 생성
+     * 단발성 스케줄 생성
      */
-    @PostMapping
-    public ResponseEntity<ApiResponse<ScheduleRuleResponse>> createSchedule(
-            @Valid @RequestBody ScheduleCreateRequest request) {
-        log.info("POST /api/v1/schedules - Creating schedule for message: {}", request.getMessageId());
-        ScheduleRuleResponse response = scheduleRuleService.createSchedule(request);
+    @PostMapping("/one-time")
+    public ResponseEntity<ApiResponse<ScheduleResponse>> createOneTimeSchedule(
+            @Valid @RequestBody CreateOneTimeScheduleRequest request
+    ) {
+        log.info("POST /api/v1/schedules/one-time - roomId: {}", request.getRoomId());
+
+        ScheduleResponse response = scheduleService.createOneTimeSchedule(request);
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ApiResponse.success("스케줄이 생성되었습니다", response));
+                .body(ApiResponse.success(response));
     }
 
     /**
-     * 스케줄 조회
+     * 주기적 스케줄 생성
      */
-    @GetMapping("/{scheduleId}")
-    public ResponseEntity<ApiResponse<ScheduleRuleResponse>> getSchedule(
-            @PathVariable Long scheduleId) {
-        log.info("GET /api/v1/schedules/{}", scheduleId);
-        ScheduleRuleResponse response = scheduleRuleService.getSchedule(scheduleId);
+    @PostMapping("/recurring")
+    public ResponseEntity<ApiResponse<ScheduleResponse>> createRecurringSchedule(
+            @Valid @RequestBody CreateRecurringScheduleRequest request
+    ) {
+        log.info("POST /api/v1/schedules/recurring - roomId: {}, cron: {}",
+            request.getRoomId(), request.getCronExpression());
+
+        ScheduleResponse response = scheduleService.createRecurringSchedule(request);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.success(response));
+    }
+
+    /**
+     * 스케줄 일시중지
+     */
+    @PutMapping("/{scheduleId}/pause")
+    public ResponseEntity<ApiResponse<ScheduleResponse>> pauseSchedule(
+            @PathVariable Long scheduleId
+    ) {
+        log.info("PUT /api/v1/schedules/{}/pause", scheduleId);
+
+        ScheduleResponse response = scheduleService.pauseSchedule(scheduleId);
+
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     /**
-     * 메시지별 스케줄 목록 조회
+     * 스케줄 재개
      */
-    @GetMapping("/message/{messageId}")
-    public ResponseEntity<ApiResponse<List<ScheduleRuleResponse>>> getSchedulesByMessage(
-            @PathVariable Long messageId) {
-        log.info("GET /api/v1/schedules/message/{}", messageId);
-        List<ScheduleRuleResponse> response = scheduleRuleService.getSchedulesByMessage(messageId);
+    @PutMapping("/{scheduleId}/resume")
+    public ResponseEntity<ApiResponse<ScheduleResponse>> resumeSchedule(
+            @PathVariable Long scheduleId
+    ) {
+        log.info("PUT /api/v1/schedules/{}/resume", scheduleId);
+
+        ScheduleResponse response = scheduleService.resumeSchedule(scheduleId);
+
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     /**
-     * 활성화된 스케줄 목록 조회
-     */
-    @GetMapping("/active")
-    public ResponseEntity<ApiResponse<List<ScheduleRuleResponse>>> getActiveSchedules() {
-        log.info("GET /api/v1/schedules/active");
-        List<ScheduleRuleResponse> response = scheduleRuleService.getActiveSchedules();
-        return ResponseEntity.ok(ApiResponse.success(response));
-    }
-
-    /**
-     * 스케줄 활성화
-     */
-    @PostMapping("/{scheduleId}/activate")
-    public ResponseEntity<ApiResponse<Void>> activateSchedule(@PathVariable Long scheduleId) {
-        log.info("POST /api/v1/schedules/{}/activate", scheduleId);
-        scheduleRuleService.activateSchedule(scheduleId);
-        return ResponseEntity.ok(ApiResponse.success("스케줄이 활성화되었습니다", null));
-    }
-
-    /**
-     * 스케줄 비활성화
-     */
-    @PostMapping("/{scheduleId}/deactivate")
-    public ResponseEntity<ApiResponse<Void>> deactivateSchedule(@PathVariable Long scheduleId) {
-        log.info("POST /api/v1/schedules/{}/deactivate", scheduleId);
-        scheduleRuleService.deactivateSchedule(scheduleId);
-        return ResponseEntity.ok(ApiResponse.success("스케줄이 비활성화되었습니다", null));
-    }
-
-    /**
-     * 스케줄 삭제
+     * 스케줄 취소
      */
     @DeleteMapping("/{scheduleId}")
-    public ResponseEntity<ApiResponse<Void>> deleteSchedule(@PathVariable Long scheduleId) {
+    public ResponseEntity<ApiResponse<Void>> cancelSchedule(
+            @PathVariable Long scheduleId
+    ) {
         log.info("DELETE /api/v1/schedules/{}", scheduleId);
-        scheduleRuleService.deleteSchedule(scheduleId);
-        return ResponseEntity.ok(ApiResponse.success("스케줄이 삭제되었습니다", null));
+
+        scheduleService.cancelSchedule(scheduleId);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    /**
+     * 내 스케줄 목록 조회
+     */
+    @GetMapping("/my")
+    public ResponseEntity<ApiResponse<List<ScheduleResponse>>> getMySchedules() {
+        log.info("GET /api/v1/schedules/my");
+
+        List<ScheduleResponse> response = scheduleService.getMySchedules();
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    /**
+     * 채팅방의 스케줄 목록 조회
+     */
+    @GetMapping("/room/{roomId}")
+    public ResponseEntity<ApiResponse<List<ScheduleResponse>>> getSchedulesByRoom(
+            @PathVariable String roomId
+    ) {
+        log.info("GET /api/v1/schedules/room/{}", roomId);
+
+        List<ScheduleResponse> response = scheduleService.getSchedulesByRoom(roomId);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
