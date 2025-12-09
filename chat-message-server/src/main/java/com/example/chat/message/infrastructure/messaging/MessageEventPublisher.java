@@ -1,6 +1,6 @@
 package com.example.chat.message.infrastructure.messaging;
 
-import com.example.chat.storage.domain.message.Message;
+import com.example.chat.domain.message.Message;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,14 +46,14 @@ public class MessageEventPublisher {
             // Step 2: JSON 직렬화
             String eventJson = serializeEvent(event);
 
-            // Step 3: Redis Pub/Sub 발행 (채팅방 채널)
-            publishToRoomChannel(message.getRoomId(), eventJson);
+            // Step 3: Redis Pub/Sub 발행 (채널)
+            publishToChannel(message.getChannelId().getValue(), eventJson);
 
-            log.info("Message event published: messageId={}, roomId={}",
-                message.getId(), message.getRoomId());
+            log.info("Message event published: messageId={}, channelId={}",
+                message.getId().getValue(), message.getChannelId().getValue());
 
         } catch (Exception e) {
-            log.error("Failed to publish message event: messageId={}", message.getId(), e);
+            log.error("Failed to publish message event: messageId={}", message.getId().getValue(), e);
             throw new RuntimeException("Failed to publish message event", e);
         }
     }
@@ -65,15 +65,13 @@ public class MessageEventPublisher {
      */
     private MessageSentEvent createMessageSentEvent(Message message) {
         return MessageSentEvent.builder()
-                .messageId(message.getId())
-                .roomId(message.getRoomId())
-                .channelId(message.getChannelId())
+                .messageId(message.getId().getValue())
+                .channelId(message.getChannelId().getValue())
                 .senderId(message.getSenderId().getValue())
-                .messageType(message.getMessageType().getCode())
-                .contentJson(message.getContent().toJson())
-                .status(message.getStatus().getCode())
+                .messageType(message.getType().name())
+                .content(message.getContent().getText())
+                .status(message.getStatus().name())
                 .sentAt(message.getSentAt())
-                .replyToMessageId(message.getReplyToMessageId())
                 .build();
     }
 
@@ -89,10 +87,10 @@ public class MessageEventPublisher {
     }
 
     /**
-     * 채팅방 채널로 발행
+     * 채널로 발행
      */
-    private void publishToRoomChannel(String roomId, String eventJson) {
-        String channel = ROOM_CHANNEL_PREFIX + roomId;
+    private void publishToChannel(String channelId, String eventJson) {
+        String channel = MESSAGE_SENT_CHANNEL_PREFIX + channelId;
         redisTemplate.convertAndSend(channel, eventJson);
 
         log.debug("Published to channel: {}", channel);

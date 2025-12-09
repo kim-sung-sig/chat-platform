@@ -1,6 +1,6 @@
 package com.example.chat.message.application.dto.request;
 
-import com.example.chat.storage.domain.message.MessageType;
+import com.example.chat.domain.message.MessageType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
@@ -15,9 +15,7 @@ import java.util.Map;
 @Builder
 public class SendMessageRequest {
 
-    @NotBlank(message = "roomId is required")
-    private String roomId;
-
+    @NotBlank(message = "channelId is required")
     private String channelId;
 
     @NotNull(message = "messageType is required")
@@ -25,6 +23,4 @@ public class SendMessageRequest {
 
     @NotNull(message = "payload is required")
     private Map<String, Object> payload;
-
-    private Long replyToMessageId;
 }

@@ -34,20 +34,47 @@ public class MessageService {
     private final ChannelRepository channelRepository;
 
     /**
-     * 메시지 생성
+     * 메시지 생성 (Key 기반 도메인 조회 후 조립, 조기 리턴)
      */
     @Transactional
     public MessageResponse createMessage(MessageCreateRequest request) {
         log.info("Creating message for channel: {}", request.getChannelId());
 
-        Channel channel = channelRepository.findById(request.getChannelId())
-                .orElseThrow(() -> new ResourceNotFoundException("Channel", request.getChannelId()));
+        // Step 1: Key 기반 도메인 조회
+        Channel channel = findChannelById(request.getChannelId());
 
+        // Step 2: Early return - 채널 활성화 검증
         if (!channel.getIsActive()) {
+            log.warn("Inactive channel attempted: channelId={}", request.getChannelId());
             throw new BusinessException("비활성화된 채널에는 메시지를 생성할 수 없습니다");
         }
 
-        Message message = Message.builder()
+        // Step 3: 도메인 조립
+        Message message = assembleMessage(channel, request);
+
+        // Step 4: 저장
+        Message savedMessage = messageRepository.save(message);
+        log.info("Message created successfully: messageId={}", savedMessage.getId());
+
+        return MessageResponse.from(savedMessage);
+    }
+
+    /**
+     * 채널 조회 (Key 기반)
+     */
+    private Channel findChannelById(Long channelId) {
+        return channelRepository.findById(channelId)
+                .orElseThrow(() -> {
+                    log.error("Channel not found: channelId={}", channelId);
+                    return new ResourceNotFoundException("Channel", channelId);
+                });
+    }
+
+    /**
+     * 메시지 도메인 조립
+     */
+    private Message assembleMessage(Channel channel, MessageCreateRequest request) {
+        return Message.builder()
                 .channel(channel)
                 .title(request.getTitle())
                 .content(request.getContent())
@@ -55,19 +82,13 @@ public class MessageService {
                 .status(MessageStatus.DRAFT)
                 .createdBy(request.getCreatedBy())
                 .build();
-
-        Message savedMessage = messageRepository.save(message);
-        log.info("Message created successfully: {}", savedMessage.getId());
-
-        return MessageResponse.from(savedMessage);
     }
 
     /**
-     * 메시지 조회
+     * 메시지 조회 (Key 기반)
      */
     public MessageResponse getMessage(Long messageId) {
-        Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new ResourceNotFoundException("Message", messageId));
+        Message message = findMessageById(messageId);
         return MessageResponse.from(message);
     }
 
@@ -75,24 +96,43 @@ public class MessageService {
      * 채널별 메시지 목록 조회
      */
     public Page<MessageResponse> getMessagesByChannel(Long channelId, Pageable pageable) {
+        // Early return: channelId 검증
+        if (channelId == null) {
+            log.error("channelId is null");
+            throw new IllegalArgumentException("channelId는 필수입니다");
+        }
+
         return messageRepository.findByChannelId(channelId, pageable)
                 .map(MessageResponse::from);
     }
 
     /**
-     * 메시지 수정 (DRAFT 상태만 가능)
+     * 메시지 수정 (Key 기반 도메인 조회, 조기 리턴)
      */
     @Transactional
     public MessageResponse updateMessage(Long messageId, MessageUpdateRequest request) {
-        log.info("Updating message: {}", messageId);
+        log.info("Updating message: messageId={}", messageId);
 
-        Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new ResourceNotFoundException("Message", messageId));
+        // Step 1: Key 기반 도메인 조회
+        Message message = findMessageById(messageId);
 
+        // Step 2: 도메인 로직 실행 (도메인 내부에서 상태 검증)
         message.updateContent(request.getTitle(), request.getContent());
-        log.info("Message updated successfully: {}", messageId);
+
+        log.info("Message updated successfully: messageId={}", messageId);
 
         return MessageResponse.from(message);
+    }
+
+    /**
+     * 메시지 조회 (Key 기반)
+     */
+    private Message findMessageById(Long messageId) {
+        return messageRepository.findById(messageId)
+                .orElseThrow(() -> {
+                    log.error("Message not found: messageId={}", messageId);
+                    return new ResourceNotFoundException("Message", messageId);
+                });
     }
 
     /**
@@ -100,13 +140,15 @@ public class MessageService {
      */
     @Transactional
     public void prepareForPublish(Long messageId) {
-        log.info("Preparing message for publish: {}", messageId);
+        log.info("Preparing message for publish: messageId={}", messageId);
 
-        Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new ResourceNotFoundException("Message", messageId));
+        // Key 기반 도메인 조회
+        Message message = findMessageById(messageId);
 
+        // 도메인 로직 실행 (내부에서 상태 검증)
         message.prepareForPublish();
-        log.info("Message prepared for publish: {}", messageId);
+
+        log.info("Message prepared for publish: messageId={}", messageId);
     }
 
     /**
@@ -114,13 +156,15 @@ public class MessageService {
      */
     @Transactional
     public void markAsPublished(Long messageId) {
-        log.info("Marking message as published: {}", messageId);
+        log.info("Marking message as published: messageId={}", messageId);
 
-        Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new ResourceNotFoundException("Message", messageId));
+        // Key 기반 도메인 조회
+        Message message = findMessageById(messageId);
 
+        // 도메인 로직 실행
         message.markAsPublished();
-        log.info("Message marked as published: {}", messageId);
+
+        log.info("Message marked as published: messageId={}", messageId);
     }
 
     /**
@@ -128,13 +172,15 @@ public class MessageService {
      */
     @Transactional
     public void cancelMessage(Long messageId) {
-        log.info("Cancelling message: {}", messageId);
+        log.info("Cancelling message: messageId={}", messageId);
 
-        Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new ResourceNotFoundException("Message", messageId));
+        // Key 기반 도메인 조회
+        Message message = findMessageById(messageId);
 
+        // 도메인 로직 실행
         message.cancel();
-        log.info("Message cancelled: {}", messageId);
+
+        log.info("Message cancelled: messageId={}", messageId);
     }
 
     /**
@@ -147,20 +193,24 @@ public class MessageService {
     }
 
     /**
-     * 메시지 삭제
+     * 메시지 삭제 (조기 리턴 적용)
      */
     @Transactional
     public void deleteMessage(Long messageId) {
-        log.info("Deleting message: {}", messageId);
+        log.info("Deleting message: messageId={}", messageId);
 
-        Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new ResourceNotFoundException("Message", messageId));
+        // Step 1: Key 기반 도메인 조회
+        Message message = findMessageById(messageId);
 
+        // Step 2: Early return - 발행 상태 검증
         if (message.getStatus() == MessageStatus.PUBLISHED) {
+            log.warn("Cannot delete published message: messageId={}", messageId);
             throw new BusinessException("발행 완료된 메시지는 삭제할 수 없습니다");
         }
 
+        // Step 3: 삭제 실행
         messageRepository.delete(message);
-        log.info("Message deleted: {}", messageId);
+
+        log.info("Message deleted successfully: messageId={}", messageId);
     }
 }

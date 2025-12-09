@@ -5,6 +5,9 @@ include("common-util")
 include("common-auth")
 include("common-logging")
 
+// Domain 모듈 (순수 도메인 계층)
+include("chat-domain")
+
 // Storage 모듈
 include("chat-storage")
 

@@ -1,6 +1,6 @@
 package com.example.chat.system.dto.request;
 
-import com.example.chat.storage.domain.message.MessageType;
+import com.example.chat.domain.message.MessageType;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -17,24 +17,24 @@ import java.util.Map;
 @Builder
 public class CreateRecurringScheduleRequest {
 
-    @NotBlank(message = "roomId is required")
-    private String roomId;
+	@NotBlank(message = "roomId is required")
+	private String roomId;
 
-    private String channelId;
+	private String channelId;
 
-    @NotNull(message = "messageType is required")
-    private MessageType messageType;
+	@NotNull(message = "messageType is required")
+	private MessageType messageType;
 
-    @NotNull(message = "payload is required")
-    private Map<String, Object> payload;
+	@NotNull(message = "payload is required")
+	private Map<String, Object> payload;
 
-    @NotBlank(message = "cronExpression is required")
-    @Pattern(
-        regexp = "^([0-9*,/-]+\\s+){5,6}[0-9*,/-]+$",
-        message = "Invalid cron expression format"
-    )
-    private String cronExpression;
+	@NotBlank(message = "cronExpression is required")
+	@Pattern(
+			regexp = "^([0-9*,/-]+\\s+){5,6}[0-9*,/-]+$",
+			message = "Invalid cron expression format"
+	)
+	private String cronExpression;
 
-    @Min(value = 1, message = "maxExecutionCount must be at least 1")
-    private Integer maxExecutionCount;  // null이면 무제한
+	@Min(value = 1, message = "maxExecutionCount must be at least 1")
+	private Integer maxExecutionCount;  // null이면 무제한
 }

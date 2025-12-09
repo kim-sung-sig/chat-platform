@@ -14,41 +14,41 @@ import java.util.Properties;
 @Configuration
 public class QuartzConfig {
 
-    @Bean
-    public SchedulerFactoryBean schedulerFactoryBean(DataSource dataSource) {
-        SchedulerFactoryBean factory = new SchedulerFactoryBean();
-        factory.setDataSource(dataSource);
-        factory.setQuartzProperties(quartzProperties());
-        factory.setWaitForJobsToCompleteOnShutdown(true);
-        factory.setAutoStartup(true);
+	@Bean
+	public SchedulerFactoryBean schedulerFactoryBean(DataSource dataSource) {
+		SchedulerFactoryBean factory = new SchedulerFactoryBean();
+		factory.setDataSource(dataSource);
+		factory.setQuartzProperties(quartzProperties());
+		factory.setWaitForJobsToCompleteOnShutdown(true);
+		factory.setAutoStartup(true);
 
-        return factory;
-    }
+		return factory;
+	}
 
-    private Properties quartzProperties() {
-        Properties properties = new Properties();
+	private Properties quartzProperties() {
+		Properties properties = new Properties();
 
-        // Scheduler 설정
-        properties.setProperty("org.quartz.scheduler.instanceName", "ChatScheduler");
-        properties.setProperty("org.quartz.scheduler.instanceId", "AUTO");
+		// Scheduler 설정
+		properties.setProperty("org.quartz.scheduler.instanceName", "ChatScheduler");
+		properties.setProperty("org.quartz.scheduler.instanceId", "AUTO");
 
-        // ThreadPool 설정
-        properties.setProperty("org.quartz.threadPool.threadCount", "10");
-        properties.setProperty("org.quartz.threadPool.class",
-            "org.quartz.simpl.SimpleThreadPool");
+		// ThreadPool 설정
+		properties.setProperty("org.quartz.threadPool.threadCount", "10");
+		properties.setProperty("org.quartz.threadPool.class",
+				"org.quartz.simpl.SimpleThreadPool");
 
-        // JobStore 설정 (JDBC)
-        properties.setProperty("org.quartz.jobStore.class",
-            "org.quartz.impl.jdbcjobstore.JobStoreTX");
-        properties.setProperty("org.quartz.jobStore.driverDelegateClass",
-            "org.quartz.impl.jdbcjobstore.PostgreSQLDelegate");
-        properties.setProperty("org.quartz.jobStore.tablePrefix", "QRTZ_");
-        properties.setProperty("org.quartz.jobStore.dataSource", "quartzDataSource");
+		// JobStore 설정 (JDBC)
+		properties.setProperty("org.quartz.jobStore.class",
+				"org.quartz.impl.jdbcjobstore.JobStoreTX");
+		properties.setProperty("org.quartz.jobStore.driverDelegateClass",
+				"org.quartz.impl.jdbcjobstore.PostgreSQLDelegate");
+		properties.setProperty("org.quartz.jobStore.tablePrefix", "QRTZ_");
+		properties.setProperty("org.quartz.jobStore.dataSource", "quartzDataSource");
 
-        // Cluster 설정 (멀티 인스턴스 지원)
-        properties.setProperty("org.quartz.jobStore.isClustered", "true");
-        properties.setProperty("org.quartz.jobStore.clusterCheckinInterval", "20000");
+		// Cluster 설정 (멀티 인스턴스 지원)
+		properties.setProperty("org.quartz.jobStore.isClustered", "true");
+		properties.setProperty("org.quartz.jobStore.clusterCheckinInterval", "20000");
 
-        return properties;
-    }
+		return properties;
+	}
 }

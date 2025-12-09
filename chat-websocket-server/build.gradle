@@ -23,7 +23,10 @@ dependencies {
 	implementation project(':common-auth')
 	implementation project(':common-logging')
 
-	// Storage 모듈 (도메인 모델)
+	// Domain 모듈 (순수 도메인 - 읽기 전용)
+	implementation project(':chat-domain')
+
+	// Storage 모듈 (영속성 - 필요시)
 	implementation project(':chat-storage')
 
 	implementation 'org.springframework.boot:spring-boot-starter-web'

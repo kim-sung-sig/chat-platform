@@ -16,33 +16,33 @@ import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 @RequiredArgsConstructor
 public class RedisConfig {
 
-    private final RedisMessageSubscriber redisMessageSubscriber;
+	private final RedisMessageSubscriber redisMessageSubscriber;
 
-    /**
-     * Redis 메시지 리스너 컨테이너
-     * chat:room:* 패턴의 채널 구독
-     */
-    @Bean
-    public RedisMessageListenerContainer redisMessageListenerContainer(
-            RedisConnectionFactory connectionFactory
-    ) {
-        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
-        container.setConnectionFactory(connectionFactory);
+	/**
+	 * Redis 메시지 리스너 컨테이너
+	 * chat:room:* 패턴의 채널 구독
+	 */
+	@Bean
+	public RedisMessageListenerContainer redisMessageListenerContainer(
+			RedisConnectionFactory connectionFactory
+	) {
+		RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+		container.setConnectionFactory(connectionFactory);
 
-        // chat:room:* 패턴 구독
-        container.addMessageListener(
-                messageListenerAdapter(),
-                new PatternTopic("chat:room:*")
-        );
+		// chat:room:* 패턴 구독
+		container.addMessageListener(
+				messageListenerAdapter(),
+				new PatternTopic("chat:room:*")
+		);
 
-        return container;
-    }
+		return container;
+	}
 
-    /**
-     * 메시지 리스너 어댑터
-     */
-    @Bean
-    public MessageListenerAdapter messageListenerAdapter() {
-        return new MessageListenerAdapter(redisMessageSubscriber);
-    }
+	/**
+	 * 메시지 리스너 어댑터
+	 */
+	@Bean
+	public MessageListenerAdapter messageListenerAdapter() {
+		return new MessageListenerAdapter(redisMessageSubscriber);
+	}
 }

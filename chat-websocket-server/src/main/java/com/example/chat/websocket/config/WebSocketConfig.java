@@ -15,11 +15,11 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketConfigurer {
 
-    private final ChatWebSocketHandler chatWebSocketHandler;
+	private final ChatWebSocketHandler chatWebSocketHandler;
 
-    @Override
-    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(chatWebSocketHandler, "/ws/chat")
-                .setAllowedOrigins("*"); // CORS 설정 (운영 환경에서는 명시적으로 지정)
-    }
+	@Override
+	public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+		registry.addHandler(chatWebSocketHandler, "/ws/chat")
+				.setAllowedOrigins("*"); // CORS 설정 (운영 환경에서는 명시적으로 지정)
+	}
 }

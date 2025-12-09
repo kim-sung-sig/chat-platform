@@ -16,76 +16,76 @@ import java.time.Duration;
 @RequiredArgsConstructor
 public class DistributedLockService {
 
-    private static final String LOCK_KEY_PREFIX = "lock:schedule:";
-    private static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(5);
+	private static final String LOCK_KEY_PREFIX = "lock:schedule:";
+	private static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(5);
 
-    private final RedisTemplate<String, String> redisTemplate;
+	private final RedisTemplate<String, String> redisTemplate;
 
-    /**
-     * 락 획득 시도
-     */
-    public boolean tryLock(Long scheduleId) {
-        return tryLock(scheduleId, DEFAULT_TIMEOUT);
-    }
+	/**
+	 * 락 획득 시도
+	 */
+	public boolean tryLock(Long scheduleId) {
+		return tryLock(scheduleId, DEFAULT_TIMEOUT);
+	}
 
-    /**
-     * 락 획득 시도 (타임아웃 지정)
-     */
-    public boolean tryLock(Long scheduleId, Duration timeout) {
-        // Early return: null 체크
-        if (scheduleId == null) {
-            log.warn("Cannot acquire lock: scheduleId is null");
-            return false;
-        }
+	/**
+	 * 락 획득 시도 (타임아웃 지정)
+	 */
+	public boolean tryLock(Long scheduleId, Duration timeout) {
+		// Early return: null 체크
+		if (scheduleId == null) {
+			log.warn("Cannot acquire lock: scheduleId is null");
+			return false;
+		}
 
-        String key = LOCK_KEY_PREFIX + scheduleId;
-        String value = Thread.currentThread().getName();
+		String key = LOCK_KEY_PREFIX + scheduleId;
+		String value = Thread.currentThread().getName();
 
-        try {
-            Boolean result = redisTemplate.opsForValue()
-                    .setIfAbsent(key, value, timeout);
+		try {
+			Boolean result = redisTemplate.opsForValue()
+					.setIfAbsent(key, value, timeout);
 
-            if (Boolean.TRUE.equals(result)) {
-                log.debug("Lock acquired: scheduleId={}, thread={}",
-                    scheduleId, value);
-                return true;
-            } else {
-                log.debug("Lock already held: scheduleId={}", scheduleId);
-                return false;
-            }
+			if (Boolean.TRUE.equals(result)) {
+				log.debug("Lock acquired: scheduleId={}, thread={}",
+						scheduleId, value);
+				return true;
+			} else {
+				log.debug("Lock already held: scheduleId={}", scheduleId);
+				return false;
+			}
 
-        } catch (Exception e) {
-            log.error("Failed to acquire lock: scheduleId={}", scheduleId, e);
-            return false;
-        }
-    }
+		} catch (Exception e) {
+			log.error("Failed to acquire lock: scheduleId={}", scheduleId, e);
+			return false;
+		}
+	}
 
-    /**
-     * 락 해제
-     */
-    public void unlock(Long scheduleId) {
-        // Early return: null 체크
-        if (scheduleId == null) {
-            log.warn("Cannot release lock: scheduleId is null");
-            return;
-        }
+	/**
+	 * 락 해제
+	 */
+	public void unlock(Long scheduleId) {
+		// Early return: null 체크
+		if (scheduleId == null) {
+			log.warn("Cannot release lock: scheduleId is null");
+			return;
+		}
 
-        String key = LOCK_KEY_PREFIX + scheduleId;
+		String key = LOCK_KEY_PREFIX + scheduleId;
 
-        try {
-            redisTemplate.delete(key);
-            log.debug("Lock released: scheduleId={}", scheduleId);
+		try {
+			redisTemplate.delete(key);
+			log.debug("Lock released: scheduleId={}", scheduleId);
 
-        } catch (Exception e) {
-            log.error("Failed to release lock: scheduleId={}", scheduleId, e);
-        }
-    }
+		} catch (Exception e) {
+			log.error("Failed to release lock: scheduleId={}", scheduleId, e);
+		}
+	}
 
-    /**
-     * 락 강제 해제 (긴급 상황용)
-     */
-    public void forceUnlock(Long scheduleId) {
-        unlock(scheduleId);
-        log.warn("Lock forcefully released: scheduleId={}", scheduleId);
-    }
+	/**
+	 * 락 강제 해제 (긴급 상황용)
+	 */
+	public void forceUnlock(Long scheduleId) {
+		unlock(scheduleId);
+		log.warn("Lock forcefully released: scheduleId={}", scheduleId);
+	}
 }

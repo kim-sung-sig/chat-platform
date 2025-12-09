@@ -1,8 +1,7 @@
 package com.example.chat.websocket.infrastructure.redis;
 
-import com.example.chat.storage.domain.message.MessageStatus;
-import com.example.chat.storage.domain.message.MessageType;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.example.chat.domain.message.MessageStatus;
+import com.example.chat.domain.message.MessageType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,39 +19,39 @@ import java.time.Instant;
 @AllArgsConstructor
 public class MessageEvent {
 
-    private Long messageId;
-    private String roomId;
-    private String channelId;
-    private Long senderId;
-
-    @JsonProperty("messageType")
-    private String messageTypeCode;  // JSON에서는 String으로 받음
-
-    private String contentJson;
-
-    @JsonProperty("status")
-    private String statusCode;  // JSON에서는 String으로 받음
-
+    private String messageId;     // String (UUID)
+    private String channelId;     // ChannelId
+    private String senderId;      // UserId
+    private String messageType;   // MessageType name (String)
+    private String content;       // 텍스트 내용
+    private String status;        // MessageStatus name (String)
     private Instant sentAt;
-    private Long replyToMessageId;
 
     /**
      * MessageType enum 반환
      */
-    public MessageType getMessageType() {
-        if (messageTypeCode == null) {
+    public MessageType getMessageTypeEnum() {
+        if (messageType == null) {
             return null;
         }
-        return MessageType.fromCode(messageTypeCode);
+        try {
+            return MessageType.valueOf(messageType);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     /**
      * MessageStatus enum 반환
      */
-    public MessageStatus getStatus() {
-        if (statusCode == null) {
+    public MessageStatus getStatusEnum() {
+        if (status == null) {
             return null;
         }
-        return MessageStatus.fromCode(statusCode);
+        try {
+            return MessageStatus.valueOf(status);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 }

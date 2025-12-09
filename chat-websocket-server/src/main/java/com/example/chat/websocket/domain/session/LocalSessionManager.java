@@ -19,121 +19,121 @@ import java.util.stream.Collectors;
 @Component
 public class LocalSessionManager implements SessionManager {
 
-    private final Map<String, ChatSession> sessionById = new ConcurrentHashMap<>();
-    private final Map<String, Set<ChatSession>> sessionsByRoom = new ConcurrentHashMap<>();
+	private final Map<String, ChatSession> sessionById = new ConcurrentHashMap<>();
+	private final Map<String, Set<ChatSession>> sessionsByRoom = new ConcurrentHashMap<>();
 
-    @Override
-    public void register(ChatSession session) {
-        if (!validateSession(session)) {
-            return;
-        }
+	@Override
+	public void register(ChatSession session) {
+		if (!validateSession(session)) {
+			return;
+		}
 
-        if (isDuplicate(session)) {
-            return;
-        }
+		if (isDuplicate(session)) {
+			return;
+		}
 
-        addToMaps(session);
+		addToMaps(session);
 
-        log.info("Local session registered: sessionId={}, roomId={}",
-            session.getSessionId(), session.getRoomId());
-    }
+		log.info("Local session registered: sessionId={}, roomId={}",
+				session.getSessionId(), session.getRoomId());
+	}
 
-    @Override
-    public void remove(String sessionId) {
-        if (sessionId == null) {
-            log.warn("Cannot remove null sessionId");
-            return;
-        }
+	@Override
+	public void remove(String sessionId) {
+		if (sessionId == null) {
+			log.warn("Cannot remove null sessionId");
+			return;
+		}
 
-        ChatSession session = sessionById.remove(sessionId);
+		ChatSession session = sessionById.remove(sessionId);
 
-        if (session == null) {
-            return;
-        }
+		if (session == null) {
+			return;
+		}
 
-        removeFromMaps(session);
+		removeFromMaps(session);
 
-        log.info("Local session removed: sessionId={}", sessionId);
-    }
+		log.info("Local session removed: sessionId={}", sessionId);
+	}
 
-    @Override
-    public Optional<ChatSession> findById(String sessionId) {
-        return Optional.ofNullable(sessionById.get(sessionId));
-    }
+	@Override
+	public Optional<ChatSession> findById(String sessionId) {
+		return Optional.ofNullable(sessionById.get(sessionId));
+	}
 
-    @Override
-    public List<ChatSession> findActiveByRoom(String roomId) {
-        if (roomId == null) {
-            return Collections.emptyList();
-        }
+	@Override
+	public List<ChatSession> findActiveByRoom(String roomId) {
+		if (roomId == null) {
+			return Collections.emptyList();
+		}
 
-        Set<ChatSession> sessions = sessionsByRoom.get(roomId);
+		Set<ChatSession> sessions = sessionsByRoom.get(roomId);
 
-        if (sessions == null) {
-            return Collections.emptyList();
-        }
+		if (sessions == null) {
+			return Collections.emptyList();
+		}
 
-        return sessions.stream()
-                .filter(ChatSession::isActive)
-                .collect(Collectors.toList());
-    }
+		return sessions.stream()
+				.filter(ChatSession::isActive)
+				.collect(Collectors.toList());
+	}
 
-    @Override
-    public List<ChatSession> findActiveByUser(Long userId) {
-        if (userId == null) {
-            return Collections.emptyList();
-        }
+	@Override
+	public List<ChatSession> findActiveByUser(Long userId) {
+		if (userId == null) {
+			return Collections.emptyList();
+		}
 
-        return sessionById.values().stream()
-                .filter(session -> userId.equals(session.getUserId()))
-                .filter(ChatSession::isActive)
-                .collect(Collectors.toList());
-    }
+		return sessionById.values().stream()
+				.filter(session -> userId.equals(session.getUserId()))
+				.filter(ChatSession::isActive)
+				.collect(Collectors.toList());
+	}
 
-    /**
-     * 전체 활성 세션 수
-     */
-    public int countActive() {
-        return (int) sessionById.values().stream()
-                .filter(ChatSession::isActive)
-                .count();
-    }
+	/**
+	 * 전체 활성 세션 수
+	 */
+	public int countActive() {
+		return (int) sessionById.values().stream()
+				.filter(ChatSession::isActive)
+				.count();
+	}
 
-    // ========== Private Methods ==========
+	// ========== Private Methods ==========
 
-    private boolean validateSession(ChatSession session) {
-        if (session == null || session.getSessionId() == null) {
-            log.warn("Invalid session");
-            return false;
-        }
-        return true;
-    }
+	private boolean validateSession(ChatSession session) {
+		if (session == null || session.getSessionId() == null) {
+			log.warn("Invalid session");
+			return false;
+		}
+		return true;
+	}
 
-    private boolean isDuplicate(ChatSession session) {
-        if (sessionById.containsKey(session.getSessionId())) {
-            log.warn("Session already registered: {}", session.getSessionId());
-            return true;
-        }
-        return false;
-    }
+	private boolean isDuplicate(ChatSession session) {
+		if (sessionById.containsKey(session.getSessionId())) {
+			log.warn("Session already registered: {}", session.getSessionId());
+			return true;
+		}
+		return false;
+	}
 
-    private void addToMaps(ChatSession session) {
-        sessionById.put(session.getSessionId(), session);
+	private void addToMaps(ChatSession session) {
+		sessionById.put(session.getSessionId(), session);
 
-        sessionsByRoom
-            .computeIfAbsent(session.getRoomId(), k -> ConcurrentHashMap.newKeySet())
-            .add(session);
-    }
+		sessionsByRoom
+				.computeIfAbsent(session.getRoomId(), k -> ConcurrentHashMap.newKeySet())
+				.add(session);
+	}
 
-    private void removeFromMaps(ChatSession session) {
-        Set<ChatSession> sessions = sessionsByRoom.get(session.getRoomId());
+	private void removeFromMaps(ChatSession session) {
+		Set<ChatSession> sessions = sessionsByRoom.get(session.getRoomId());
 
-        if (sessions != null) {
-            sessions.remove(session);
+		if (sessions != null) {
+			sessions.remove(session);
 
-            if (sessions.isEmpty()) {
-                sessionsByRoom.remove(session.getRoomId());
-            }
-        }
-    }
+			if (sessions.isEmpty()) {
+				sessionsByRoom.remove(session.getRoomId());
+			}
+		}
+	}
 }
