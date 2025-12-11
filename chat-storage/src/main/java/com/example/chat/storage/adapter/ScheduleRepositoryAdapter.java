@@ -70,6 +70,30 @@ public class ScheduleRepositoryAdapter implements ScheduleRuleRepository {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<ScheduleRule> findActiveBySenderId(String senderId) {
+        List<ScheduleRuleEntity> entities = jpaRepository.findBySenderIdAndScheduleStatusIn(
+                senderId,
+                List.of(ScheduleStatus.PENDING, ScheduleStatus.ACTIVE)
+        );
+        return entities.stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ScheduleRule> findActiveByChannelId(String channelId) {
+        List<ScheduleRuleEntity> entities = jpaRepository.findByChannelIdAndScheduleStatusIn(
+                channelId,
+                List.of(ScheduleStatus.PENDING, ScheduleStatus.ACTIVE)
+        );
+        return entities.stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public void delete(ScheduleId id) {
         jpaRepository.deleteById(id.getValue());

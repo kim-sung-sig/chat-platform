@@ -4,8 +4,10 @@ import com.example.chat.domain.message.MessageType;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -15,11 +17,11 @@ import java.util.Map;
  */
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CreateOneTimeScheduleRequest {
 
-	@NotBlank(message = "roomId is required")
-	private String roomId;
-
+	@NotBlank(message = "channelId is required")
 	private String channelId;
 
 	@NotNull(message = "messageType is required")

@@ -1,9 +1,9 @@
 package com.example.chat.system.job;
 
+import com.example.chat.domain.schedule.ScheduleId;
 import com.example.chat.domain.schedule.ScheduleRule;
 import com.example.chat.domain.schedule.ScheduleRuleRepository;
 import com.example.chat.system.infrastructure.lock.DistributedLockService;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,58 +36,69 @@ public class MessagePublishJob implements Job {
 	@Override
 	public void execute(JobExecutionContext context) {
 		JobDataMap dataMap = context.getJobDetail().getJobDataMap();
-		Long scheduleId = dataMap.getLong("scheduleId");
+		String scheduleIdStr = dataMap.getString("scheduleId");
 
-		log.info("MessagePublishJob started: scheduleId={}", scheduleId);
+		log.info("MessagePublishJob started: scheduleId={}", scheduleIdStr);
 
 		// Step 1: 분산 락 획득 시도
-		if (!lockService.tryLock(scheduleId)) {
-			log.info("Another instance is processing: scheduleId={}", scheduleId);
+		if (!lockService.tryLock(scheduleIdStr)) {
+			log.info("Another instance is processing: scheduleId={}", scheduleIdStr);
 			return;
 		}
 
 		try {
 			// Step 2: ScheduleRule 조회 (락 획득 후)
+			ScheduleId scheduleId = ScheduleId.of(scheduleIdStr);
 			ScheduleRule rule = findScheduleRule(scheduleId);
 
 			// Early return: 스케줄이 없거나 실행 불가능
 			if (rule == null) {
-				log.warn("Schedule not found: scheduleId={}", scheduleId);
+				log.warn("Schedule not found: scheduleId={}", scheduleIdStr);
 				return;
 			}
 
-			if (!rule.getStatus().isExecutable()) {
+			if (!rule.canBeExecuted()) {
 				log.info("Schedule not executable: scheduleId={}, status={}",
-						scheduleId, rule.getStatus());
+						scheduleIdStr, rule.getStatus());
 				return;
 			}
 
 			// Step 3: 메시지 발송
 			publishMessage(rule);
 
-			// Step 4: 실행 횟수 증가 및 상태 업데이트
-			ScheduleRule updatedRule = rule.execute();
-			scheduleRuleRepository.save(updatedRule);
+			// Step 4: 단발성이면 실행 완료 표시
+			if (rule.isOneTime()) {
+				rule.markAsExecuted();
+				scheduleRuleRepository.save(rule);
+			}
 
-			log.info("MessagePublishJob completed: scheduleId={}, executionCount={}/{}",
-					scheduleId,
-					updatedRule.getExecutionCount(),
-					updatedRule.getMaxExecutionCount());
+			log.info("MessagePublishJob completed: scheduleId={}", scheduleIdStr);
 
 		} catch (Exception e) {
-			log.error("MessagePublishJob failed: scheduleId={}", scheduleId, e);
+			log.error("MessagePublishJob failed: scheduleId={}", scheduleIdStr, e);
+			// 실패 시 상태 업데이트
+			try {
+				ScheduleId scheduleId = ScheduleId.of(scheduleIdStr);
+				ScheduleRule rule = findScheduleRule(scheduleId);
+				if (rule != null) {
+					rule.markAsFailed();
+					scheduleRuleRepository.save(rule);
+				}
+			} catch (Exception ex) {
+				log.error("Failed to mark schedule as failed: scheduleId={}", scheduleIdStr, ex);
+			}
 			throw new RuntimeException("Failed to publish scheduled message", e);
 
 		} finally {
 			// Step 5: 락 해제
-			lockService.unlock(scheduleId);
+			lockService.unlock(scheduleIdStr);
 		}
 	}
 
 	/**
 	 * ScheduleRule 조회
 	 */
-	private ScheduleRule findScheduleRule(Long scheduleId) {
+	private ScheduleRule findScheduleRule(ScheduleId scheduleId) {
 		return scheduleRuleRepository.findById(scheduleId).orElse(null);
 	}
 
@@ -96,20 +107,26 @@ public class MessagePublishJob implements Job {
 	 */
 	private void publishMessage(ScheduleRule rule) {
 		try {
-			// Payload JSON 파싱
-			Map<String, Object> payload = parsePayload(rule.getMessagePayloadJson());
+			// Payload 생성 (MessageContent로부터)
+			Map<String, Object> payload = new HashMap<>();
+			payload.put("text", rule.getMessage().getContent().getText());
+
+			if (rule.getMessage().getContent().getMediaUrl() != null) {
+				payload.put("mediaUrl", rule.getMessage().getContent().getMediaUrl());
+				payload.put("fileName", rule.getMessage().getContent().getFileName());
+				payload.put("fileSize", rule.getMessage().getContent().getFileSize());
+			}
 
 			// 요청 DTO 생성
 			Map<String, Object> request = new HashMap<>();
-			request.put("roomId", rule.getRoomId());
-			request.put("channelId", rule.getChannelId());
-			request.put("messageType", rule.getMessageType().getCode());
+			request.put("channelId", rule.getMessage().getChannelId().getValue());
+			request.put("messageType", rule.getMessage().getType().name());
 			request.put("payload", payload);
 
 			// HTTP 헤더 설정
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
-			// TODO: 실제 인증 토큰 추가
+			// TODO: 실제 인증 토큰 추가 (senderId 사용)
 
 			HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, headers);
 
@@ -117,28 +134,13 @@ public class MessagePublishJob implements Job {
 			String url = "http://localhost:8081/api/messages";  // TODO: 설정으로 분리
 			restTemplate.postForObject(url, entity, Map.class);
 
-			log.info("Message published: scheduleId={}, roomId={}",
-					rule.getScheduleId(), rule.getRoomId());
+			log.info("Message published: scheduleId={}, channelId={}",
+					rule.getId().getValue(), rule.getMessage().getChannelId().getValue());
 
 		} catch (Exception e) {
 			log.error("Failed to publish message: scheduleId={}",
-					rule.getScheduleId(), e);
+					rule.getId().getValue(), e);
 			throw new RuntimeException("Message publish failed", e);
-		}
-	}
-
-	/**
-	 * JSON Payload 파싱
-	 */
-	private Map<String, Object> parsePayload(String payloadJson) {
-		try {
-			return objectMapper.readValue(
-					payloadJson,
-					new TypeReference<Map<String, Object>>() {}
-			);
-		} catch (Exception e) {
-			log.error("Failed to parse payload: {}", payloadJson, e);
-			return new HashMap<>();
 		}
 	}
 }

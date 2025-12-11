@@ -8,7 +8,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * Chat System Server Application
  * 메시지 스케줄링 및 발행 서비스
  */
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {
+		"com.example.chat.system",
+		"com.example.chat.storage",
+		"com.example.chat.common"
+})
 @EnableScheduling
 public class ChatSystemServerApplication {
 

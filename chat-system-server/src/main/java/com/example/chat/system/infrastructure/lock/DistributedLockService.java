@@ -24,17 +24,17 @@ public class DistributedLockService {
 	/**
 	 * 락 획득 시도
 	 */
-	public boolean tryLock(Long scheduleId) {
+	public boolean tryLock(String scheduleId) {
 		return tryLock(scheduleId, DEFAULT_TIMEOUT);
 	}
 
 	/**
 	 * 락 획득 시도 (타임아웃 지정)
 	 */
-	public boolean tryLock(Long scheduleId, Duration timeout) {
+	public boolean tryLock(String scheduleId, Duration timeout) {
 		// Early return: null 체크
-		if (scheduleId == null) {
-			log.warn("Cannot acquire lock: scheduleId is null");
+		if (scheduleId == null || scheduleId.isBlank()) {
+			log.warn("Cannot acquire lock: scheduleId is null or blank");
 			return false;
 		}
 
@@ -63,10 +63,10 @@ public class DistributedLockService {
 	/**
 	 * 락 해제
 	 */
-	public void unlock(Long scheduleId) {
+	public void unlock(String scheduleId) {
 		// Early return: null 체크
-		if (scheduleId == null) {
-			log.warn("Cannot release lock: scheduleId is null");
+		if (scheduleId == null || scheduleId.isBlank()) {
+			log.warn("Cannot release lock: scheduleId is null or blank");
 			return;
 		}
 
@@ -84,7 +84,7 @@ public class DistributedLockService {
 	/**
 	 * 락 강제 해제 (긴급 상황용)
 	 */
-	public void forceUnlock(Long scheduleId) {
+	public void forceUnlock(String scheduleId) {
 		unlock(scheduleId);
 		log.warn("Lock forcefully released: scheduleId={}", scheduleId);
 	}

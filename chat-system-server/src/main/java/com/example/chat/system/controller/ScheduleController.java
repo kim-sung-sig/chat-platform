@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -60,7 +59,7 @@ public class ScheduleController {
 	public ResponseEntity<ApiResponse<ScheduleResponse>> createOneTimeSchedule(
 			@Valid @RequestBody CreateOneTimeScheduleRequest request
 	) {
-		log.info("POST /api/v1/schedules/one-time - roomId: {}", request.getRoomId());
+		log.info("POST /api/v1/schedules/one-time - channelId: {}", request.getChannelId());
 
 		ScheduleResponse response = scheduleService.createOneTimeSchedule(request);
 
@@ -84,8 +83,8 @@ public class ScheduleController {
 	public ResponseEntity<ApiResponse<ScheduleResponse>> createRecurringSchedule(
 			@Valid @RequestBody CreateRecurringScheduleRequest request
 	) {
-		log.info("POST /api/v1/schedules/recurring - roomId: {}, cron: {}",
-				request.getRoomId(), request.getCronExpression());
+		log.info("POST /api/v1/schedules/recurring - channelId: {}, cron: {}",
+				request.getChannelId(), request.getCronExpression());
 
 		ScheduleResponse response = scheduleService.createRecurringSchedule(request);
 
@@ -95,45 +94,13 @@ public class ScheduleController {
 	}
 
 	/**
-	 * 스케줄 일시중지
-	 */
-	@Operation(summary = "스케줄 일시중지", description = "활성 상태의 스케줄을 일시중지합니다.")
-	@Parameter(name = "scheduleId", description = "스케줄 ID", required = true)
-	@PutMapping("/{scheduleId}/pause")
-	public ResponseEntity<ApiResponse<ScheduleResponse>> pauseSchedule(
-			@PathVariable Long scheduleId
-	) {
-		log.info("PUT /api/v1/schedules/{}/pause", scheduleId);
-
-		ScheduleResponse response = scheduleService.pauseSchedule(scheduleId);
-
-		return ResponseEntity.ok(ApiResponse.success(response));
-	}
-
-	/**
-	 * 스케줄 재개
-	 */
-	@Operation(summary = "스케줄 재개", description = "일시중지된 스케줄을 재개합니다.")
-	@Parameter(name = "scheduleId", description = "스케줄 ID", required = true)
-	@PutMapping("/{scheduleId}/resume")
-	public ResponseEntity<ApiResponse<ScheduleResponse>> resumeSchedule(
-			@PathVariable Long scheduleId
-	) {
-		log.info("PUT /api/v1/schedules/{}/resume", scheduleId);
-
-		ScheduleResponse response = scheduleService.resumeSchedule(scheduleId);
-
-		return ResponseEntity.ok(ApiResponse.success(response));
-	}
-
-	/**
 	 * 스케줄 취소
 	 */
 	@Operation(summary = "스케줄 취소", description = "스케줄을 취소하고 Quartz Job을 삭제합니다.")
 	@Parameter(name = "scheduleId", description = "스케줄 ID", required = true)
 	@DeleteMapping("/{scheduleId}")
 	public ResponseEntity<ApiResponse<Void>> cancelSchedule(
-			@PathVariable Long scheduleId
+			@PathVariable String scheduleId
 	) {
 		log.info("DELETE /api/v1/schedules/{}", scheduleId);
 
@@ -156,17 +123,17 @@ public class ScheduleController {
 	}
 
 	/**
-	 * 채팅방의 스케줄 목록 조회
+	 * 채널의 스케줄 목록 조회
 	 */
-	@Operation(summary = "채팅방 스케줄 목록 조회", description = "특정 채팅방의 활성 스케줄 목록을 조회합니다.")
-	@Parameter(name = "roomId", description = "채팅방 ID", required = true)
-	@GetMapping("/room/{roomId}")
-	public ResponseEntity<ApiResponse<List<ScheduleResponse>>> getSchedulesByRoom(
-			@PathVariable String roomId
+	@Operation(summary = "채널 스케줄 목록 조회", description = "특정 채널의 활성 스케줄 목록을 조회합니다.")
+	@Parameter(name = "channelId", description = "채널 ID", required = true)
+	@GetMapping("/channel/{channelId}")
+	public ResponseEntity<ApiResponse<List<ScheduleResponse>>> getSchedulesByChannel(
+			@PathVariable String channelId
 	) {
-		log.info("GET /api/v1/schedules/room/{}", roomId);
+		log.info("GET /api/v1/schedules/channel/{}", channelId);
 
-		List<ScheduleResponse> response = scheduleService.getSchedulesByRoom(roomId);
+		List<ScheduleResponse> response = scheduleService.getSchedulesByChannel(channelId);
 
 		return ResponseEntity.ok(ApiResponse.success(response));
 	}

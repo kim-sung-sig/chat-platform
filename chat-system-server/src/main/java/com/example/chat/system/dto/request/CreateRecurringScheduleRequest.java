@@ -5,8 +5,10 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.Map;
 
@@ -15,11 +17,11 @@ import java.util.Map;
  */
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CreateRecurringScheduleRequest {
 
-	@NotBlank(message = "roomId is required")
-	private String roomId;
-
+	@NotBlank(message = "channelId is required")
 	private String channelId;
 
 	@NotNull(message = "messageType is required")

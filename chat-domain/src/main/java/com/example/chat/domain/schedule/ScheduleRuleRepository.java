@@ -34,6 +34,16 @@ public interface ScheduleRuleRepository {
     List<ScheduleRule> findActiveRecurringSchedules();
 
     /**
+     * 사용자의 활성 스케줄 목록 조회
+     */
+    List<ScheduleRule> findActiveBySenderId(String senderId);
+
+    /**
+     * 채널의 활성 스케줄 목록 조회
+     */
+    List<ScheduleRule> findActiveByChannelId(String channelId);
+
+    /**
      * 스케줄 규칙 삭제
      */
     void delete(ScheduleId id);

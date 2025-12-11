@@ -1,9 +1,15 @@
 package com.example.chat.system.service;
 
 import com.example.chat.common.auth.context.UserContextHolder;
-import com.example.chat.common.auth.model.UserId;
+import com.example.chat.domain.channel.ChannelId;
+import com.example.chat.domain.message.Message;
+import com.example.chat.domain.schedule.CronExpression;
+import com.example.chat.domain.schedule.ScheduleId;
 import com.example.chat.domain.schedule.ScheduleRule;
 import com.example.chat.domain.schedule.ScheduleRuleRepository;
+import com.example.chat.domain.service.MessageDomainService;
+import com.example.chat.domain.service.ScheduleDomainService;
+import com.example.chat.domain.user.UserId;
 import com.example.chat.system.dto.request.CreateOneTimeScheduleRequest;
 import com.example.chat.system.dto.request.CreateRecurringScheduleRequest;
 import com.example.chat.system.dto.response.ScheduleResponse;
@@ -21,6 +27,7 @@ import org.quartz.TriggerBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
@@ -37,6 +44,8 @@ import java.util.stream.Collectors;
 public class ScheduleService {
 
 	private final ScheduleRuleRepository scheduleRuleRepository;
+	private final MessageDomainService messageDomainService;
+	private final ScheduleDomainService scheduleDomainService;
 	private final Scheduler quartzScheduler;
 	private final ObjectMapper objectMapper;
 
@@ -45,31 +54,33 @@ public class ScheduleService {
 	 */
 	@Transactional
 	public ScheduleResponse createOneTimeSchedule(CreateOneTimeScheduleRequest request) {
-		log.info("Creating one-time schedule: roomId={}, executeAt={}",
-				request.getRoomId(), request.getExecuteAt());
+		log.info("Creating one-time schedule: channelId={}, executeAt={}",
+				request.getChannelId(), request.getExecuteAt());
 
 		// Step 1: 사용자 ID 조회 (Key)
-		UserId senderId = getUserId();
+		UserId senderId = getUserIdFromContext();
 
-		// Step 2: 도메인 생성 (팩토리 메서드)
-		ScheduleRule rule = ScheduleRule.createOneTime(
-				request.getRoomId(),
-				request.getChannelId(),
-				senderId,
-				request.getMessageType(),
-				request.getPayload(),
-				request.getExecuteAt()
-		);
+		// Step 2: ChannelId로 도메인 객체 생성
+		ChannelId channelId = ChannelId.of(request.getChannelId());
 
-		// Step 3: 영속화
+		// Step 3: Message 도메인 생성 (MessageType에 따라)
+		Message message = createMessageFromRequest(channelId, senderId, request.getMessageType(), request.getPayload());
+
+		// Step 4: Instant로 변환
+		Instant scheduledAt = request.getExecuteAt().atZone(ZoneId.systemDefault()).toInstant();
+
+		// Step 5: ScheduleRule 도메인 생성
+		ScheduleRule rule = scheduleDomainService.createOneTimeSchedule(message, scheduledAt);
+
+		// Step 6: 영속화
 		ScheduleRule savedRule = scheduleRuleRepository.save(rule);
 
-		// Step 4: Quartz Job 등록
+		// Step 7: Quartz Job 등록
 		registerQuartzJob(savedRule);
 
-		log.info("One-time schedule created: scheduleId={}", savedRule.getScheduleId());
+		log.info("One-time schedule created: scheduleId={}", savedRule.getId().getValue());
 
-		// Step 5: Response 변환
+		// Step 8: Response 변환
 		return ScheduleResponse.from(savedRule);
 	}
 
@@ -78,76 +89,33 @@ public class ScheduleService {
 	 */
 	@Transactional
 	public ScheduleResponse createRecurringSchedule(CreateRecurringScheduleRequest request) {
-		log.info("Creating recurring schedule: roomId={}, cron={}",
-				request.getRoomId(), request.getCronExpression());
+		log.info("Creating recurring schedule: channelId={}, cron={}",
+				request.getChannelId(), request.getCronExpression());
 
 		// Step 1: 사용자 ID 조회 (Key)
-		UserId senderId = getUserId();
+		UserId senderId = getUserIdFromContext();
 
-		// Step 2: 도메인 생성 (팩토리 메서드)
-		ScheduleRule rule = ScheduleRule.createRecurring(
-				request.getRoomId(),
-				request.getChannelId(),
-				senderId,
-				request.getMessageType(),
-				request.getPayload(),
-				request.getCronExpression(),
-				request.getMaxExecutionCount()
-		);
+		// Step 2: ChannelId로 도메인 객체 생성
+		ChannelId channelId = ChannelId.of(request.getChannelId());
 
-		// Step 3: 영속화
+		// Step 3: Message 도메인 생성
+		Message message = createMessageFromRequest(channelId, senderId, request.getMessageType(), request.getPayload());
+
+		// Step 4: CronExpression 생성
+		CronExpression cronExpression = CronExpression.of(request.getCronExpression());
+
+		// Step 5: ScheduleRule 도메인 생성
+		ScheduleRule rule = scheduleDomainService.createRecurringSchedule(message, cronExpression);
+
+		// Step 6: 영속화
 		ScheduleRule savedRule = scheduleRuleRepository.save(rule);
 
-		// Step 4: Quartz Job 등록
+		// Step 7: Quartz Job 등록
 		registerQuartzJob(savedRule);
 
-		log.info("Recurring schedule created: scheduleId={}", savedRule.getScheduleId());
+		log.info("Recurring schedule created: scheduleId={}", savedRule.getId().getValue());
 
-		// Step 5: Response 변환
-		return ScheduleResponse.from(savedRule);
-	}
-
-	/**
-	 * 스케줄 일시중지
-	 */
-	@Transactional
-	public ScheduleResponse pauseSchedule(Long scheduleId) {
-		log.info("Pausing schedule: scheduleId={}", scheduleId);
-
-		// Step 1: Key로 도메인 조회
-		ScheduleRule rule = findScheduleRule(scheduleId);
-
-		// Step 2: 도메인 로직 실행
-		ScheduleRule pausedRule = rule.pause();
-
-		// Step 3: 영속화
-		ScheduleRule savedRule = scheduleRuleRepository.save(pausedRule);
-
-		// Step 4: Quartz Job 일시중지
-		pauseQuartzJob(scheduleId);
-
-		return ScheduleResponse.from(savedRule);
-	}
-
-	/**
-	 * 스케줄 재개
-	 */
-	@Transactional
-	public ScheduleResponse resumeSchedule(Long scheduleId) {
-		log.info("Resuming schedule: scheduleId={}", scheduleId);
-
-		// Step 1: Key로 도메인 조회
-		ScheduleRule rule = findScheduleRule(scheduleId);
-
-		// Step 2: 도메인 로직 실행
-		ScheduleRule resumedRule = rule.resume();
-
-		// Step 3: 영속화
-		ScheduleRule savedRule = scheduleRuleRepository.save(resumedRule);
-
-		// Step 4: Quartz Job 재개
-		resumeQuartzJob(scheduleId);
-
+		// Step 8: Response 변환
 		return ScheduleResponse.from(savedRule);
 	}
 
@@ -155,27 +123,28 @@ public class ScheduleService {
 	 * 스케줄 취소
 	 */
 	@Transactional
-	public void cancelSchedule(Long scheduleId) {
-		log.info("Cancelling schedule: scheduleId={}", scheduleId);
+	public void cancelSchedule(String scheduleIdStr) {
+		log.info("Cancelling schedule: scheduleId={}", scheduleIdStr);
 
 		// Step 1: Key로 도메인 조회
+		ScheduleId scheduleId = ScheduleId.of(scheduleIdStr);
 		ScheduleRule rule = findScheduleRule(scheduleId);
 
 		// Step 2: 도메인 로직 실행
-		ScheduleRule cancelledRule = rule.cancel();
+		rule.cancel();
 
 		// Step 3: 영속화
-		scheduleRuleRepository.save(cancelledRule);
+		scheduleRuleRepository.save(rule);
 
 		// Step 4: Quartz Job 삭제
-		deleteQuartzJob(scheduleId);
+		deleteQuartzJob(scheduleIdStr);
 	}
 
 	/**
 	 * 사용자의 스케줄 목록 조회
 	 */
 	public List<ScheduleResponse> getMySchedules() {
-		UserId senderId = getUserId();
+		UserId senderId = getUserIdFromContext();
 
 		List<ScheduleRule> rules = scheduleRuleRepository
 				.findActiveBySenderId(senderId.getValue());
@@ -186,11 +155,11 @@ public class ScheduleService {
 	}
 
 	/**
-	 * 채팅방의 스케줄 목록 조회
+	 * 채널의 스케줄 목록 조회
 	 */
-	public List<ScheduleResponse> getSchedulesByRoom(String roomId) {
+	public List<ScheduleResponse> getSchedulesByChannel(String channelId) {
 		List<ScheduleRule> rules = scheduleRuleRepository
-				.findActiveByRoomId(roomId);
+				.findActiveByChannelId(channelId);
 
 		return rules.stream()
 				.map(ScheduleResponse::from)
@@ -200,26 +169,116 @@ public class ScheduleService {
 	// ========== Private Helper Methods ==========
 
 	/**
-	 * 인증된 사용자 ID 조회
+	 * 인증된 사용자 ID 조회 (common-auth 컨텍스트 → domain UserId로 변환)
 	 */
-	private UserId getUserId() {
-		UserId userId = UserContextHolder.getUserId();
+	private UserId getUserIdFromContext() {
+		com.example.chat.common.auth.model.UserId authUserId = UserContextHolder.getUserId();
 
 		// Early return: 인증되지 않은 사용자
-		if (userId == null) {
+		if (authUserId == null) {
 			throw new IllegalStateException("User not authenticated");
 		}
 
-		return userId;
+		return UserId.of(String.valueOf(authUserId.getValue()));
+	}
+
+	/**
+	 * Message 도메인 생성 (MessageType에 따라)
+	 */
+	private Message createMessageFromRequest(ChannelId channelId, UserId senderId,
+	                                         com.example.chat.domain.message.MessageType messageType,
+	                                         java.util.Map<String, Object> payload) {
+		// Early return: MessageType 검증
+		if (messageType == null) {
+			throw new IllegalArgumentException("Message type is required");
+		}
+
+		switch (messageType) {
+			case TEXT:
+				String text = extractTextField(payload, "text");
+				return messageDomainService.createTextMessage(channelId, senderId, text);
+
+			case IMAGE:
+				String imageUrl = extractTextField(payload, "imageUrl");
+				String imageName = extractTextFieldOrDefault(payload, "fileName", "image.jpg");
+				Long imageSize = extractLongFieldOrDefault(payload, "fileSize", 0L);
+				return messageDomainService.createImageMessage(channelId, senderId, imageUrl, imageName, imageSize);
+
+			case FILE:
+				String fileUrl = extractTextField(payload, "fileUrl");
+				String fileName = extractTextField(payload, "fileName");
+				Long fileSize = extractLongFieldOrDefault(payload, "fileSize", 0L);
+				String mimeType = extractTextFieldOrDefault(payload, "mimeType", "application/octet-stream");
+				return messageDomainService.createFileMessage(channelId, senderId, fileUrl, fileName, fileSize, mimeType);
+
+			case SYSTEM:
+				String systemText = extractTextField(payload, "text");
+				return messageDomainService.createSystemMessage(channelId, systemText);
+
+			default:
+				throw new IllegalArgumentException("Unsupported message type: " + messageType);
+		}
+	}
+
+	/**
+	 * Payload에서 필수 텍스트 필드 추출
+	 */
+	private String extractTextField(java.util.Map<String, Object> payload, String fieldName) {
+		if (payload == null) {
+			throw new IllegalArgumentException("Payload is required");
+		}
+
+		Object value = payload.get(fieldName);
+		if (value == null) {
+			throw new IllegalArgumentException(String.format("Field '%s' is required in payload", fieldName));
+		}
+
+		return value.toString();
+	}
+
+	/**
+	 * Payload에서 텍스트 필드 추출 (기본값 있음)
+	 */
+	private String extractTextFieldOrDefault(java.util.Map<String, Object> payload, String fieldName, String defaultValue) {
+		if (payload == null) {
+			return defaultValue;
+		}
+
+		Object value = payload.get(fieldName);
+		return value != null ? value.toString() : defaultValue;
+	}
+
+	/**
+	 * Payload에서 Long 필드 추출 (기본값 있음)
+	 */
+	private Long extractLongFieldOrDefault(java.util.Map<String, Object> payload, String fieldName, Long defaultValue) {
+		if (payload == null) {
+			return defaultValue;
+		}
+
+		Object value = payload.get(fieldName);
+		if (value == null) {
+			return defaultValue;
+		}
+
+		if (value instanceof Number) {
+			return ((Number) value).longValue();
+		}
+
+		try {
+			return Long.parseLong(value.toString());
+		} catch (NumberFormatException e) {
+			return defaultValue;
+		}
 	}
 
 	/**
 	 * Key로 ScheduleRule 조회
 	 */
-	private ScheduleRule findScheduleRule(Long scheduleId) {
+	private ScheduleRule findScheduleRule(ScheduleId scheduleId) {
 		return scheduleRuleRepository.findById(scheduleId)
 				.orElseThrow(() -> new IllegalArgumentException(
-						"Schedule not found: " + scheduleId
+						"Schedule not found: " + scheduleId.getValue()
 				));
 	}
 
@@ -228,11 +287,13 @@ public class ScheduleService {
 	 */
 	private void registerQuartzJob(ScheduleRule rule) {
 		try {
+			String scheduleIdStr = rule.getId().getValue();
+
 			JobDetail jobDetail = JobBuilder
 					.newJob()
 					.ofType(com.example.chat.system.job.MessagePublishJob.class)
-					.withIdentity("schedule-" + rule.getScheduleId())
-					.usingJobData("scheduleId", rule.getScheduleId())
+					.withIdentity("schedule-" + scheduleIdStr)
+					.usingJobData("scheduleId", scheduleIdStr)
 					.storeDurably()
 					.build();
 
@@ -240,11 +301,11 @@ public class ScheduleService {
 
 			quartzScheduler.scheduleJob(jobDetail, trigger);
 
-			log.info("Quartz job registered: scheduleId={}", rule.getScheduleId());
+			log.info("Quartz job registered: scheduleId={}", scheduleIdStr);
 
 		} catch (SchedulerException e) {
 			log.error("Failed to register Quartz job: scheduleId={}",
-					rule.getScheduleId(), e);
+					rule.getId().getValue(), e);
 			throw new RuntimeException("Failed to register schedule", e);
 		}
 	}
@@ -253,20 +314,19 @@ public class ScheduleService {
 	 * Trigger 생성
 	 */
 	private Trigger createTrigger(ScheduleRule rule) {
+		String scheduleIdStr = rule.getId().getValue();
 		TriggerBuilder<Trigger> builder = TriggerBuilder.newTrigger()
-				.withIdentity("trigger-" + rule.getScheduleId());
+				.withIdentity("trigger-" + scheduleIdStr);
 
-		if (rule.getType() == com.example.chat.storage.domain.schedule.ScheduleType.ONE_TIME) {
+		if (rule.isOneTime()) {
 			// 단발성: SimpleSchedule
-			Date startTime = Date.from(
-					rule.getExecuteAt().atZone(ZoneId.systemDefault()).toInstant()
-			);
+			Date startTime = Date.from(rule.getScheduledAt());
 			builder.startAt(startTime);
 
 		} else {
 			// 주기적: CronSchedule
 			builder.withSchedule(
-					CronScheduleBuilder.cronSchedule(rule.getCronExpression())
+					CronScheduleBuilder.cronSchedule(rule.getCronExpression().getValue())
 			);
 		}
 
@@ -274,38 +334,14 @@ public class ScheduleService {
 	}
 
 	/**
-	 * Quartz Job 일시중지
-	 */
-	private void pauseQuartzJob(Long scheduleId) {
-		try {
-			JobKey jobKey = new JobKey("schedule-" + scheduleId);
-			quartzScheduler.pauseJob(jobKey);
-
-		} catch (SchedulerException e) {
-			log.error("Failed to pause Quartz job: scheduleId={}", scheduleId, e);
-		}
-	}
-
-	/**
-	 * Quartz Job 재개
-	 */
-	private void resumeQuartzJob(Long scheduleId) {
-		try {
-			JobKey jobKey = new JobKey("schedule-" + scheduleId);
-			quartzScheduler.resumeJob(jobKey);
-
-		} catch (SchedulerException e) {
-			log.error("Failed to resume Quartz job: scheduleId={}", scheduleId, e);
-		}
-	}
-
-	/**
 	 * Quartz Job 삭제
 	 */
-	private void deleteQuartzJob(Long scheduleId) {
+	private void deleteQuartzJob(String scheduleId) {
 		try {
 			JobKey jobKey = new JobKey("schedule-" + scheduleId);
 			quartzScheduler.deleteJob(jobKey);
+
+			log.info("Quartz job deleted: scheduleId={}", scheduleId);
 
 		} catch (SchedulerException e) {
 			log.error("Failed to delete Quartz job: scheduleId={}", scheduleId, e);

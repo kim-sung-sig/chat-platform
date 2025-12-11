@@ -34,4 +34,14 @@ public interface JpaScheduleRuleRepository extends JpaRepository<ScheduleRuleEnt
      * 활성화된 주기적 스케줄 목록 조회
      */
     List<ScheduleRuleEntity> findByScheduleTypeAndScheduleStatus(ScheduleType type, ScheduleStatus status);
+
+    /**
+     * 사용자의 활성 스케줄 목록 조회
+     */
+    List<ScheduleRuleEntity> findBySenderIdAndScheduleStatusIn(String senderId, List<ScheduleStatus> statuses);
+
+    /**
+     * 채널의 활성 스케줄 목록 조회
+     */
+    List<ScheduleRuleEntity> findByChannelIdAndScheduleStatusIn(String channelId, List<ScheduleStatus> statuses);
 }

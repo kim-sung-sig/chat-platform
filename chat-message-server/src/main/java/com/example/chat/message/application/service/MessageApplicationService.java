@@ -1,12 +1,16 @@
 package com.example.chat.message.application.service;
 
 import com.example.chat.common.auth.context.UserContextHolder;
+import com.example.chat.domain.channel.Channel;
 import com.example.chat.domain.channel.ChannelId;
+import com.example.chat.domain.channel.ChannelRepository;
 import com.example.chat.domain.message.Message;
 import com.example.chat.domain.message.MessageRepository;
 import com.example.chat.domain.message.MessageType;
 import com.example.chat.domain.service.MessageDomainService;
+import com.example.chat.domain.user.User;
 import com.example.chat.domain.user.UserId;
+import com.example.chat.domain.user.UserRepository;
 import com.example.chat.message.application.dto.request.SendMessageRequest;
 import com.example.chat.message.application.dto.response.MessageResponse;
 import com.example.chat.message.infrastructure.messaging.MessageEventPublisher;
@@ -17,9 +21,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 메시지 애플리케이션 서비스 (Use Case)
- * - Early Return 패턴 적용
- * - Key 기반 도메인 조회 패턴
- * - Domain Service 활용
+ *
+ * Application Service의 역할:
+ * 1. 트랜잭션 경계 관리
+ * 2. 인증/인가 확인
+ * 3. Repository에서 Aggregate 조회
+ * 4. Domain Service 호출 (도메인 로직은 Domain Service에 위임)
+ * 5. 이벤트 발행
+ * 6. DTO 변환
+ *
+ * 비즈니스 규칙 검증은 Domain Service에서 처리
  */
 @Slf4j
 @Service
@@ -28,44 +39,53 @@ import org.springframework.transaction.annotation.Transactional;
 public class MessageApplicationService {
 
     private final MessageRepository messageRepository;
+    private final ChannelRepository channelRepository;
+    private final UserRepository userRepository;
     private final MessageDomainService messageDomainService;
     private final MessageEventPublisher messageEventPublisher;
 
     /**
      * 메시지 발송 Use Case
+     *
+     * 흐름:
+     * 1. 인증 확인
+     * 2. Aggregate 조회 (Channel, User)
+     * 3. Domain Service 호출 (비즈니스 규칙 검증 + 메시지 생성)
+     * 4. 저장
+     * 5. 이벤트 발행
      */
     @Transactional
     public MessageResponse sendMessage(SendMessageRequest request) {
         log.info("Sending message: channelId={}, type={}", request.getChannelId(), request.getMessageType());
 
-        // Early return 1: 인증된 사용자 확인
-        com.example.chat.common.auth.model.UserId authUserId = UserContextHolder.getUserId();
-        if (authUserId == null) {
-            throw new IllegalStateException("User not authenticated");
-        }
-        UserId senderId = UserId.of(String.valueOf(authUserId.getValue()));
+        // Step 1: 인증 확인 - 인증된 사용자 ID 조회
+        UserId senderId = getUserIdFromContext();
 
-        // Early return 2: 필수 파라미터 검증
+        // Step 2: 필수 파라미터 검증
         if (request.getChannelId() == null || request.getChannelId().isBlank()) {
             throw new IllegalArgumentException("Channel ID is required");
         }
 
-        // Step 1: ChannelId로 도메인 객체 생성
-        ChannelId channelId = ChannelId.of(request.getChannelId());
+        // Step 3: Aggregate 조회 - Channel
+        Channel channel = findChannelById(request.getChannelId());
 
-        // Step 2: MessageType에 따라 Domain Service로 메시지 생성
-        Message message = createMessageByType(channelId, senderId, request);
+        // Step 4: Aggregate 조회 - User
+        User sender = findUserById(senderId);
 
-        // Step 3: 저장
+        // Step 5: Domain Service 호출 - 메시지 생성 (도메인 규칙 검증 포함)
+        Message message = createMessageByType(channel, sender, request);
+
+        // Step 6: 저장
         Message savedMessage = messageRepository.save(message);
 
-        // Step 4: 이벤트 발행 (비동기)
+        // Step 7: 이벤트 발행 (비동기)
         publishMessageEvent(savedMessage);
 
-        // Step 5: Response 변환
+        // Step 8: Response 변환
         MessageResponse response = convertToResponse(savedMessage);
 
-        log.info("Message sent successfully: messageId={}", savedMessage.getId().getValue());
+        log.info("Message sent successfully: messageId={}, channelId={}, senderId={}",
+                savedMessage.getId().getValue(), channel.getId().getValue(), sender.getId().getValue());
 
         return response;
     }
@@ -73,9 +93,39 @@ public class MessageApplicationService {
     // ========== Private Helper Methods ==========
 
     /**
-     * MessageType에 따라 메시지 생성
+     * 인증된 사용자 ID 조회
      */
-    private Message createMessageByType(ChannelId channelId, UserId senderId, SendMessageRequest request) {
+    private UserId getUserIdFromContext() {
+        com.example.chat.common.auth.model.UserId authUserId = UserContextHolder.getUserId();
+        if (authUserId == null) {
+            throw new IllegalStateException("User not authenticated");
+        }
+        return UserId.of(String.valueOf(authUserId.getValue()));
+    }
+
+    /**
+     * Channel Aggregate 조회
+     */
+    private Channel findChannelById(String channelIdStr) {
+        ChannelId channelId = ChannelId.of(channelIdStr);
+        return channelRepository.findById(channelId)
+                .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + channelIdStr));
+    }
+
+    /**
+     * User Aggregate 조회
+     */
+    private User findUserById(UserId userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId.getValue()));
+    }
+
+    /**
+     * MessageType에 따라 메시지 생성
+     *
+     * Domain Service에 Aggregate를 전달하여 도메인 규칙 검증 수행
+     */
+    private Message createMessageByType(Channel channel, User sender, SendMessageRequest request) {
         MessageType type = request.getMessageType();
 
         // Early return: MessageType 검증
@@ -86,24 +136,25 @@ public class MessageApplicationService {
         switch (type) {
             case TEXT:
                 String text = extractTextField(request, "text");
-                return messageDomainService.createTextMessage(channelId, senderId, text);
+                return messageDomainService.createTextMessage(channel, sender, text);
 
             case IMAGE:
                 String imageUrl = extractTextField(request, "imageUrl");
                 String imageName = extractTextFieldOrDefault(request, "fileName", "image.jpg");
                 Long imageSize = extractLongFieldOrDefault(request, "fileSize", 0L);
-                return messageDomainService.createImageMessage(channelId, senderId, imageUrl, imageName, imageSize);
+                return messageDomainService.createImageMessage(channel, sender, imageUrl, imageName, imageSize);
 
             case FILE:
                 String fileUrl = extractTextField(request, "fileUrl");
                 String fileName = extractTextField(request, "fileName");
                 Long fileSize = extractLongFieldOrDefault(request, "fileSize", 0L);
                 String mimeType = extractTextFieldOrDefault(request, "mimeType", "application/octet-stream");
-                return messageDomainService.createFileMessage(channelId, senderId, fileUrl, fileName, fileSize, mimeType);
+                return messageDomainService.createFileMessage(channel, sender, fileUrl, fileName, fileSize, mimeType);
 
             case SYSTEM:
+                // 시스템 메시지는 User가 필요 없음
                 String systemText = extractTextField(request, "text");
-                return messageDomainService.createSystemMessage(channelId, systemText);
+                return messageDomainService.createSystemMessage(channel, systemText);
 
             default:
                 throw new IllegalArgumentException("Unsupported message type: " + type);
