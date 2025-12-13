@@ -12,23 +12,23 @@ import java.util.Optional;
 @Repository
 public interface JpaUserRepository extends JpaRepository<UserEntity, String> {
 
-    /**
-     * Username으로 사용자 조회
-     */
-    Optional<UserEntity> findByUsername(String username);
+	/**
+	 * Username으로 사용자 조회
+	 */
+	Optional<UserEntity> findByUsername(String username);
 
-    /**
-     * Email로 사용자 조회
-     */
-    Optional<UserEntity> findByEmail(String email);
+	/**
+	 * Email로 사용자 조회
+	 */
+	Optional<UserEntity> findByEmail(String email);
 
-    /**
-     * Username 존재 여부 확인
-     */
-    boolean existsByUsername(String username);
+	/**
+	 * Username 존재 여부 확인
+	 */
+	boolean existsByUsername(String username);
 
-    /**
-     * Email 존재 여부 확인
-     */
-    boolean existsByEmail(String email);
+	/**
+	 * Email 존재 여부 확인
+	 */
+	boolean existsByEmail(String email);
 }

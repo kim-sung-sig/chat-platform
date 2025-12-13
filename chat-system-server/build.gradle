@@ -46,6 +46,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
+	// WebFlux WebClient (비동기 HTTP 클라이언트)
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
 	// security
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'

@@ -21,14 +21,24 @@ public interface ChannelRepository {
     Optional<Channel> findById(ChannelId id);
 
     /**
-     * 사용자가 속한 채널 목록 조회
+     * 사용자가 속한 채널 목록 조회 (UserId)
      */
     List<Channel> findByMemberId(UserId userId);
+
+    /**
+     * 사용자가 속한 채널 목록 조회 (String)
+     */
+    List<Channel> findByMemberId(String userId);
 
     /**
      * 사용자가 소유한 채널 목록 조회
      */
     List<Channel> findByOwnerId(UserId userId);
+
+    /**
+     * 공개 채널 목록 조회
+     */
+    List<Channel> findPublicChannels();
 
     /**
      * 채널 삭제

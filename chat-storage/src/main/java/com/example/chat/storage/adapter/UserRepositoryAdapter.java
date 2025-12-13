@@ -19,41 +19,41 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserRepositoryAdapter implements UserRepository {
 
-    private final JpaUserRepository jpaRepository;
-    private final UserMapper mapper;
+	private final JpaUserRepository jpaRepository;
+	private final UserMapper mapper;
 
-    @Override
-    @Transactional
-    public User save(User user) {
-        UserEntity entity = mapper.toEntity(user);
-        UserEntity saved = jpaRepository.save(entity);
-        return mapper.toDomain(saved);
-    }
+	@Override
+	@Transactional
+	public User save(User user) {
+		UserEntity entity = mapper.toEntity(user);
+		UserEntity saved = jpaRepository.save(entity);
+		return mapper.toDomain(saved);
+	}
 
-    @Override
-    @Transactional(readOnly = true)
-    public Optional<User> findById(UserId id) {
-        return jpaRepository.findById(id.getValue())
-                .map(mapper::toDomain);
-    }
+	@Override
+	@Transactional(readOnly = true)
+	public Optional<User> findById(UserId id) {
+		return jpaRepository.findById(id.getValue())
+				.map(mapper::toDomain);
+	}
 
-    @Override
-    @Transactional(readOnly = true)
-    public boolean existsById(UserId id) {
-        return jpaRepository.existsById(id.getValue());
-    }
+	@Override
+	@Transactional(readOnly = true)
+	public boolean existsById(UserId id) {
+		return jpaRepository.existsById(id.getValue());
+	}
 
-    @Override
-    @Transactional(readOnly = true)
-    public Optional<User> findByUsername(String username) {
-        return jpaRepository.findByUsername(username)
-                .map(mapper::toDomain);
-    }
+	@Override
+	@Transactional(readOnly = true)
+	public Optional<User> findByUsername(String username) {
+		return jpaRepository.findByUsername(username)
+				.map(mapper::toDomain);
+	}
 
-    @Override
-    @Transactional(readOnly = true)
-    public Optional<User> findByEmail(String email) {
-        return jpaRepository.findByEmail(email)
-                .map(mapper::toDomain);
-    }
+	@Override
+	@Transactional(readOnly = true)
+	public Optional<User> findByEmail(String email) {
+		return jpaRepository.findByEmail(email)
+				.map(mapper::toDomain);
+	}
 }

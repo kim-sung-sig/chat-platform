@@ -10,8 +10,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class DomainServiceConfig {
 
-    @Bean
-    public MessageDomainService messageDomainService() {
-        return new MessageDomainService();
-    }
+	@Bean
+	public MessageDomainService messageDomainService() {
+		return new MessageDomainService();
+	}
 }

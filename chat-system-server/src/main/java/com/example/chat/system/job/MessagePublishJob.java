@@ -10,11 +10,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +28,7 @@ public class MessagePublishJob implements Job {
 
 	private final ScheduleRuleRepository scheduleRuleRepository;
 	private final DistributedLockService lockService;
-	private final RestTemplate restTemplate;
+	private final WebClient webClient;
 	private final ObjectMapper objectMapper;
 
 	@Override
@@ -104,6 +102,7 @@ public class MessagePublishJob implements Job {
 
 	/**
 	 * 메시지 발송 (chat-message-server API 호출)
+	 * WebClient 사용 - 비동기, 논블로킹, Connection Pool 관리
 	 */
 	private void publishMessage(ScheduleRule rule) {
 		try {
@@ -123,16 +122,18 @@ public class MessagePublishJob implements Job {
 			request.put("messageType", rule.getMessage().getType().name());
 			request.put("payload", payload);
 
-			// HTTP 헤더 설정
-			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON);
-			// TODO: 실제 인증 토큰 추가 (senderId 사용)
-
-			HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, headers);
-
-			// chat-message-server API 호출
+			// chat-message-server API 호출 (WebClient - 비동기)
 			String url = "http://localhost:8081/api/messages";  // TODO: 설정으로 분리
-			restTemplate.postForObject(url, entity, Map.class);
+
+			webClient.post()
+					.uri(url)
+					.contentType(MediaType.APPLICATION_JSON)
+					// TODO: 실제 인증 토큰 추가 (senderId 사용)
+					// .header("Authorization", "Bearer " + token)
+					.bodyValue(request)
+					.retrieve()
+					.bodyToMono(Map.class)
+					.block();  // 동기 대기 (Quartz Job은 동기 실행)
 
 			log.info("Message published: scheduleId={}, channelId={}",
 					rule.getId().getValue(), rule.getMessage().getChannelId().getValue());

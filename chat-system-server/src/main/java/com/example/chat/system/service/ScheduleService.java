@@ -1,6 +1,7 @@
 package com.example.chat.system.service;
 
 import com.example.chat.common.auth.context.UserContextHolder;
+import com.example.chat.domain.channel.Channel;
 import com.example.chat.domain.channel.ChannelId;
 import com.example.chat.domain.message.Message;
 import com.example.chat.domain.schedule.CronExpression;
@@ -9,6 +10,7 @@ import com.example.chat.domain.schedule.ScheduleRule;
 import com.example.chat.domain.schedule.ScheduleRuleRepository;
 import com.example.chat.domain.service.MessageDomainService;
 import com.example.chat.domain.service.ScheduleDomainService;
+import com.example.chat.domain.user.User;
 import com.example.chat.domain.user.UserId;
 import com.example.chat.system.dto.request.CreateOneTimeScheduleRequest;
 import com.example.chat.system.dto.request.CreateRecurringScheduleRequest;
@@ -44,6 +46,8 @@ import java.util.stream.Collectors;
 public class ScheduleService {
 
 	private final ScheduleRuleRepository scheduleRuleRepository;
+	private final com.example.chat.domain.channel.ChannelRepository channelRepository;
+	private final com.example.chat.domain.user.UserRepository userRepository;
 	private final MessageDomainService messageDomainService;
 	private final ScheduleDomainService scheduleDomainService;
 	private final Scheduler quartzScheduler;
@@ -51,36 +55,46 @@ public class ScheduleService {
 
 	/**
 	 * 단발성 스케줄 생성
+	 *
+	 * Application Service 패턴:
+	 * 1. Key로 Aggregate 조회
+	 * 2. Domain Service 호출 (Aggregate 전달)
+	 * 3. 영속화
+	 * 4. 인프라 작업 (Quartz)
 	 */
 	@Transactional
 	public ScheduleResponse createOneTimeSchedule(CreateOneTimeScheduleRequest request) {
 		log.info("Creating one-time schedule: channelId={}, executeAt={}",
 				request.getChannelId(), request.getExecuteAt());
 
-		// Step 1: 사용자 ID 조회 (Key)
+		// Step 1: Key 조회 - 인증된 사용자 ID
 		UserId senderId = getUserIdFromContext();
 
-		// Step 2: ChannelId로 도메인 객체 생성
+		// Step 2: Key로 Aggregate 조회 - Channel
 		ChannelId channelId = ChannelId.of(request.getChannelId());
+		Channel channel = findChannelById(channelId);
 
-		// Step 3: Message 도메인 생성 (MessageType에 따라)
-		Message message = createMessageFromRequest(channelId, senderId, request.getMessageType(), request.getPayload());
+		// Step 3: Key로 Aggregate 조회 - User (Sender)
+		User sender = findUserById(senderId);
 
-		// Step 4: Instant로 변환
+		// Step 4: Domain Service 호출 - Message 생성 (Aggregate 간 협력)
+		Message message = createMessageByType(channel, sender, request.getMessageType(), request.getPayload());
+
+		// Step 5: Instant 변환
 		Instant scheduledAt = request.getExecuteAt().atZone(ZoneId.systemDefault()).toInstant();
 
-		// Step 5: ScheduleRule 도메인 생성
+		// Step 6: Domain Service 호출 - ScheduleRule 생성
 		ScheduleRule rule = scheduleDomainService.createOneTimeSchedule(message, scheduledAt);
 
-		// Step 6: 영속화
+		// Step 7: 영속화
 		ScheduleRule savedRule = scheduleRuleRepository.save(rule);
 
-		// Step 7: Quartz Job 등록
+		// Step 8: 인프라 작업 - Quartz Job 등록
 		registerQuartzJob(savedRule);
 
 		log.info("One-time schedule created: scheduleId={}", savedRule.getId().getValue());
 
-		// Step 8: Response 변환
+		// Step 9: Response 변환
 		return ScheduleResponse.from(savedRule);
 	}
 
@@ -92,30 +106,34 @@ public class ScheduleService {
 		log.info("Creating recurring schedule: channelId={}, cron={}",
 				request.getChannelId(), request.getCronExpression());
 
-		// Step 1: 사용자 ID 조회 (Key)
+		// Step 1: Key 조회 - 인증된 사용자 ID
 		UserId senderId = getUserIdFromContext();
 
-		// Step 2: ChannelId로 도메인 객체 생성
+		// Step 2: Key로 Aggregate 조회 - Channel
 		ChannelId channelId = ChannelId.of(request.getChannelId());
+		Channel channel = findChannelById(channelId);
 
-		// Step 3: Message 도메인 생성
-		Message message = createMessageFromRequest(channelId, senderId, request.getMessageType(), request.getPayload());
+		// Step 3: Key로 Aggregate 조회 - User (Sender)
+		User sender = findUserById(senderId);
 
-		// Step 4: CronExpression 생성
+		// Step 4: Domain Service 호출 - Message 생성 (Aggregate 간 협력)
+		Message message = createMessageByType(channel, sender, request.getMessageType(), request.getPayload());
+
+		// Step 5: CronExpression 생성
 		CronExpression cronExpression = CronExpression.of(request.getCronExpression());
 
-		// Step 5: ScheduleRule 도메인 생성
+		// Step 6: Domain Service 호출 - ScheduleRule 생성
 		ScheduleRule rule = scheduleDomainService.createRecurringSchedule(message, cronExpression);
 
-		// Step 6: 영속화
+		// Step 7: 영속화
 		ScheduleRule savedRule = scheduleRuleRepository.save(rule);
 
-		// Step 7: Quartz Job 등록
+		// Step 8: 인프라 작업 - Quartz Job 등록
 		registerQuartzJob(savedRule);
 
 		log.info("Recurring schedule created: scheduleId={}", savedRule.getId().getValue());
 
-		// Step 8: Response 변환
+		// Step 9: Response 변환
 		return ScheduleResponse.from(savedRule);
 	}
 
@@ -183,12 +201,35 @@ public class ScheduleService {
 	}
 
 	/**
-	 * Message 도메인 생성 (MessageType에 따라)
+	 * Channel Aggregate 조회
 	 */
-	private Message createMessageFromRequest(ChannelId channelId, UserId senderId,
-	                                         com.example.chat.domain.message.MessageType messageType,
-	                                         java.util.Map<String, Object> payload) {
-		// Early return: MessageType 검증
+	private com.example.chat.domain.channel.Channel findChannelById(ChannelId channelId) {
+		return channelRepository.findById(channelId)
+				.orElseThrow(() -> new IllegalArgumentException(
+						"Channel not found: " + channelId.getValue()
+				));
+	}
+
+	/**
+	 * User Aggregate 조회
+	 */
+	private com.example.chat.domain.user.User findUserById(UserId userId) {
+		return userRepository.findById(userId)
+				.orElseThrow(() -> new IllegalArgumentException(
+						"User not found: " + userId.getValue()
+				));
+	}
+
+	/**
+	 * Message 도메인 생성 (MessageType에 따라)
+	 *
+	 * Domain Service에 Aggregate 전달
+	 */
+	private Message createMessageByType(com.example.chat.domain.channel.Channel channel,
+	                                     com.example.chat.domain.user.User sender,
+	                                     com.example.chat.domain.message.MessageType messageType,
+	                                     java.util.Map<String, Object> payload) {
+		// Early Return: MessageType 검증
 		if (messageType == null) {
 			throw new IllegalArgumentException("Message type is required");
 		}
@@ -196,24 +237,24 @@ public class ScheduleService {
 		switch (messageType) {
 			case TEXT:
 				String text = extractTextField(payload, "text");
-				return messageDomainService.createTextMessage(channelId, senderId, text);
+				return messageDomainService.createTextMessage(channel, sender, text);
 
 			case IMAGE:
 				String imageUrl = extractTextField(payload, "imageUrl");
 				String imageName = extractTextFieldOrDefault(payload, "fileName", "image.jpg");
 				Long imageSize = extractLongFieldOrDefault(payload, "fileSize", 0L);
-				return messageDomainService.createImageMessage(channelId, senderId, imageUrl, imageName, imageSize);
+				return messageDomainService.createImageMessage(channel, sender, imageUrl, imageName, imageSize);
 
 			case FILE:
 				String fileUrl = extractTextField(payload, "fileUrl");
 				String fileName = extractTextField(payload, "fileName");
 				Long fileSize = extractLongFieldOrDefault(payload, "fileSize", 0L);
 				String mimeType = extractTextFieldOrDefault(payload, "mimeType", "application/octet-stream");
-				return messageDomainService.createFileMessage(channelId, senderId, fileUrl, fileName, fileSize, mimeType);
+				return messageDomainService.createFileMessage(channel, sender, fileUrl, fileName, fileSize, mimeType);
 
 			case SYSTEM:
 				String systemText = extractTextField(payload, "text");
-				return messageDomainService.createSystemMessage(channelId, systemText);
+				return messageDomainService.createSystemMessage(channel, systemText);
 
 			default:
 				throw new IllegalArgumentException("Unsupported message type: " + messageType);

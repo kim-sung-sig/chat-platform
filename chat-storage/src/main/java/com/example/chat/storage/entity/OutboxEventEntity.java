@@ -6,7 +6,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
-import jakarta.persistence.Lob;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -15,6 +14,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.OffsetDateTime;
 
@@ -40,7 +41,7 @@ public class OutboxEventEntity {
     @Column(name = "event_type", nullable = false, length = 64)
     private String eventType;
 
-    @Lob
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "payload", nullable = false)
     private String payload; // JSON payload
 

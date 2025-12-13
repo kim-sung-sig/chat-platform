@@ -7,28 +7,28 @@ import java.util.Optional;
  */
 public interface UserRepository {
 
-    /**
-     * 사용자 저장
-     */
-    User save(User user);
+	/**
+	 * 사용자 저장
+	 */
+	User save(User user);
 
-    /**
-     * ID로 사용자 조회
-     */
-    Optional<User> findById(UserId id);
+	/**
+	 * ID로 사용자 조회
+	 */
+	Optional<User> findById(UserId id);
 
-    /**
-     * 사용자 존재 여부 확인
-     */
-    boolean existsById(UserId id);
+	/**
+	 * 사용자 존재 여부 확인
+	 */
+	boolean existsById(UserId id);
 
-    /**
-     * Username으로 사용자 조회
-     */
-    Optional<User> findByUsername(String username);
+	/**
+	 * Username으로 사용자 조회
+	 */
+	Optional<User> findByUsername(String username);
 
-    /**
-     * Email로 사용자 조회
-     */
-    Optional<User> findByEmail(String email);
+	/**
+	 * Email로 사용자 조회
+	 */
+	Optional<User> findByEmail(String email);
 }

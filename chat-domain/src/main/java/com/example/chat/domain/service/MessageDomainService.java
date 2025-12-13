@@ -9,194 +9,206 @@ import com.example.chat.domain.user.User;
 /**
  * 메시지 도메인 서비스
  *
- * Domain Service의 역할:
- * 1. 여러 Aggregate 간의 협력을 조율
- * 2. 복잡한 도메인 규칙 검증
+ * DDD Domain Service의 역할:
+ * 1. 여러 Aggregate Root 간의 협력을 조율
+ * 2. 복잡한 도메인 규칙 검증 (단일 Aggregate으로 표현할 수 없는 규칙)
  * 3. 도메인 불변식(Invariants) 보장
  *
- * 이 서비스는 Channel, User, Message Aggregate 간의 협력을 통해
- * 메시지 발송 가능 여부를 검증하고 메시지를 생성합니다.
+ * 이 서비스는 Channel + User Aggregate의 협력을 통해
+ * 메시지 발송 가능 여부를 검증하고 Message를 생성합니다.
  */
 public class MessageDomainService {
 
-    /**
-     * 텍스트 메시지 생성
-     *
-     * @param channel 메시지를 발송할 채널 (Aggregate)
-     * @param sender 메시지를 발송하는 사용자 (Aggregate)
-     * @param text 메시지 텍스트 내용
-     * @return 생성된 메시지
-     * @throws DomainException 도메인 규칙 위반 시
-     */
-    public Message createTextMessage(Channel channel, User sender, String text) {
-        // Step 1: 도메인 규칙 검증 - 채널 접근 권한
-        validateChannelAccess(channel, sender);
+	/**
+	 * 텍스트 메시지 생성
+	 *
+	 * Domain Service의 핵심:
+	 * - Channel Aggregate: 채널 상태 및 멤버십 검증
+	 * - User Aggregate: 사용자 상태 및 권한 검증
+	 * - Message Aggregate: 메시지 생성
+	 *
+	 * @param channel 메시지를 발송할 채널 (Aggregate Root)
+	 * @param sender 메시지를 발송하는 사용자 (Aggregate Root)
+	 * @param text 메시지 텍스트 내용
+	 * @return 생성된 메시지 (Aggregate Root)
+	 * @throws DomainException 도메인 규칙 위반 시
+	 */
+	public Message createTextMessage(Channel channel, User sender, String text) {
+		// Early Return: 텍스트 내용 사전 검증
+		validateTextContent(text);
 
-        // Step 2: 도메인 규칙 검증 - 메시지 발송 가능 여부
-        validateMessageSendingCapability(channel, sender);
+		// Domain Rule: Channel + User 협력을 통한 발송 권한 검증
+		validateMessageSendingPermission(channel, sender);
 
-        // Step 3: 메시지 내용 검증
-        validateTextContent(text);
+		// Message 생성 (Aggregate 생성)
+		MessageContent content = MessageContent.text(text);
+		return Message.create(channel.getId(), sender.getId(), content, MessageType.TEXT);
+	}
 
-        // Step 4: 메시지 생성
-        MessageContent content = MessageContent.text(text);
-        return Message.create(channel.getId(), sender.getId(), content, MessageType.TEXT);
-    }
+	/**
+	 * 이미지 메시지 생성
+	 */
+	public Message createImageMessage(Channel channel, User sender, String mediaUrl, String fileName, Long fileSize) {
+		// Early Return: 입력값 사전 검증
+		validateMediaUrl(mediaUrl);
+		validateImageFileSize(fileSize);
 
-    /**
-     * 이미지 메시지 생성
-     */
-    public Message createImageMessage(Channel channel, User sender, String mediaUrl, String fileName, Long fileSize) {
-        // 도메인 규칙 검증
-        validateChannelAccess(channel, sender);
-        validateMessageSendingCapability(channel, sender);
+		// Domain Rule: 발송 권한 검증
+		validateMessageSendingPermission(channel, sender);
 
-        // 이미지 파일 크기 제한 (예: 10MB)
-        validateImageFileSize(fileSize);
-        validateMediaUrl(mediaUrl);
+		// Message 생성
+		MessageContent content = MessageContent.image(mediaUrl, fileName, fileSize);
+		return Message.create(channel.getId(), sender.getId(), content, MessageType.IMAGE);
+	}
 
-        MessageContent content = MessageContent.image(mediaUrl, fileName, fileSize);
-        return Message.create(channel.getId(), sender.getId(), content, MessageType.IMAGE);
-    }
+	/**
+	 * 파일 메시지 생성
+	 */
+	public Message createFileMessage(Channel channel, User sender, String mediaUrl, String fileName, Long fileSize, String mimeType) {
+		// Early Return: 입력값 사전 검증
+		validateMediaUrl(mediaUrl);
+		validateFileName(fileName);
+		validateFileSize(fileSize);
 
-    /**
-     * 파일 메시지 생성
-     */
-    public Message createFileMessage(Channel channel, User sender, String mediaUrl, String fileName, Long fileSize, String mimeType) {
-        // 도메인 규칙 검증
-        validateChannelAccess(channel, sender);
-        validateMessageSendingCapability(channel, sender);
+		// Domain Rule: 발송 권한 검증
+		validateMessageSendingPermission(channel, sender);
 
-        // 파일 크기 제한 (예: 50MB)
-        validateFileSize(fileSize);
-        validateMediaUrl(mediaUrl);
-        validateFileName(fileName);
+		// Message 생성
+		MessageContent content = MessageContent.file(mediaUrl, fileName, fileSize, mimeType);
+		return Message.create(channel.getId(), sender.getId(), content, MessageType.FILE);
+	}
 
-        MessageContent content = MessageContent.file(mediaUrl, fileName, fileSize, mimeType);
-        return Message.create(channel.getId(), sender.getId(), content, MessageType.FILE);
-    }
+	/**
+	 * 시스템 메시지 생성 (관리자/시스템용)
+	 *
+	 * 시스템 메시지는 User 검증이 불필요
+	 */
+	public Message createSystemMessage(Channel channel, String text) {
+		// Early Return: 입력값 검증
+		validateTextContent(text);
 
-    /**
-     * 시스템 메시지 생성 (관리자용)
-     *
-     * 시스템 메시지는 사용자 검증이 필요 없음
-     */
-    public Message createSystemMessage(Channel channel, String text) {
-        // 채널 활성화 여부만 확인
-        if (!channel.isActive()) {
-            throw new DomainException("Cannot send system message to inactive channel");
-        }
+		// Early Return: 채널 상태 검증
+		if (!channel.isActive()) {
+			throw new DomainException("Cannot send system message to inactive channel");
+		}
 
-        validateTextContent(text);
-        MessageContent content = MessageContent.text(text);
+		// 시스템 계정으로 메시지 생성
+		MessageContent content = MessageContent.text(text);
+		return Message.create(channel.getId(), User.SYSTEM_USER_ID, content, MessageType.SYSTEM);
+	}
 
-        // 시스템 계정으로 발송
-        return Message.create(channel.getId(), User.SYSTEM_USER_ID, content, MessageType.SYSTEM);
-    }
+	// ============================================================
+	// 도메인 규칙 검증 메서드 (Domain Validation Logic)
+	// ============================================================
 
-    // ========== 도메인 규칙 검증 메서드 ==========
+	/**
+	 * 메시지 발송 권한 검증 (핵심 도메인 규칙)
+	 *
+	 * 복합 도메인 규칙:
+	 * 1. Channel: 활성 상태여야 함
+	 * 2. Channel: 사용자가 멤버여야 함
+	 * 3. User: 활성 상태여야 함 (차단/정지 아님)
+	 */
+	private void validateMessageSendingPermission(Channel channel, User sender) {
+		// Early Return: 채널 활성화 확인
+		if (!channel.isActive()) {
+			throw new DomainException("Channel is not active");
+		}
 
-    /**
-     * 채널 접근 권한 검증
-     *
-     * 도메인 규칙:
-     * - 사용자는 채널의 멤버여야 함
-     * - 채널이 활성화되어 있어야 함
-     */
-    private void validateChannelAccess(Channel channel, User sender) {
-        // Early return: 채널 활성화 확인
-        if (!channel.isActive()) {
-            throw new DomainException("Channel is not active");
-        }
+		// Early Return: 채널 멤버십 확인
+		if (!channel.isMember(sender.getId())) {
+			throw new DomainException("User is not a member of the channel");
+		}
 
-        // Early return: 멤버십 확인
-        if (!channel.isMember(sender.getId())) {
-            throw new DomainException("User is not a member of the channel");
-        }
-    }
+		// Early Return: 사용자 차단 여부 확인
+		if (sender.isBanned()) {
+			throw new DomainException("User is banned and cannot send messages");
+		}
 
-    /**
-     * 메시지 발송 가능 여부 검증
-     *
-     * 도메인 규칙:
-     * - 사용자가 활성 상태여야 함
-     * - 사용자가 차단되지 않았어야 함
-     * - 사용자가 정지되지 않았어야 함
-     */
-    private void validateMessageSendingCapability(Channel channel, User sender) {
-        // Early return: 사용자 상태 확인
-        if (!sender.canSendMessage()) {
-            throw new DomainException("User is not allowed to send messages (status: " + sender.getStatus() + ")");
-        }
+		// Early Return: 사용자 정지 여부 확인
+		if (sender.isSuspended()) {
+			throw new DomainException("User is suspended and cannot send messages");
+		}
 
-        if (sender.isBanned()) {
-            throw new DomainException("User is banned and cannot send messages");
-        }
+		// Early Return: 사용자 메시지 발송 가능 여부 확인
+		if (!sender.canSendMessage()) {
+			throw new DomainException("User is not allowed to send messages (status: " + sender.getStatus() + ")");
+		}
+	}
 
-        if (sender.isSuspended()) {
-            throw new DomainException("User is suspended and cannot send messages");
-        }
-    }
+	// ============================================================
+	// 입력값 검증 메서드 (Input Validation)
+	// ============================================================
 
-    /**
-     * 텍스트 내용 검증
-     */
-    private void validateTextContent(String text) {
-        if (text == null || text.isBlank()) {
-            throw new IllegalArgumentException("Text content cannot be null or blank");
-        }
-        if (text.length() > 5000) {
-            throw new IllegalArgumentException("Text content exceeds maximum length (5000 characters)");
-        }
-    }
+	/**
+	 * 텍스트 내용 검증
+	 */
+	private void validateTextContent(String text) {
+		// Early Return: null/blank 체크
+		if (text == null || text.isBlank()) {
+			throw new IllegalArgumentException("Text content cannot be null or blank");
+		}
 
-    /**
-     * 미디어 URL 검증
-     */
-    private void validateMediaUrl(String mediaUrl) {
-        if (mediaUrl == null || mediaUrl.isBlank()) {
-            throw new IllegalArgumentException("Media URL cannot be null or blank");
-        }
-        // URL 형식 검증 추가 가능
-    }
+		// Early Return: 길이 제한 체크
+		if (text.length() > 5000) {
+			throw new IllegalArgumentException("Text content exceeds maximum length (5000 characters)");
+		}
+	}
 
-    /**
-     * 파일명 검증
-     */
-    private void validateFileName(String fileName) {
-        if (fileName == null || fileName.isBlank()) {
-            throw new IllegalArgumentException("File name cannot be null or blank");
-        }
-        if (fileName.length() > 255) {
-            throw new IllegalArgumentException("File name is too long (max 255 characters)");
-        }
-    }
+	/**
+	 * 미디어 URL 검증
+	 */
+	private void validateMediaUrl(String mediaUrl) {
+		// Early Return
+		if (mediaUrl == null || mediaUrl.isBlank()) {
+			throw new IllegalArgumentException("Media URL cannot be null or blank");
+		}
+	}
 
-    /**
-     * 이미지 파일 크기 검증 (10MB 제한)
-     */
-    private void validateImageFileSize(Long fileSize) {
-        if (fileSize == null || fileSize <= 0) {
-            throw new IllegalArgumentException("File size must be positive");
-        }
+	/**
+	 * 파일명 검증
+	 */
+	private void validateFileName(String fileName) {
+		// Early Return: null/blank 체크
+		if (fileName == null || fileName.isBlank()) {
+			throw new IllegalArgumentException("File name cannot be null or blank");
+		}
 
-        long maxImageSize = 10 * 1024 * 1024; // 10MB
-        if (fileSize > maxImageSize) {
-            throw new DomainException("Image file size exceeds maximum allowed size (10MB)");
-        }
-    }
+		// Early Return: 길이 제한 체크
+		if (fileName.length() > 255) {
+			throw new IllegalArgumentException("File name is too long (max 255 characters)");
+		}
+	}
 
-    /**
-     * 파일 크기 검증 (50MB 제한)
-     */
-    private void validateFileSize(Long fileSize) {
-        if (fileSize == null || fileSize <= 0) {
-            throw new IllegalArgumentException("File size must be positive");
-        }
+	/**
+	 * 이미지 파일 크기 검증 (10MB 제한)
+	 */
+	private void validateImageFileSize(Long fileSize) {
+		// Early Return: null/음수 체크
+		if (fileSize == null || fileSize <= 0) {
+			throw new IllegalArgumentException("File size must be positive");
+		}
 
-        long maxFileSize = 50 * 1024 * 1024; // 50MB
-        if (fileSize > maxFileSize) {
-            throw new DomainException("File size exceeds maximum allowed size (50MB)");
-        }
-    }
+		// Early Return: 크기 제한 체크
+		long maxImageSize = 10 * 1024 * 1024; // 10MB
+		if (fileSize > maxImageSize) {
+			throw new DomainException("Image file size exceeds maximum allowed size (10MB)");
+		}
+	}
+
+	/**
+	 * 파일 크기 검증 (50MB 제한)
+	 */
+	private void validateFileSize(Long fileSize) {
+		// Early Return: null/음수 체크
+		if (fileSize == null || fileSize <= 0) {
+			throw new IllegalArgumentException("File size must be positive");
+		}
+
+		// Early Return: 크기 제한 체크
+		long maxFileSize = 50 * 1024 * 1024; // 50MB
+		if (fileSize > maxFileSize) {
+			throw new DomainException("File size exceeds maximum allowed size (50MB)");
+		}
+	}
 }

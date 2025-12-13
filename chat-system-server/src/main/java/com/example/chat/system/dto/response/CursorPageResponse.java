@@ -9,6 +9,8 @@ import java.util.List;
 
 /**
  * 커서 기반 페이징 응답 DTO
+ *
+ * Generic Type: 페이징될 데이터의 타입
  */
 @Getter
 @NoArgsConstructor
@@ -16,20 +18,35 @@ import java.util.List;
 @Builder
 public class CursorPageResponse<T> {
 
-    private List<T> content;
-    private Long nextCursor; // 다음 페이지 커서
-    private Boolean hasNext; // 다음 페이지 존재 여부
-    private Integer size; // 요청한 페이지 크기
+    /**
+     * 페이징된 데이터 목록
+     */
+    private List<T> data;
+
+    /**
+     * 다음 페이지 커서 (Base64 인코딩된 문자열)
+     */
+    private String nextCursor;
+
+    /**
+     * 다음 페이지 존재 여부
+     */
+    private Boolean hasNext;
+
+    /**
+     * 현재 페이지 데이터 개수
+     */
+    private Integer size;
 
     /**
      * 커서 기반 페이징 응답 생성
      */
-    public static <T> CursorPageResponse<T> of(List<T> content, Long nextCursor, Boolean hasNext, Integer size) {
+    public static <T> CursorPageResponse<T> of(List<T> data, String nextCursor, Boolean hasNext) {
         return CursorPageResponse.<T>builder()
-                .content(content)
+                .data(data)
                 .nextCursor(nextCursor)
                 .hasNext(hasNext)
-                .size(size)
+                .size(data.size())
                 .build();
     }
 }

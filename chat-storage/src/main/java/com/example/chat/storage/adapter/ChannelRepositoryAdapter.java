@@ -3,6 +3,7 @@ package com.example.chat.storage.adapter;
 import com.example.chat.domain.channel.Channel;
 import com.example.chat.domain.channel.ChannelId;
 import com.example.chat.domain.channel.ChannelRepository;
+import com.example.chat.domain.channel.ChannelType;
 import com.example.chat.domain.user.UserId;
 import com.example.chat.storage.entity.ChatChannelEntity;
 import com.example.chat.storage.entity.ChatChannelMemberEntity;
@@ -79,8 +80,29 @@ public class ChannelRepositoryAdapter implements ChannelRepository {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Channel> findByMemberId(String userId) {
+        return findByMemberId(UserId.of(userId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Channel> findByOwnerId(UserId userId) {
         List<ChatChannelEntity> entities = jpaChannelRepository.findByOwnerId(userId.getValue());
+
+        return entities.stream()
+                .map(entity -> {
+                    Set<String> memberIds = jpaMemberRepository.findByChannelId(entity.getId()).stream()
+                            .map(ChatChannelMemberEntity::getUserId)
+                            .collect(Collectors.toSet());
+                    return mapper.toDomain(entity, memberIds);
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Channel> findPublicChannels() {
+        List<ChatChannelEntity> entities = jpaChannelRepository.findByChannelTypeAndActive(ChannelType.PUBLIC, true);
 
         return entities.stream()
                 .map(entity -> {
