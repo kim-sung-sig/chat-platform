@@ -26,18 +26,47 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+      PGDATA: /var/lib/postgresql/data/pgdata
+      REPLICA_SOURCE_HOST: ms-postgres-source
+      REPLICA_SOURCE_PORT: 5432
+      REPLICA_SOURCE_USER: replica_user
+      REPLICA_SOURCE_PASSWORD: replica_password
+    entrypoint: [ "/bin/bash", "-c" ]
+    command:
+      - |
+        set -e
+        echo "Starting replica initialization..."
+
+        # PGDATA가 비어있거나 초기화되지 않은 경우
+        if [ ! -f "$${PGDATA}/PG_VERSION" ]; then
+          echo "Initializing replica from primary..."
+          export PGPASSWORD=$${REPLICA_SOURCE_PASSWORD}
+
+          # pg_basebackup으로 복제
+          pg_basebackup -h $${REPLICA_SOURCE_HOST} \
+                        -p $${REPLICA_SOURCE_PORT} \
+                        -U $${REPLICA_SOURCE_USER} \
+                        -D $${PGDATA} \
+                        -Fp -Xs -P -R
+
+          echo "Replica initialization complete"
+        else
+          echo "Replica already initialized"
+        fi
+
+        # PostgreSQL 시작
+        exec docker-entrypoint.sh postgres
     ports:
       - "15433:5432"
     volumes:
       - ./data/postgres-replica:/var/lib/postgresql/data
-      - ./init-scripts-replica:/docker-entrypoint-initdb.d
     depends_on:
       ms-postgres-source:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${REPLICA_USER} -h ms-postgres-source || exit 1" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 20s
-      timeout: 5s
+      timeout: 30s
       retries: 10
 
   ms-redis:
