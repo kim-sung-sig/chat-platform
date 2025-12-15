@@ -26,33 +26,34 @@ import java.time.OffsetDateTime;
 @Builder
 @Entity
 @Table(name = "ms_outbox_event", indexes = {
-        @Index(name = "idx_outbox_state_created", columnList = "processed, created_at")
+		@Index(name = "idx_outbox_state_created", columnList = "processed, created_at")
 })
 public class OutboxEventEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ms_outbox_event_id_gen")
-    @SequenceGenerator(name = "ms_outbox_event_id_gen", sequenceName = "ms_outbox_event_id_seq", allocationSize = 1)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ms_outbox_event_id_gen")
+	@SequenceGenerator(name = "ms_outbox_event_id_gen", sequenceName = "ms_outbox_event_id_seq", allocationSize = 1)
+	private Long id;
 
-    @Column(name = "aggregate_id", nullable = false, length = 128)
-    private String aggregateId; // e.g., channelId or messageId
+	@Column(name = "aggregate_id", nullable = false, length = 128)
+	private String aggregateId; // e.g., channelId or messageId
 
-    @Column(name = "event_type", nullable = false, length = 64)
-    private String eventType;
+	@Column(name = "event_type", nullable = false, length = 64)
+	private String eventType;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "payload", nullable = false)
-    private String payload; // JSON payload
+	@JdbcTypeCode(SqlTypes.JSON)
+	@Column(name = "payload", nullable = false)
+	private String payload; // JSON payload
 
-    @Column(name = "processed", nullable = false)
-    private boolean processed = false;
+	@Column(name = "processed", nullable = false)
+	@Builder.Default
+	private boolean processed = false;
 
-    @Column(name = "created_at", nullable = false)
-    private OffsetDateTime createdAt;
+	@Column(name = "created_at", nullable = false)
+	private OffsetDateTime createdAt;
 
-    @PrePersist
-    public void prePersist() {
-        if (this.createdAt == null) this.createdAt = OffsetDateTime.now();
-    }
+	@PrePersist
+	public void prePersist() {
+		if (this.createdAt == null) this.createdAt = OffsetDateTime.now();
+	}
 }

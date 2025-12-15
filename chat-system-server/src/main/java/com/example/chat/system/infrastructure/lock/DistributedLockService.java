@@ -3,9 +3,11 @@ package com.example.chat.system.infrastructure.lock;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
+import java.util.Objects;
 
 /**
  * Redis 기반 분산 락 서비스
@@ -24,22 +26,17 @@ public class DistributedLockService {
 	/**
 	 * 락 획득 시도
 	 */
-	public boolean tryLock(String scheduleId) {
+	public boolean tryLock(@NonNull String scheduleId) {
 		return tryLock(scheduleId, DEFAULT_TIMEOUT);
 	}
 
 	/**
 	 * 락 획득 시도 (타임아웃 지정)
 	 */
-	public boolean tryLock(String scheduleId, Duration timeout) {
-		// Early return: null 체크
-		if (scheduleId == null || scheduleId.isBlank()) {
-			log.warn("Cannot acquire lock: scheduleId is null or blank");
-			return false;
-		}
+	public boolean tryLock(@NonNull String scheduleId, @NonNull Duration timeout) {
 
 		String key = LOCK_KEY_PREFIX + scheduleId;
-		String value = Thread.currentThread().getName();
+		String value = Objects.requireNonNull(Thread.currentThread().getName());
 
 		try {
 			Boolean result = redisTemplate.opsForValue()
