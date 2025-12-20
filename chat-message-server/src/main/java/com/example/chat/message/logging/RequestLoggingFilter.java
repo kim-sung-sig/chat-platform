@@ -18,24 +18,24 @@ import java.util.UUID;
  * TODO: X-Trace-Id 헤더 우선 사용, 샘플링 및 민감정보 마스킹 추가
  */
 public class RequestLoggingFilter extends OncePerRequestFilter {
-    private static final Logger logger = LoggerFactory.getLogger(RequestLoggingFilter.class);
-    private static final String HEADER_TRACE_ID = "X-Trace-Id";
+	private static final Logger logger = LoggerFactory.getLogger(RequestLoggingFilter.class);
+	private static final String HEADER_TRACE_ID = "X-Trace-Id";
 
-    @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
-        String traceId = request.getHeader(HEADER_TRACE_ID);
-        boolean generated = false;
-        if (traceId == null || traceId.isBlank()) {
-            traceId = UUID.randomUUID().toString();
-            generated = true;
-        }
+	@Override
+	protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
+		String traceId = request.getHeader(HEADER_TRACE_ID);
+		boolean generated = false;
+		if (traceId == null || traceId.isBlank()) {
+			traceId = UUID.randomUUID().toString();
+			generated = true;
+		}
 
-        try {
-            MdcUtil.putTraceId(traceId);
-            logger.debug("[MSG] incoming request method={} uri={} traceId={} generated={}", request.getMethod(), request.getRequestURI(), traceId, generated);
-            filterChain.doFilter(request, response);
-        } finally {
-            MdcUtil.removeTraceId();
-        }
-    }
+		try {
+			MdcUtil.putTraceId(traceId);
+			logger.debug("[MSG] incoming request method={} uri={} traceId={} generated={}", request.getMethod(), request.getRequestURI(), traceId, generated);
+			filterChain.doFilter(request, response);
+		} finally {
+			MdcUtil.removeTraceId();
+		}
+	}
 }
