@@ -15,3 +15,7 @@ include("chat-storage")
 include("chat-message-server")
 include("chat-system-server")
 include("chat-websocket-server")
+
+// New Auth Architecture
+include("auth-server")
+include("modules:auth-security")

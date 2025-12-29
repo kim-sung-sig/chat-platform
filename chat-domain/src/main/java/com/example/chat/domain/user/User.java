@@ -1,9 +1,9 @@
 package com.example.chat.domain.user;
 
+import java.time.Instant;
+
 import lombok.Builder;
 import lombok.Getter;
-
-import java.time.Instant;
 
 /**
  * 사용자 Aggregate Root
@@ -20,6 +20,7 @@ public class User {
 	private final Instant createdAt;
 	private String username;
 	private String email;
+	private String password;
 	private UserStatus status;
 	private Instant updatedAt;
 	private Instant lastActiveAt;
@@ -27,11 +28,12 @@ public class User {
 	/**
 	 * 새로운 사용자 생성
 	 */
-	public static User create(String username, String email) {
+	public static User create(String username, String email, String password) {
 		return User.builder()
 				.id(UserId.generate())
 				.username(username)
 				.email(email)
+				.password(password)
 				.status(UserStatus.ACTIVE)
 				.createdAt(Instant.now())
 				.updatedAt(Instant.now())
