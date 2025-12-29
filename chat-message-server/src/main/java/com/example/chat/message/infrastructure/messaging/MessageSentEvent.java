@@ -13,11 +13,11 @@ import java.time.Instant;
 @Builder
 public class MessageSentEvent {
 
-    private String messageId;     // String (UUID)
-    private String channelId;     // ChannelId
-    private String senderId;      // UserId
-    private String messageType;   // MessageType name
-    private String content;       // 텍스트 내용
-    private String status;        // MessageStatus name
-    private Instant sentAt;
+	private String messageId;     // String (UUID)
+	private String channelId;     // ChannelId
+	private String senderId;      // UserId
+	private String messageType;   // MessageType name
+	private String content;       // 텍스트 내용
+	private String status;        // MessageStatus name
+	private Instant sentAt;
 }
