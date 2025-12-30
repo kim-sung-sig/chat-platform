@@ -1,21 +1,22 @@
 rootProject.name = 'chat-platform'
 
-// Common 서브 모듈 (세분화)
-include("common-util")
-include("common-auth")
-include("common-logging")
+// ============================================
+// 📂 Apps - 실행 가능한 애플리케이션
+// ============================================
+include("apps:auth-server")
+include("apps:chat:message-server")
+include("apps:chat:system-server")
+include("apps:chat:websocket-server")
 
-// Domain 모듈 (순수 도메인 계층)
-include("chat-domain")
+// ============================================
+// 📚 Libs - 비즈니스 로직 & 인프라
+// ============================================
+include("libs:chat-domain")
+include("libs:chat-storage")
 
-// Storage 모듈
-include("chat-storage")
-
-// 실행 모듈
-include("chat-message-server")
-include("chat-system-server")
-include("chat-websocket-server")
-
-// New Auth Architecture
-include("auth-server")
-include("modules:auth-security")
+// ============================================
+// 🛠️ Common - 유틸리티 & 횡단 관심사
+// ============================================
+include("common:util")
+include("common:logging")
+include("common:auth-security")
