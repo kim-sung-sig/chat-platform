@@ -24,7 +24,7 @@ repositories {
 
 dependencies {
     // common-util 의존
-    api project(':common-util')
+    api project(':common:util')
 
     // Lombok
     compileOnly 'org.projectlombok:lombok'

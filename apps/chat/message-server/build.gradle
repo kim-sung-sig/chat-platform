@@ -19,15 +19,15 @@ repositories {
 
 dependencies {
 	// Common 모듈 (세분화)
-	implementation project(':common-util')
-	implementation project(':common-auth')
-	implementation project(':common-logging')
+	implementation project(':common:util')
+	implementation project(':common:auth-security')
+	implementation project(':common:logging')
 
 	// Domain 모듈 (순수 도메인)
-	implementation project(':chat-domain')
+	implementation project(':libs:chat-domain')
 
 	// Storage 모듈 (영속성)
-	implementation project(':chat-storage')
+	implementation project(':libs:chat-storage')
 
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'

@@ -19,12 +19,12 @@ repositories {
 
 dependencies {
 	// Common 모듈 (세분화)
-	implementation project(':common-util')
-	implementation project(':common-auth')
-	implementation project(':common-logging')
+	implementation project(':common:util')
+	implementation project(':common:auth-security')
+	implementation project(':common:logging')
 
 	// Domain 모듈 (순수 도메인 - 읽기 전용)
-	implementation project(':chat-domain')
+	implementation project(':libs:chat-domain')
 
 	// Storage 모듈 제거 (WebSocket 서버는 영속성 불필요, Domain 모델만 사용)
 	// implementation project(':chat-storage')

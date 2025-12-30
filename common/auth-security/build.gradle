@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
     // Common
-    api project(':common-util')
+    api project(':common:util')
 
     // Spring Security
     implementation 'org.springframework.boot:spring-boot-starter-security'

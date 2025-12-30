@@ -31,11 +31,11 @@ ext {
 
 dependencies {
 	// Common 모듈 (세분화)
-	implementation project(':common-util')
-	implementation project(':common-auth')
+	implementation project(':common:util')
+	implementation project(':common:auth-security')
 
 	// Domain 모듈
-	implementation project(':chat-domain')
+	implementation project(':libs:chat-domain')
 
 	// DB
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
