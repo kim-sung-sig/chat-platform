@@ -1,12 +1,15 @@
 package com.example.chat.websocket.domain.session;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.time.Duration;
+import java.util.Objects;
+import java.util.Set;
+
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
-import java.util.Set;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Redis 기반 세션 메타데이터 관리자
@@ -23,7 +26,7 @@ public class RedisSessionMetadataManager {
 	private static final String ROOM_SESSIONS_KEY_PREFIX = "chat:room:sessions:";
 	private static final String USER_SESSIONS_KEY_PREFIX = "chat:user:sessions:";
 	private static final String SESSION_INFO_KEY_PREFIX = "chat:session:info:";
-	private static final Duration SESSION_TTL = Duration.ofHours(24);
+	private static final @NonNull Duration SESSION_TTL = Objects.requireNonNull(Duration.ofHours(24));
 
 	private final RedisTemplate<String, String> redisTemplate;
 

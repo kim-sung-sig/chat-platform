@@ -1,12 +1,16 @@
 package com.example.chat.websocket.infrastructure.redis;
 
-import com.example.chat.websocket.application.service.WebSocketBroadcastService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
+
+import com.example.chat.websocket.application.service.WebSocketBroadcastService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Redis 메시지 구독자
@@ -21,7 +25,7 @@ public class RedisMessageSubscriber implements MessageListener {
 	private final WebSocketBroadcastService broadcastService;
 
 	@Override
-	public void onMessage(Message message, byte[] pattern) {
+	public void onMessage(@NonNull Message message, @Nullable byte[] pattern) {
 		try {
 			// Step 1: 메시지 역직렬화
 			String messageBody = new String(message.getBody());
