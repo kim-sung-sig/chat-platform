@@ -31,18 +31,18 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
 
     // SLF4J, Logback
-    implementation 'org.slf4j:slf4j-api:2.0.16'
-    implementation 'ch.qos.logback:logback-classic:1.5.16'
+    implementation 'org.slf4j:slf4j-api'
+    implementation 'ch.qos.logback:logback-classic'
 
     // Spring Web (Filter 용)
-    implementation 'org.springframework:spring-web:6.2.1'
+    implementation 'org.springframework:spring-web'
 
     // Jakarta Servlet
-    compileOnly 'jakarta.servlet:jakarta.servlet-api:6.1.0'
+    compileOnly 'jakarta.servlet:jakarta.servlet-api'
 
     // Test
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
-    testImplementation 'org.assertj:assertj-core:3.27.3'
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.assertj:assertj-core'
 }
 
 test {
