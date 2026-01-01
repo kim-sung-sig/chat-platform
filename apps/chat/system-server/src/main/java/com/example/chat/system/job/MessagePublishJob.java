@@ -1,12 +1,9 @@
 package com.example.chat.system.job;
 
-import com.example.chat.domain.schedule.ScheduleId;
-import com.example.chat.domain.schedule.ScheduleRule;
-import com.example.chat.domain.schedule.ScheduleRuleRepository;
-import com.example.chat.system.infrastructure.lock.DistributedLockService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -14,8 +11,13 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.example.chat.domain.schedule.ScheduleId;
+import com.example.chat.domain.schedule.ScheduleRule;
+import com.example.chat.domain.schedule.ScheduleRuleRepository;
+import com.example.chat.system.infrastructure.lock.DistributedLockService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 예약 메시지 발행 Job
@@ -29,12 +31,11 @@ public class MessagePublishJob implements Job {
 	private final ScheduleRuleRepository scheduleRuleRepository;
 	private final DistributedLockService lockService;
 	private final WebClient webClient;
-	private final ObjectMapper objectMapper;
 
 	@Override
 	public void execute(JobExecutionContext context) {
 		JobDataMap dataMap = context.getJobDetail().getJobDataMap();
-		String scheduleIdStr = dataMap.getString("scheduleId");
+		String scheduleIdStr = Objects.requireNonNull(dataMap.getString("scheduleId"));
 
 		log.info("MessagePublishJob started: scheduleId={}", scheduleIdStr);
 
@@ -123,17 +124,17 @@ public class MessagePublishJob implements Job {
 			request.put("payload", payload);
 
 			// chat-message-server API 호출 (WebClient - 비동기)
-			String url = "http://localhost:8081/api/messages";  // TODO: 설정으로 분리
+			String url = "http://localhost:8081/api/messages"; // TODO: 설정으로 분리
 
 			webClient.post()
 					.uri(url)
-					.contentType(MediaType.APPLICATION_JSON)
+					.contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
 					// TODO: 실제 인증 토큰 추가 (senderId 사용)
 					// .header("Authorization", "Bearer " + token)
 					.bodyValue(request)
 					.retrieve()
 					.bodyToMono(Map.class)
-					.block();  // 동기 대기 (Quartz Job은 동기 실행)
+					.block(); // 동기 대기 (Quartz Job은 동기 실행)
 
 			log.info("Message published: scheduleId={}, channelId={}",
 					rule.getId().getValue(), rule.getMessage().getChannelId().getValue());

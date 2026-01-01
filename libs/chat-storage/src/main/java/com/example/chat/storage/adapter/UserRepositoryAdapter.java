@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -25,7 +26,7 @@ public class UserRepositoryAdapter implements UserRepository {
 	@Override
 	@Transactional
 	public User save(User user) {
-		UserEntity entity = mapper.toEntity(user);
+		UserEntity entity = Objects.requireNonNull(mapper.toEntity(user));
 		UserEntity saved = jpaRepository.save(entity);
 		return mapper.toDomain(saved);
 	}

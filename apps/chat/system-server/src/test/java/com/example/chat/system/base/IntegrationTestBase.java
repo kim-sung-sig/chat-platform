@@ -22,12 +22,12 @@ public abstract class IntegrationTestBase {
      * PostgreSQL Container (모든 테스트에서 공유)
      */
     @Container
-    protected static final PostgreSQLContainer<?> POSTGRES_CONTAINER =
-        new PostgreSQLContainer<>("postgres:17.6")
+    @SuppressWarnings("resource")
+    protected static final PostgreSQLContainer<?> POSTGRES_CONTAINER = new PostgreSQLContainer<>("postgres:17.6")
             .withDatabaseName("chatdb_test")
             .withUsername("test_user")
             .withPassword("test_password")
-            .withReuse(true);  // 컨테이너 재사용으로 테스트 속도 향상
+            .withReuse(true); // 컨테이너 재사용으로 테스트 속도 향상
 
     /**
      * 동적 프로퍼티 설정

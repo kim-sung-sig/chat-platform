@@ -1,13 +1,14 @@
 package com.example.chat.system.infrastructure.lock;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.time.Duration;
+import java.util.Objects;
+
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
-import java.util.Objects;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Redis 기반 분산 락 서비스
@@ -19,7 +20,7 @@ import java.util.Objects;
 public class DistributedLockService {
 
 	private static final String LOCK_KEY_PREFIX = "lock:schedule:";
-	private static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(5);
+	private static final @NonNull Duration DEFAULT_TIMEOUT = Objects.requireNonNull(Duration.ofMinutes(5));
 
 	private final RedisTemplate<String, String> redisTemplate;
 

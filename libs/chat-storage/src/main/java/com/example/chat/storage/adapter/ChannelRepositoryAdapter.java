@@ -1,5 +1,14 @@
 package com.example.chat.storage.adapter;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.example.chat.domain.channel.Channel;
 import com.example.chat.domain.channel.ChannelId;
 import com.example.chat.domain.channel.ChannelRepository;
@@ -10,14 +19,8 @@ import com.example.chat.storage.entity.ChatChannelMemberEntity;
 import com.example.chat.storage.mapper.ChannelMapper;
 import com.example.chat.storage.repository.JpaChatChannelMemberRepository;
 import com.example.chat.storage.repository.JpaChatChannelRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
 /**
  * ChannelRepository 구현체 (Adapter)
@@ -34,7 +37,7 @@ public class ChannelRepositoryAdapter implements ChannelRepository {
     @Transactional
     public Channel save(Channel channel) {
         // 1. 채널 엔티티 저장
-        ChatChannelEntity channelEntity = mapper.toEntity(channel);
+        ChatChannelEntity channelEntity = Objects.requireNonNull(mapper.toEntity(channel));
         ChatChannelEntity savedChannel = jpaChannelRepository.save(channelEntity);
 
         // 2. 기존 멤버 삭제 후 새로 저장 (간단한 구현)
@@ -42,7 +45,7 @@ public class ChannelRepositoryAdapter implements ChannelRepository {
         jpaMemberRepository.deleteByChannelIdAndUserId(channelId, channel.getOwnerId().getValue());
 
         // 3. 멤버 엔티티 저장
-        List<ChatChannelMemberEntity> memberEntities = mapper.toMemberEntities(channel);
+        List<ChatChannelMemberEntity> memberEntities = Objects.requireNonNull(mapper.toMemberEntities(channel));
         jpaMemberRepository.saveAll(memberEntities);
 
         // 4. 저장된 멤버 조회

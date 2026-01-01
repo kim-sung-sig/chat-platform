@@ -1,11 +1,14 @@
 package com.example.chat.message.infrastructure.messaging;
 
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
+
 import com.example.chat.domain.message.Message;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Component;
 
 /**
  * 메시지 이벤트 발행자 (Redis Pub/Sub)
@@ -51,8 +54,7 @@ public class MessageEventPublisher {
 			log.info("Message event published: messageId={}, channelId={}",
 					message.getId().getValue(), message.getChannelId().getValue());
 
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			log.error("Failed to publish message event: messageId={}", message.getId().getValue(), e);
 			throw new RuntimeException("Failed to publish message event", e);
 		}
@@ -81,8 +83,7 @@ public class MessageEventPublisher {
 	private String serializeEvent(MessageSentEvent event) {
 		try {
 			return objectMapper.writeValueAsString(event);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException("Failed to serialize message event", e);
 		}
 	}
@@ -90,7 +91,7 @@ public class MessageEventPublisher {
 	/**
 	 * 채널로 발행
 	 */
-	private void publishToChannel(String channelId, String eventJson) {
+	private void publishToChannel(@NonNull String channelId, @NonNull String eventJson) {
 		String channel = MESSAGE_SENT_CHANNEL_PREFIX + channelId;
 		redisTemplate.convertAndSend(channel, eventJson);
 

@@ -1,17 +1,20 @@
 package com.example.chat.websocket.presentation.handler;
 
-import com.example.chat.websocket.domain.session.ChatRoomSessionManager;
-import com.example.chat.websocket.domain.session.ChatSession;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.time.Instant;
+import java.util.Map;
+
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import java.time.Instant;
-import java.util.Map;
+import com.example.chat.websocket.domain.session.ChatRoomSessionManager;
+import com.example.chat.websocket.domain.session.ChatSession;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * WebSocket 핸들러
@@ -28,7 +31,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
      * WebSocket 연결 수립
      */
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+    public void afterConnectionEstablished(@NonNull WebSocketSession session) throws Exception {
         log.info("WebSocket connection established: sessionId={}", session.getId());
 
         // Step 1: 세션 정보 추출
@@ -49,16 +52,16 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         sessionManager.registerSession(chatSession);
 
         log.info("WebSocket session registered: sessionId={}, userId={}, roomId={}",
-            session.getId(), userId, roomId);
+                session.getId(), userId, roomId);
     }
 
     /**
      * 메시지 수신 (현재는 읽기 전용, 메시지 발송은 REST API 사용)
      */
     @Override
-    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+    protected void handleTextMessage(@NonNull WebSocketSession session, @NonNull TextMessage message) throws Exception {
         log.debug("Received WebSocket message: sessionId={}, payload={}",
-            session.getId(), message.getPayload());
+                session.getId(), message.getPayload());
 
         // 클라이언트에서 보낸 메시지는 무시 (메시지 발송은 REST API를 통해)
         // Ping/Pong 또는 읽음 처리 등의 가벼운 작업만 처리 가능
@@ -68,9 +71,9 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
      * WebSocket 연결 종료
      */
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+    public void afterConnectionClosed(@NonNull WebSocketSession session, @NonNull CloseStatus status) throws Exception {
         log.info("WebSocket connection closed: sessionId={}, status={}",
-            session.getId(), status);
+                session.getId(), status);
 
         // 세션 제거
         sessionManager.removeSession(session.getId());
@@ -80,7 +83,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
      * 전송 에러 처리
      */
     @Override
-    public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
+    public void handleTransportError(@NonNull WebSocketSession session, @NonNull Throwable exception) throws Exception {
         log.error("WebSocket transport error: sessionId={}", session.getId(), exception);
 
         // 에러 발생 시 세션 제거

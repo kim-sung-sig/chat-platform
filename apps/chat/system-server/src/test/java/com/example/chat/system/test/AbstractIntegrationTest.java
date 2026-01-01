@@ -26,21 +26,23 @@ public abstract class AbstractIntegrationTest {
      * PostgreSQL 컨테이너
      */
     @Container
-    protected static final PostgreSQLContainer<?> POSTGRES_CONTAINER =
-            new PostgreSQLContainer<>(DockerImageName.parse("postgres:15-alpine"))
-                    .withDatabaseName("chat_test")
-                    .withUsername("test")
-                    .withPassword("test")
-                    .withReuse(true);
+    @SuppressWarnings("resource")
+    protected static final PostgreSQLContainer<?> POSTGRES_CONTAINER = new PostgreSQLContainer<>(
+            DockerImageName.parse("postgres:15-alpine"))
+            .withDatabaseName("chat_test")
+            .withUsername("test")
+            .withPassword("test")
+            .withReuse(true);
 
     /**
      * Redis 컨테이너
      */
     @Container
-    protected static final GenericContainer<?> REDIS_CONTAINER =
-            new GenericContainer<>(DockerImageName.parse("redis:7-alpine"))
-                    .withExposedPorts(6379)
-                    .withReuse(true);
+    @SuppressWarnings("resource")
+    protected static final GenericContainer<?> REDIS_CONTAINER = new GenericContainer<>(
+            DockerImageName.parse("redis:7-alpine"))
+            .withExposedPorts(6379)
+            .withReuse(true);
 
     /**
      * 컨테이너 시작 확인

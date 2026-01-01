@@ -1,11 +1,7 @@
 package com.example.chat.common.util.util;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.Base64;
 
 /**
  * Cursor 기반 페이징을 위한 VO

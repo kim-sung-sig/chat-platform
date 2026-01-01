@@ -1,16 +1,19 @@
 package com.example.chat.websocket.application.service;
 
-import com.example.chat.websocket.domain.session.ChatRoomSessionManager;
-import com.example.chat.websocket.domain.session.ChatSession;
-import com.example.chat.websocket.infrastructure.redis.MessageEvent;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-import java.util.List;
+import com.example.chat.websocket.domain.session.ChatRoomSessionManager;
+import com.example.chat.websocket.domain.session.ChatSession;
+import com.example.chat.websocket.infrastructure.redis.MessageEvent;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * WebSocket 브로드캐스트 서비스
@@ -35,7 +38,7 @@ public class WebSocketBroadcastService {
         }
 
         log.debug("Broadcasting message to room: roomId={}, messageId={}",
-            roomId, event.getMessageId());
+                roomId, event.getMessageId());
 
         // Step 1: 채팅방의 활성 세션 조회
         List<ChatSession> activeSessions = findActiveSessionsByRoom(roomId);
@@ -68,7 +71,7 @@ public class WebSocketBroadcastService {
         }
 
         log.info("Broadcast completed: roomId={}, messageId={}, success={}, fail={}",
-            roomId, event.getMessageId(), successCount, failCount);
+                roomId, event.getMessageId(), successCount, failCount);
     }
 
     /**
@@ -82,7 +85,7 @@ public class WebSocketBroadcastService {
         }
 
         log.debug("Broadcasting message to user: userId={}, messageId={}",
-            userId, event.getMessageId());
+                userId, event.getMessageId());
 
         // Step 1: 사용자의 활성 세션 조회
         List<ChatSession> activeSessions = findActiveSessionsByUser(userId);
@@ -111,7 +114,7 @@ public class WebSocketBroadcastService {
         }
 
         log.info("User broadcast completed: userId={}, messageId={}, sent={}",
-            userId, event.getMessageId(), successCount);
+                userId, event.getMessageId(), successCount);
     }
 
     // ========== Private Helper Methods ==========
@@ -145,7 +148,7 @@ public class WebSocketBroadcastService {
     /**
      * 세션에 메시지 전송
      */
-    private boolean sendMessageToSession(ChatSession chatSession, String messageJson) {
+    private boolean sendMessageToSession(ChatSession chatSession, @NonNull String messageJson) {
         // Early return: 비활성 세션
         if (!chatSession.isActive()) {
             log.debug("Session is not active: {}", chatSession.getSessionId());
@@ -161,7 +164,7 @@ public class WebSocketBroadcastService {
 
         } catch (Exception e) {
             log.error("Failed to send message to session: sessionId={}",
-                chatSession.getSessionId(), e);
+                    chatSession.getSessionId(), e);
 
             // 세션 제거 (연결이 끊어진 경우)
             sessionManager.removeSession(chatSession.getSessionId());

@@ -1,10 +1,12 @@
 package com.example.chat.domain.user;
 
+import java.util.UUID;
+
+import org.springframework.lang.NonNull;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
-
-import java.util.UUID;
 
 /**
  * 사용자 ID (Value Object)
@@ -13,6 +15,7 @@ import java.util.UUID;
 @EqualsAndHashCode
 @ToString
 public class UserId {
+    @NonNull
     private final String value;
 
     private UserId(String value) {

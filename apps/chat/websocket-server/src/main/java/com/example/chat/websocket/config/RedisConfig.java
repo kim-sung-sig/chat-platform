@@ -1,13 +1,16 @@
 package com.example.chat.websocket.config;
 
-import com.example.chat.websocket.infrastructure.redis.RedisMessageSubscriber;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.listener.PatternTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
+import org.springframework.lang.NonNull;
+
+import com.example.chat.websocket.infrastructure.redis.RedisMessageSubscriber;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * Redis 구독 설정
@@ -16,7 +19,7 @@ import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 @RequiredArgsConstructor
 public class RedisConfig {
 
-	private final RedisMessageSubscriber redisMessageSubscriber;
+	private final @NonNull RedisMessageSubscriber redisMessageSubscriber;
 
 	/**
 	 * Redis 메시지 리스너 컨테이너
@@ -24,16 +27,14 @@ public class RedisConfig {
 	 */
 	@Bean
 	public RedisMessageListenerContainer redisMessageListenerContainer(
-			RedisConnectionFactory connectionFactory
-	) {
+			@NonNull RedisConnectionFactory connectionFactory) {
 		RedisMessageListenerContainer container = new RedisMessageListenerContainer();
 		container.setConnectionFactory(connectionFactory);
 
 		// chat:room:* 패턴 구독
 		container.addMessageListener(
 				messageListenerAdapter(),
-				new PatternTopic("chat:room:*")
-		);
+				new PatternTopic("chat:room:*"));
 
 		return container;
 	}
@@ -42,7 +43,7 @@ public class RedisConfig {
 	 * 메시지 리스너 어댑터
 	 */
 	@Bean
-	public MessageListenerAdapter messageListenerAdapter() {
+	public @NonNull MessageListenerAdapter messageListenerAdapter() {
 		return new MessageListenerAdapter(redisMessageSubscriber);
 	}
 }

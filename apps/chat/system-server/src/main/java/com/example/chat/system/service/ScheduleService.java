@@ -1,5 +1,22 @@
 package com.example.chat.system.service;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.quartz.CronScheduleBuilder;
+import org.quartz.JobBuilder;
+import org.quartz.JobDetail;
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.Trigger;
+import org.quartz.TriggerBuilder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.example.chat.common.auth.context.UserContextHolder;
 import com.example.chat.domain.channel.Channel;
 import com.example.chat.domain.channel.ChannelId;
@@ -15,25 +32,9 @@ import com.example.chat.domain.user.UserId;
 import com.example.chat.system.dto.request.CreateOneTimeScheduleRequest;
 import com.example.chat.system.dto.request.CreateRecurringScheduleRequest;
 import com.example.chat.system.dto.response.ScheduleResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.quartz.CronScheduleBuilder;
-import org.quartz.JobBuilder;
-import org.quartz.JobDetail;
-import org.quartz.JobKey;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.Trigger;
-import org.quartz.TriggerBuilder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 스케줄 서비스
@@ -51,7 +52,6 @@ public class ScheduleService {
 	private final MessageDomainService messageDomainService;
 	private final ScheduleDomainService scheduleDomainService;
 	private final Scheduler quartzScheduler;
-	private final ObjectMapper objectMapper;
 
 	/**
 	 * 단발성 스케줄 생성
@@ -206,8 +206,7 @@ public class ScheduleService {
 	private com.example.chat.domain.channel.Channel findChannelById(ChannelId channelId) {
 		return channelRepository.findById(channelId)
 				.orElseThrow(() -> new IllegalArgumentException(
-						"Channel not found: " + channelId.getValue()
-				));
+						"Channel not found: " + channelId.getValue()));
 	}
 
 	/**
@@ -216,8 +215,7 @@ public class ScheduleService {
 	private com.example.chat.domain.user.User findUserById(UserId userId) {
 		return userRepository.findById(userId)
 				.orElseThrow(() -> new IllegalArgumentException(
-						"User not found: " + userId.getValue()
-				));
+						"User not found: " + userId.getValue()));
 	}
 
 	/**
@@ -226,9 +224,9 @@ public class ScheduleService {
 	 * Domain Service에 Aggregate 전달
 	 */
 	private Message createMessageByType(com.example.chat.domain.channel.Channel channel,
-	                                     com.example.chat.domain.user.User sender,
-	                                     com.example.chat.domain.message.MessageType messageType,
-	                                     java.util.Map<String, Object> payload) {
+			com.example.chat.domain.user.User sender,
+			com.example.chat.domain.message.MessageType messageType,
+			java.util.Map<String, Object> payload) {
 		// Early Return: MessageType 검증
 		if (messageType == null) {
 			throw new IllegalArgumentException("Message type is required");
@@ -280,7 +278,8 @@ public class ScheduleService {
 	/**
 	 * Payload에서 텍스트 필드 추출 (기본값 있음)
 	 */
-	private String extractTextFieldOrDefault(java.util.Map<String, Object> payload, String fieldName, String defaultValue) {
+	private String extractTextFieldOrDefault(java.util.Map<String, Object> payload, String fieldName,
+			String defaultValue) {
 		if (payload == null) {
 			return defaultValue;
 		}
@@ -319,8 +318,7 @@ public class ScheduleService {
 	private ScheduleRule findScheduleRule(ScheduleId scheduleId) {
 		return scheduleRuleRepository.findById(scheduleId)
 				.orElseThrow(() -> new IllegalArgumentException(
-						"Schedule not found: " + scheduleId.getValue()
-				));
+						"Schedule not found: " + scheduleId.getValue()));
 	}
 
 	/**
@@ -367,8 +365,7 @@ public class ScheduleService {
 		} else {
 			// 주기적: CronSchedule
 			builder.withSchedule(
-					CronScheduleBuilder.cronSchedule(rule.getCronExpression().getValue())
-			);
+					CronScheduleBuilder.cronSchedule(rule.getCronExpression().getValue()));
 		}
 
 		return builder.build();
