@@ -15,56 +15,53 @@ import java.util.List;
 @Builder
 public class ErrorResponse {
 
-    private final String code;
-    private final String message;
-    private final int status;
-    private final LocalDateTime timestamp;
-    private final String path;
-    private final List<FieldError> fieldErrors;
+	private final String code;
+	private final String message;
+	private final int status;
+	private final LocalDateTime timestamp;
+	private final String path;
+	private final List<FieldError> fieldErrors;
 
-    /**
-     * 필드 에러 DTO
-     */
-    @Getter
-    @Builder
-    public static class FieldError {
-        private final String field;
-        private final String rejectedValue;
-        private final String message;
-    }
+	/**
+	 * 필드 에러 DTO
+	 */
+	@Getter
+	@Builder
+	public static class FieldError {
+		private final String field;
+		private final String rejectedValue;
+		private final String message;
+	}
 
-    /**
-     * BaseException으로부터 ErrorResponse 생성
-     */
-    public static ErrorResponse of(BaseException ex, String path) {
-        return ErrorResponse.builder()
-                .code(ex.getCode())
-                .message(ex.getMessage())
-                .status(ex.getStatus())
-                .timestamp(LocalDateTime.now())
-                .path(path)
-                .build();
-    }
+	/**
+	 * BaseException으로부터 ErrorResponse 생성
+	 */
+	public static ErrorResponse of(BaseException ex, String path) {
+		return ErrorResponse.builder()
+				.code(ex.getCode())
+				.message(ex.getMessage())
+				.status(ex.getStatus())
+				.timestamp(LocalDateTime.now())
+				.path(path)
+				.build();
+	}
 
-    /**
-     * ErrorCode로부터 ErrorResponse 생성
-     */
-    public static ErrorResponse of(ErrorCode errorCode, String path) {
-        return ErrorResponse.builder()
-                .code(errorCode.getCode())
-                .message(errorCode.getMessage())
-                .status(errorCode.getStatus())
-                .timestamp(LocalDateTime.now())
-                .path(path)
-                .build();
-    }
+	public static ErrorResponse of(ErrorCode errorCode, String path) {
+		return ErrorResponse.builder()
+				.code(errorCode.getCode())
+				.message(errorCode.getMessage())
+				.status(errorCode.getStatus())
+				.timestamp(LocalDateTime.now())
+				.path(path)
+				.build();
+	}
 
-    /**
-     * ErrorResponse를 ResponseEntity로 변환
-     */
-    public ResponseEntity<ErrorResponse> toResponseEntity() {
-        return ResponseEntity
-                .status(this.status)
-                .body(this);
-    }
+	/**
+	 * ErrorResponse를 ResponseEntity로 변환
+	 */
+	public ResponseEntity<ErrorResponse> toResponseEntity() {
+		return ResponseEntity
+				.status(this.status)
+				.body(this);
+	}
 }

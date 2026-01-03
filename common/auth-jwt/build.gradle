@@ -1,0 +1,36 @@
+plugins {
+	id 'java-library'
+}
+
+dependencies {
+	// ===== 외부로 노출되는 API =====
+	// Spring Security
+	api 'org.springframework.boot:spring-boot-starter-web'
+	api 'org.springframework.boot:spring-boot-starter-security'
+	api 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+
+	// Jakarta Servlet
+	api 'jakarta.servlet:jakarta.servlet-api'
+
+	// ===== 내부 구현 전용 =====
+	// Spring Boot Configuration Properties
+	implementation 'org.springframework.boot:spring-boot'
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+	// Jackson for JSON processing
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+	// Logging
+	implementation 'org.slf4j:slf4j-api'
+
+	// Common
+	implementation project(':common:util')
+
+	// Lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	// Test
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+}

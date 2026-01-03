@@ -20,15 +20,6 @@ public class UserId implements Serializable {
         return UserId.of(id);
     }
 
-    public static UserId from(String idString) {
-        try {
-            Long id = Long.parseLong(idString);
-            return from(id);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid user ID format: " + idString, e);
-        }
-    }
-
     @Override
     public String toString() {
         return String.valueOf(value);

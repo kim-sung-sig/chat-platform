@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class AuthModuleConfig {
 
     @Bean
+    @ConditionalOnMissingBean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
@@ -26,8 +27,10 @@ public class AuthModuleConfig {
     }
 
     @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtTokenProvider provider,
-            TokenBlacklistService blacklistService) {
+    public JwtAuthenticationFilter jwtAuthenticationFilter(
+            JwtTokenProvider provider,
+            TokenBlacklistService blacklistService
+    ) {
         return new JwtAuthenticationFilter(provider, blacklistService);
     }
 }
