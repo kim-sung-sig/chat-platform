@@ -1,9 +1,9 @@
 package com.example.chat.auth.server.controller;
 
-import com.example.chat.auth.server.domain.LoginRequest;
-import com.example.chat.auth.server.domain.SignupRequest;
-import com.example.chat.auth.server.domain.TokenResponse;
-import com.example.chat.auth.server.service.AuthService;
+import com.example.chat.auth.server.domain.service.AuthService;
+import com.example.chat.auth.server.dto.request.LoginRequest;
+import com.example.chat.auth.server.dto.request.SignupRequest;
+import com.example.chat.auth.server.dto.response.TokenResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 @RequiredArgsConstructor
-public class AuthController {
+public class AuthApi {
 
     private final AuthService authService;
 

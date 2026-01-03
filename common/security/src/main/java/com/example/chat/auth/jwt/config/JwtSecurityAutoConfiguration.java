@@ -30,7 +30,7 @@ public class JwtSecurityAutoConfiguration {
 	@ConditionalOnMissingBean
 	public JwtDecoder jwtDecoder(JwtProperties properties) {
 		log.info("Initializing JwtDecoder with issuerUri: {}", properties.issuerUri());
-		return NimbusJwtDecoder.withIssuerLocation(properties.issuerUri()).build();
+		return NimbusJwtDecoder.withJwkSetUri(properties.jwkSetUri()).build();
 	}
 
 	@Bean
