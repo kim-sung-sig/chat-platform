@@ -1,48 +1,36 @@
 plugins {
-    id 'java-library'
-}
-
-group = 'com.example.chat'
-version = '0.0.1-SNAPSHOT'
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-}
-
-repositories {
-    mavenCentral()
+	id 'java-library'
 }
 
 dependencies {
-    // Core 모듈
-    api project(':common:core')
+	// ===== 외부로 노출되는 API =====
+	// Spring Security
+	api 'org.springframework.boot:spring-boot-starter-web'
+	api 'org.springframework.boot:spring-boot-starter-security'
+	api 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 
-    // Spring Security & OAuth2
-    api 'org.springframework.boot:spring-boot-starter-security'
-    api 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
-    api 'org.springframework.boot:spring-boot-starter-web'
+	// Jakarta Servlet
+	api 'jakarta.servlet:jakarta.servlet-api'
 
-    // Jakarta Servlet
-    api 'jakarta.servlet:jakarta.servlet-api'
+	// ===== 내부 구현 전용 =====
+	// Spring Boot Configuration Properties
+	implementation 'org.springframework.boot:spring-boot'
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
-    // Jackson (JSON)
-    implementation 'com.fasterxml.jackson.core:jackson-databind'
+	// Jackson for JSON processing
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
 
-    // Logging
-    implementation 'org.slf4j:slf4j-api'
+	// Logging
+	implementation 'org.slf4j:slf4j-api'
 
-    // Lombok
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+	// Common
+	implementation project(':common:core')
 
-    // Test
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'
+	// Lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	// Test
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
 }
-
-test {
-    useJUnitPlatform()
-}
-

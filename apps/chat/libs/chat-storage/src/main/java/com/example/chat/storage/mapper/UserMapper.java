@@ -1,10 +1,9 @@
 package com.example.chat.storage.mapper;
 
-import org.springframework.stereotype.Component;
-
 import com.example.chat.domain.user.User;
 import com.example.chat.domain.user.UserId;
 import com.example.chat.storage.entity.UserEntity;
+import org.springframework.stereotype.Component;
 
 /**
  * User Domain ↔ UserEntity 변환 Mapper
@@ -24,7 +23,7 @@ public class UserMapper {
 				.id(user.getId().getValue())
 				.username(user.getUsername())
 				.email(user.getEmail())
-				.password(user.getPassword())
+				//.password(user.getPassword())
 				.status(user.getStatus())
 				.createdAt(user.getCreatedAt())
 				.updatedAt(user.getUpdatedAt())
@@ -44,7 +43,7 @@ public class UserMapper {
 				.id(UserId.of(entity.getId()))
 				.username(entity.getUsername())
 				.email(entity.getEmail())
-				.password(entity.getPassword())
+				//.password(entity.getPassword())
 				.status(entity.getStatus())
 				.createdAt(entity.getCreatedAt())
 				.updatedAt(entity.getUpdatedAt())

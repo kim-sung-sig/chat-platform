@@ -17,7 +17,9 @@ repositories {
 
 dependencies {
 	// Common 모듈 (최소 의존성)
-	implementation project(':common:util')
+	implementation project(':common:core')
+
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
 	// Lombok
 	compileOnly 'org.projectlombok:lombok'

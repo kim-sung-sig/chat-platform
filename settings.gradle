@@ -1,7 +1,7 @@
 rootProject.name = 'chat-platform'
 
 // ============================================
-// 📂 Apps - 실행 가능한 애플리케이션
+// Apps - 실행 가능한 애플리케이션
 // ============================================
 include("apps:auth-server")
 include("apps:chat:message-server")
@@ -9,27 +9,15 @@ include("apps:chat:system-server")
 include("apps:chat:websocket-server")
 
 // ============================================
-// 📦 Apps - Chat 관련 라이브러리 모듈
+// Apps - Chat 관련 라이브러리 모듈
 // ============================================
-include("apps:chat:lib:chat-domain")
-include("apps:chat:lib:chat-storage")
+include("apps:chat:libs:chat-domain")
+include("apps:chat:libs:chat-storage")
 
 // ============================================
-// 🛠️ Common - 유틸리티 & 횡단 관심사
+// Common - 유틸리티 & 횡단 관심사
 // ============================================
-// 🎯 Core - 핵심 도메인 공통 (모든 모듈의 기반)
-include("common:core")
-
-// 🌐 Web - Web 계층 공통 (Controller, DTO, ExceptionHandler)
-include("common:web")
-
-// 🔐 Security - 보안 통합 (JWT + OAuth2)
-include("common:security")
-
-// 📝 Logging - 로깅
-include("common:logging")
-
-// Legacy (추후 제거 예정)
-include("common:util")
-include("common:auth-security")
-include("common:auth-jwt")
+include("common:core")              // Core - 공통 객체 및 유틸리티
+include("common:web")               // Web - Web 계층 공통
+include("common:security")          // JWT - 보안 통합 (JWT + OAuth2)
+include("common:logging")           // Logging - 로깅

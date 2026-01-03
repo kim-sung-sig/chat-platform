@@ -1,8 +1,7 @@
 package com.example.chat.common.core.exception;
 
 /**
- * ?�러 코드 ?�터?�이??
- * 모든 ?�러 코드?????�터?�이?��? 구현?�야 ??
+ * 에러 코드 인터페이스
  */
 public interface ErrorCode {
     String getCode();

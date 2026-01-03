@@ -4,9 +4,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * Cursor 기반 ?�이징을 ?�한 VO
+ * 커서 기반 페이지네이션을 위한 Cursor 클래스
  *
- * @param <T> Cursor 값의 ?�??(Long, String ??
+ * @param <T> 커서 값의 타입
  */
 @Getter
 @NoArgsConstructor

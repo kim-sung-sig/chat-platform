@@ -1,7 +1,7 @@
 package com.example.chat.common.web.advice;
 
-import com.example.chat.common.core.exception.BaseException;
 import com.example.chat.common.core.exception.BaseErrorCode;
+import com.example.chat.common.core.exception.BaseException;
 import com.example.chat.common.core.exception.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -18,15 +18,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 글로벌 ?�외 ?�들??
- * 모든 ?�외�??��????�식?�로 처리
+ * 글로벌 예외 핸들러
+ * 모든 예외를 일관된 형식으로 처리
  */
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
 	/* =============================
-	 *  공통 비�??�스 메서??처리 ?�들??
+	 *  공통 비지니스 메서드 처리 핸들러
 	 * ============================= */
 
 	/**
@@ -36,15 +36,15 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ErrorResponse> handleBaseException(BaseException ex, HttpServletRequest request) {
 		log.error("BaseException occurred: {}", ex.getMessage(), ex);
 		ErrorResponse errorResponse = ErrorResponse.of(ex, request.getRequestURI());
-		return errorResponse.toResponseEntity();
+		return toResponseEntity(errorResponse);
 	}
 
 	/* =============================
-	 *  ?�력 검�?관??처리 ?�들??
+	 *  입력 검증 관련 처리 헨들러
 	 * ============================= */
 
 	/**
-	 * Validation ?�외 처리
+	 * Validation 예외 처리
 	 */
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex, HttpServletRequest request) {
@@ -104,18 +104,18 @@ public class GlobalExceptionHandler {
 	private ResponseEntity<ErrorResponse> validationErrorResponse(List<ErrorResponse.FieldError> fieldErrors, HttpServletRequest request) {
 		var errorResponse = ErrorResponse.of(BaseErrorCode.VALIDATION_ERROR, request.getRequestURI())
 				.withFieldErrors(fieldErrors);
-		return errorResponse.toResponseEntity();
+		return toResponseEntity(errorResponse);
 	}
 
 
 	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
 	public ResponseEntity<ErrorResponse> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
 		var errorResponse = ErrorResponse.of(BaseErrorCode.METHOD_NOT_ALLOWED, request.getRequestURI());
-		return errorResponse.toResponseEntity();
+		return toResponseEntity(errorResponse);
 	}
 
 	/**
-	 * �???모든 ?�외 처리
+	 * 그 외 모든 예외 처리
 	 */
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ErrorResponse> handleException(Exception ex, HttpServletRequest request) {
@@ -129,7 +129,12 @@ public class GlobalExceptionHandler {
 				.path(request.getRequestURI())
 				.build();
 
-		return errorResponse.toResponseEntity();
+		return toResponseEntity(errorResponse);
+	}
+
+	public ResponseEntity<ErrorResponse> toResponseEntity(ErrorResponse errorResponse) {
+		return ResponseEntity
+				.status(errorResponse.getStatus())
+				.body(errorResponse);
 	}
 }
-

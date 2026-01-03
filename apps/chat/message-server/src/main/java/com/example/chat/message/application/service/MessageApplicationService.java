@@ -1,6 +1,6 @@
 package com.example.chat.message.application.service;
 
-import com.example.chat.common.auth.context.UserContextHolder;
+import com.example.chat.auth.core.util.SecurityUtils;
 import com.example.chat.domain.channel.Channel;
 import com.example.chat.domain.channel.ChannelId;
 import com.example.chat.domain.channel.ChannelRepository;
@@ -96,11 +96,9 @@ public class MessageApplicationService {
 	 * 인증된 사용자 ID 조회
 	 */
 	private UserId getUserIdFromContext() {
-		com.example.chat.common.auth.model.UserId authUserId = UserContextHolder.getUserId();
-		if (authUserId == null) {
-			throw new IllegalStateException("User not authenticated");
-		}
-		return UserId.of(String.valueOf(authUserId.getValue()));
+		return SecurityUtils.getCurrentUserId()
+				.map(UserId::of)
+				.orElseThrow(() -> new IllegalStateException("User not authenticated"));
 	}
 
 	/**

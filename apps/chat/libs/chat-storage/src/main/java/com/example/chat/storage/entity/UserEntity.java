@@ -1,9 +1,6 @@
 package com.example.chat.storage.entity;
 
-import java.time.Instant;
-
 import com.example.chat.domain.user.UserStatus;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -18,6 +15,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.time.Instant;
 
 /**
  * 사용자 JPA Entity
@@ -45,8 +44,8 @@ public class UserEntity {
 	@Column(name = "email", length = 255, nullable = false, unique = true)
 	private String email;
 
-	@Column(name = "password", length = 255)
-	private String password;
+	//@Column(name = "password", length = 255)
+	//private String password;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", length = 20, nullable = false)

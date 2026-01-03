@@ -2,15 +2,14 @@ package com.example.chat.common.core.exception;
 
 import lombok.Builder;
 import lombok.Getter;
-import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * ?�러 ?�답 DTO
- * ?�라?�언?�에�??��????�식???�러 ?�답 ?�공
+ * 에러 응답 DTO
+ * 클라이언트에게 일관된 형식의 에러 응답 제공
  */
 @Getter
 public class ErrorResponse {
@@ -33,7 +32,7 @@ public class ErrorResponse {
 	private final List<FieldError> fieldErrors = new ArrayList<>();
 
 	/**
-	 * ?�드 ?�러 DTO
+	 * 필드 에러 DTO
 	 */
 	@Getter
 	@Builder
@@ -44,7 +43,7 @@ public class ErrorResponse {
 	}
 
 	/**
-	 * BaseException?�로부??ErrorResponse ?�성
+	 * BaseException으로부터 ErrorResponse 생성
 	 */
 	public static ErrorResponse of(BaseException ex, String path) {
 		return ErrorResponse.builder()
@@ -72,12 +71,4 @@ public class ErrorResponse {
 		return this;
 	}
 
-	/**
-	 * ErrorResponse�?ResponseEntity�?변??
-	 */
-	public ResponseEntity<ErrorResponse> toResponseEntity() {
-		return ResponseEntity
-				.status(this.status)
-				.body(this);
-	}
 }
