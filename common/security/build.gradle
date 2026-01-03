@@ -1,0 +1,48 @@
+plugins {
+    id 'java-library'
+}
+
+group = 'com.example.chat'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Core 모듈
+    api project(':common:core')
+
+    // Spring Security & OAuth2
+    api 'org.springframework.boot:spring-boot-starter-security'
+    api 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+    api 'org.springframework.boot:spring-boot-starter-web'
+
+    // Jakarta Servlet
+    api 'jakarta.servlet:jakarta.servlet-api'
+
+    // Jackson (JSON)
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+    // Logging
+    implementation 'org.slf4j:slf4j-api'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+}
+
+test {
+    useJUnitPlatform()
+}
+

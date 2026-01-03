@@ -11,13 +11,25 @@ include("apps:chat:websocket-server")
 // ============================================
 // 📦 Apps - Chat 관련 라이브러리 모듈
 // ============================================
-include("apps:chat:libs:chat-domain")
-include("apps:chat:libs:chat-storage")
+include("apps:chat:lib:chat-domain")
+include("apps:chat:lib:chat-storage")
 
 // ============================================
 // 🛠️ Common - 유틸리티 & 횡단 관심사
 // ============================================
-include("common:util")
+// 🎯 Core - 핵심 도메인 공통 (모든 모듈의 기반)
+include("common:core")
+
+// 🌐 Web - Web 계층 공통 (Controller, DTO, ExceptionHandler)
+include("common:web")
+
+// 🔐 Security - 보안 통합 (JWT + OAuth2)
+include("common:security")
+
+// 📝 Logging - 로깅
 include("common:logging")
+
+// Legacy (추후 제거 예정)
+include("common:util")
 include("common:auth-security")
 include("common:auth-jwt")
