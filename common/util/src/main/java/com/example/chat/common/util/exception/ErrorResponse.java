@@ -5,6 +5,7 @@ import lombok.Getter;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -12,7 +13,6 @@ import java.util.List;
  * 클라이언트에게 일관된 형식의 에러 응답 제공
  */
 @Getter
-@Builder
 public class ErrorResponse {
 
 	private final String code;
@@ -20,7 +20,17 @@ public class ErrorResponse {
 	private final int status;
 	private final LocalDateTime timestamp;
 	private final String path;
-	private final List<FieldError> fieldErrors;
+
+	@Builder
+	private ErrorResponse(String code, String message, int status, LocalDateTime timestamp, String path) {
+		this.code = code;
+		this.message = message;
+		this.status = status;
+		this.timestamp = timestamp;
+		this.path = path;
+	}
+
+	private final List<FieldError> fieldErrors = new ArrayList<>();
 
 	/**
 	 * 필드 에러 DTO
@@ -54,6 +64,12 @@ public class ErrorResponse {
 				.timestamp(LocalDateTime.now())
 				.path(path)
 				.build();
+	}
+
+	public ErrorResponse withFieldErrors(List<FieldError> fieldErrors) {
+		this.fieldErrors.clear();
+		this.fieldErrors.addAll(fieldErrors);
+		return this;
 	}
 
 	/**
