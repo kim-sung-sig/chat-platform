@@ -35,7 +35,7 @@ dependencies {
 	implementation project(':common:auth-security')
 
 	// Domain 모듈
-	implementation project(':libs:chat-domain')
+	implementation project(':apps:chat:libs:chat-domain')
 
 	// DB
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'

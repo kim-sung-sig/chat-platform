@@ -9,10 +9,10 @@ include("apps:chat:system-server")
 include("apps:chat:websocket-server")
 
 // ============================================
-// 📚 Libs - 비즈니스 로직 & 인프라
+// 📦 Apps - Chat 관련 라이브러리 모듈
 // ============================================
-include("libs:chat-domain")
-include("libs:chat-storage")
+include("apps:chat:libs:chat-domain")
+include("apps:chat:libs:chat-storage")
 
 // ============================================
 // 🛠️ Common - 유틸리티 & 횡단 관심사

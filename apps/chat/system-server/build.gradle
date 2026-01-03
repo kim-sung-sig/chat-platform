@@ -36,10 +36,10 @@ dependencies {
 	implementation project(':common:logging')
 
 	// Domain 모듈 (순수 도메인)
-	implementation project(':libs:chat-domain')
+	implementation project(':apps:chat:libs:chat-domain')
 
 	// Storage 모듈 (영속성)
-	implementation project(':libs:chat-storage')
+	implementation project(':apps:chat:libs:chat-storage')
 
 	// web, validation, websocket
 	implementation 'org.springframework.boot:spring-boot-starter-web'
