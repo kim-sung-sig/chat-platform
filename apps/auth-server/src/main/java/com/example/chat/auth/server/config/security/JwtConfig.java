@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
+import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 
@@ -78,6 +80,14 @@ public class JwtConfig {
 	@Bean
 	public JWKSet jwkSet(ECKey ecKey) {
 		return new JWKSet(ecKey);
+	}
+
+	@Bean
+	public JwsHeader jwsHeader(ECKey ecKey) {
+		// 알고리즘과 Key ID를 결합하여 헤더 정책 정의
+		return JwsHeader.with(SignatureAlgorithm.ES256)
+				.keyId(ecKey.getKeyID())
+				.build();
 	}
 
 	/**

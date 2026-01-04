@@ -1,5 +1,6 @@
 package com.example.chat.auth.jwt.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -43,8 +44,8 @@ public class JwtSecurityAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint() {
-		return new JwtAuthenticationEntryPoint();
+	public JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint(ObjectMapper objectMapper) {
+		return new JwtAuthenticationEntryPoint(objectMapper);
 	}
 
 	/**

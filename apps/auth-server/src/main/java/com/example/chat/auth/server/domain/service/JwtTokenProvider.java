@@ -3,6 +3,7 @@ package com.example.chat.auth.server.domain.service;
 import com.example.chat.auth.server.config.security.JwtProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
@@ -20,6 +21,7 @@ public class JwtTokenProvider {
 
 	private final JwtEncoder jwtEncoder;
 	private final JwtProperties jwtProperties;
+	private final JwsHeader jwsHeader;
 
 	/**
 	 * Access Token 생성
@@ -41,7 +43,7 @@ public class JwtTokenProvider {
 				.claim("type", "access")
 				.build();
 
-		String token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+		String token = jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
 		log.debug("Access token created for user: {}", userId);
 		return token;
 	}
@@ -64,7 +66,7 @@ public class JwtTokenProvider {
 				.claim("type", "refresh")
 				.build();
 
-		String token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+		String token = jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
 		log.debug("Refresh token created for user: {}", userId);
 		return token;
 	}

@@ -1,5 +1,6 @@
 package com.example.chat.common.core.exception;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -17,6 +18,7 @@ public class ErrorResponse {
 	private final String code;
 	private final String message;
 	private final int status;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
 	private final LocalDateTime timestamp;
 	private final String path;
 
