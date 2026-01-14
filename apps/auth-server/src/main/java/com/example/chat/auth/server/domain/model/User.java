@@ -1,5 +1,9 @@
 package com.example.chat.auth.server.domain.model;
 
+import java.time.Instant;
+
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -8,7 +12,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -18,13 +21,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.Instant;
 
 @Slf4j
 @Entity
@@ -35,7 +31,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
-public class User {
+public class User extends AuditEntity {
 
     @Id
     @Column(name = "id")
@@ -59,7 +55,8 @@ public class User {
     private UserStatus status;
 
     @Column(name = "login_fail_count")
-    private Integer loginFailCount;
+    @Builder.Default
+    private Integer loginFailCount = 0;
 
     @Column(name = "last_login_at")
     private Instant lastLoginAt;
@@ -77,21 +74,19 @@ public class User {
     @Column(name = "email")
     private String email;
 
-    // audit
-    @Column(name = "created_by", updatable = false) @CreatedBy
-    private String createdBy;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
 
-    @Column(name = "created_at", updatable = false) @CreatedDate
-    private Instant createdAt;
+        if (org.hibernate.Hibernate.getClass(this) != org.hibernate.Hibernate.getClass(o)) return false;
 
-    @Column(name = "updated_by") @LastModifiedBy
-    private String updatedBy;
+        User other = (User) o;
+        return id != null && id.equals(other.id);
+    }
 
-    @Column(name = "updated_at") @LastModifiedDate
-    private Instant updatedAt;
-
-    @PrePersist
-    public void onCreate() {
-        if (this.loginFailCount == null) this.loginFailCount = 0;
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

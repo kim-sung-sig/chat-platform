@@ -1,4 +1,4 @@
-package com.example.chat.auth.server.controller;
+package com.example.chat.auth.server.api;
 
 import com.nimbusds.jose.jwk.JWKSet;
 import lombok.RequiredArgsConstructor;

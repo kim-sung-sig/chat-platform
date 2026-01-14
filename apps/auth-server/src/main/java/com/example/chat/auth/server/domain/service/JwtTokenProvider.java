@@ -1,22 +1,24 @@
 package com.example.chat.auth.server.domain.service;
 
-import com.example.chat.auth.server.config.security.JwtProperties;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.time.Instant;
+import java.util.List;
+
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-import java.time.Instant;
-import java.util.List;
+import com.example.chat.auth.server.config.security.JwtProperties;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * JWT 토큰 생성 서비스
  */
 @Slf4j
-@Service
+@Component
 @RequiredArgsConstructor
 public class JwtTokenProvider {
 

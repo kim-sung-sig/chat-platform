@@ -1,4 +1,4 @@
-package com.example.chat.auth.server.dto.response;
+package com.example.chat.auth.server.api.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;

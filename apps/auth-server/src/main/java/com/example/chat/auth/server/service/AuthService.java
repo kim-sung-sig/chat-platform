@@ -1,15 +1,16 @@
-package com.example.chat.auth.server.domain.service;
+package com.example.chat.auth.server.service;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.chat.auth.server.api.dto.request.SignupRequest;
+import com.example.chat.auth.server.api.dto.response.TokenResponse;
 import com.example.chat.auth.server.domain.model.User;
 import com.example.chat.auth.server.domain.model.UserRole;
 import com.example.chat.auth.server.domain.model.UserStatus;
 import com.example.chat.auth.server.domain.repository.UserRepository;
-import com.example.chat.auth.server.dto.request.SignupRequest;
-import com.example.chat.auth.server.dto.response.TokenResponse;
+import com.example.chat.auth.server.domain.service.JwtTokenProvider;
 
 import lombok.RequiredArgsConstructor;
 

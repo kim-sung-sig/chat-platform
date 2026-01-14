@@ -1,4 +1,4 @@
-package com.example.chat.auth.server.dto.request;
+package com.example.chat.auth.server.api.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
