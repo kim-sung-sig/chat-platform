@@ -5,16 +5,25 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
+import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.client.RestOperations;
+
+import java.time.Duration;
 
 /**
  * JWT 인증 보안 설정
@@ -30,8 +39,43 @@ public class JwtSecurityAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public JwtDecoder jwtDecoder(JwtProperties properties) {
-		log.info("Initializing JwtDecoder with issuerUri: {}", properties.issuerUri());
-		return NimbusJwtDecoder.withJwkSetUri(properties.jwkSetUri()).build();
+		log.info("Initializing JwtDecoder with issuerUri: {}, jwkSetUri: {}",
+			properties.issuerUri(), properties.jwkSetUri());
+
+		try {
+			// RestTemplate 설정 (타임아웃 추가)
+			RestOperations restOperations = new RestTemplateBuilder()
+					.connectTimeout(Duration.ofSeconds(5))
+					.readTimeout(Duration.ofSeconds(5))
+					.build();
+
+			// JWK Set URI로 JwtDecoder 생성
+			// ES256 알고리즘(ECDSA with P-256)을 명시적으로 지정
+			NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(properties.jwkSetUri())
+					.jwsAlgorithm(SignatureAlgorithm.ES256)  // ES256 알고리즘 명시
+					.restOperations(restOperations)
+					.build();
+
+			// Issuer 검증을 포함한 Validator 설정
+			JwtIssuerValidator issuerValidator = new JwtIssuerValidator(properties.issuerUri());
+			JwtTimestampValidator timestampValidator = new JwtTimestampValidator();
+
+			DelegatingOAuth2TokenValidator<Jwt> validators = new DelegatingOAuth2TokenValidator<>(
+				issuerValidator, timestampValidator
+			);
+
+			decoder.setJwtValidator(validators);
+
+			log.info("JwtDecoder initialized successfully");
+			log.info("  - Issuer URI: {}", properties.issuerUri());
+			log.info("  - JWK Set URI: {}", properties.jwkSetUri());
+			log.info("  - Algorithm: ES256 (ECDSA with P-256)");
+
+			return decoder;
+		} catch (Exception e) {
+			log.error("Failed to initialize JwtDecoder", e);
+			throw new IllegalStateException("Could not create JwtDecoder", e);
+		}
 	}
 
 	@Bean

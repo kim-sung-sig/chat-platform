@@ -10,6 +10,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 
 /**
  * JWT 토큰 생성 서비스
@@ -40,6 +41,7 @@ public class JwtTokenProvider {
 				.issuedAt(now)
 				.expiresAt(expiresAt)
 				.claim("scope", role)
+				.claim("roles", List.of(role))
 				.claim("type", "access")
 				.build();
 
