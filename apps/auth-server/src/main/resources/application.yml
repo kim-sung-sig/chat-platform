@@ -1,0 +1,23 @@
+# Auth Server Configuration
+
+# JWT Configuration
+auth:
+  jwt:
+    # 256-bit secret key (실제 운영에서는 환경변수로 관리)
+    secret: your-256-bit-secret-key-change-this-in-production-environment-please-use-strong-key
+    
+    # Access Token TTL (분 단위)
+    # LOW: 15분, MEDIUM: 30분, HIGH: 60분
+    access-ttl-minutes: 15
+    
+    # Refresh Token TTL (일 단위)
+    refresh-ttl-days: 7
+    
+    # MFA Token TTL (분 단위) - 짧게 설정
+    mfa-ttl-minutes: 5
+
+# Spring Boot Logging
+logging:
+  level:
+    com.example.chat.auth: DEBUG
+    org.springframework.security: DEBUG

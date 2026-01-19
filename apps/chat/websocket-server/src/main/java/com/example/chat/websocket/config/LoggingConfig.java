@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 
-import com.example.chat.websocket.logging.RequestLoggingFilter;
+import com.example.chat.websocket.presentation.handler.CustomRequestLoggingFilter;
 
 import jakarta.servlet.Filter;
 
@@ -18,7 +18,7 @@ public class LoggingConfig {
 	@Bean
 	public FilterRegistrationBean<Filter> requestLoggingFilter() {
 		FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>();
-		registration.setFilter(new RequestLoggingFilter());
+		registration.setFilter(new CustomRequestLoggingFilter());
 		registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
 		registration.addUrlPatterns("/*");
 		return registration;

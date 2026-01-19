@@ -25,6 +25,9 @@ dependencies {
 	implementation 'org.springframework.security:spring-security-oauth2-jose'
 	implementation 'com.nimbusds:nimbus-jose-jwt:10.0.2'
 
+	// JSON - Jackson (CredentialMapper에서 사용)
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
+
 	// Lombok
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
