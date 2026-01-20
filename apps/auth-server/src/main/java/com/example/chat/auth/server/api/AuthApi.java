@@ -2,10 +2,12 @@ package com.example.chat.auth.server.api;
 
 import java.time.Instant;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,6 +21,7 @@ import com.example.chat.auth.server.core.domain.AuthenticationContext;
 import com.example.chat.auth.server.core.domain.Credential;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,100 +42,150 @@ public class AuthApi {
 	private final MfaApplicationService mfaService;
 	private final CredentialFactory credentialFactory;
 
+	private static final String REFRESH_TOKEN_COOKIE = "refresh_token";
+
 	/**
-	 * 로그인
-	 * - 비밀번호, OAuth, Passkey, SSO 모두 이 엔드포인트로 처리
-	 * - JWT 토큰 응답 (FULL_ACCESS 또는 MFA_PENDING)
+	 * 인증 실행 (Login)
 	 */
-	@PostMapping("/login")
-	public ResponseEntity<AuthResponse> login(
-			@Valid @RequestBody AuthenticateRequest request,
-			HttpServletRequest httpRequest) {
-		
-		log.info("Login attempt for identifier: {}, type: {}", 
-				request.getIdentifier(), request.getCredentialType());
+	@PostMapping("/authenticate")
+	public ResponseEntity<AuthResponse> authenticate(
+			@Valid @RequestBody AuthenticateRequest requestDto,
+			HttpServletRequest request,
+			HttpServletResponse response) {
 
-		// 1. HTTP → 도메인 개념 변환
-		AuthenticationContext context = buildAuthenticationContext(httpRequest);
+		log.info("Authentication request for identifier: {}, type: {}",
+				requestDto.getIdentifier(), requestDto.getCredentialType());
 
-		// 2. Credential 구성 (Factory 패턴)
-		Credential credential = credentialFactory.createFromRequest(request);
-		
-		// 3. Application Service 실행
-		AuthenticationApplicationService.AuthenticationResult result = 
-				authenticationService.authenticate(
-						request.getIdentifier(),
-						request.getCredentialType(),
-						credential,
-						context
-				);
+		// 1. 도메인 개념으로 변환
+		Credential providedCredential = credentialFactory.createFromRequest(requestDto);
+		AuthenticationContext context = createAuthContext(request);
 
-		// 4. 도메인 → HTTP 응답 변환 (JWT 포함)
+		// 2. 서비스 호출
+		AuthenticationApplicationService.AuthenticationResult result = authenticationService.authenticate(
+				requestDto.getIdentifier(),
+				requestDto.getCredentialType(),
+				providedCredential,
+				context);
+
+		// 3. 결과 처리
+		if (result.getAuthResult().isAuthenticated()) {
+			if (result.getToken() != null && result.getToken().getRefreshToken() != null) {
+				setRefreshTokenCookie(response, result.getToken().getRefreshToken());
+			}
+		}
+
 		return ResponseEntity.ok(AuthResponse.from(result.getAuthResult(), result.getToken()));
 	}
 
 	/**
-	 * MFA 검증
-	 * - 1차 인증 후 MFA가 필요한 경우 호출
-	 * - MFA_PENDING 토큰을 헤더로 받음
-	 * - 성공 시 FULL_ACCESS 토큰 반환
+	 * MFA 완료
 	 */
 	@PostMapping("/mfa/complete")
 	public ResponseEntity<AuthResponse> completeMfa(
-			@RequestHeader("Authorization") String authorization,
-			@Valid @RequestBody CompleteMfaRequest request) {
-		
-		log.info("MFA completion for session: {}", request.getSessionId());
+			@Valid @RequestBody CompleteMfaRequest requestDto,
+			HttpServletRequest request,
+			HttpServletResponse response) {
 
-		// Bearer 토큰 추출
-		String mfaToken = authorization.replace("Bearer ", "");
+		log.info("MFA completion request for session: {}", requestDto.getMfaSessionId());
 
-		// MFA 완료 처리
+		// 1. 서비스 호출
 		MfaApplicationService.MfaCompletionResult result = mfaService.completeMfa(
-				mfaToken,
-				request.getSessionId(),
-				request.getMfaMethod(),
-				request.getCode()
-		);
+				requestDto.getMfaToken(),
+				requestDto.getMfaSessionId(),
+				requestDto.getMfaMethod(),
+				requestDto.getOtpCode(),
+				createAuthContext(request).getDevice());
+
+		// 2. 결과 처리
+		if (result.getAuthResult().isAuthenticated()) {
+			if (result.getToken() != null && result.getToken().getRefreshToken() != null) {
+				setRefreshTokenCookie(response, result.getToken().getRefreshToken());
+			}
+		}
 
 		return ResponseEntity.ok(AuthResponse.from(result.getAuthResult(), result.getToken()));
 	}
 
 	/**
-	 * HTTP 요청을 AuthenticationContext로 변환
+	 * 토큰 갱신 (Refresh Token Rotation)
 	 */
-	private AuthenticationContext buildAuthenticationContext(HttpServletRequest request) {
-		String ipAddress = extractClientIp(request);
-		String userAgent = request.getHeader("User-Agent") != null 
-				? request.getHeader("User-Agent") 
-				: "Unknown";
-		String channel = determineChannel(request);
+	@PostMapping("/refresh")
+	public ResponseEntity<AuthResponse> refresh(
+			@CookieValue(value = REFRESH_TOKEN_COOKIE, required = false) String refreshToken,
+			HttpServletRequest request,
+			HttpServletResponse response) {
+
+		log.info("Token refresh request");
+
+		if (refreshToken == null || refreshToken.isEmpty()) {
+			return ResponseEntity.status(401).build();
+		}
+
+		// 1. 서비스 호출
+		AuthenticationApplicationService.AuthenticationResult result = authenticationService.refreshToken(
+				refreshToken,
+				createAuthContext(request).getDevice());
+
+		// 2. 결과 처리
+		if (result.getAuthResult().isAuthenticated()) {
+			if (result.getToken() != null && result.getToken().getRefreshToken() != null) {
+				setRefreshTokenCookie(response, result.getToken().getRefreshToken());
+			}
+		} else {
+			return ResponseEntity.status(401).body(AuthResponse.from(result.getAuthResult(), null));
+		}
+
+		return ResponseEntity.ok(AuthResponse.from(result.getAuthResult(), result.getToken()));
+	}
+
+	/**
+	 * 로그아웃
+	 */
+	@PostMapping("/logout")
+	public ResponseEntity<Void> logout(
+			@CookieValue(value = REFRESH_TOKEN_COOKIE, required = false) String refreshToken,
+			HttpServletResponse response) {
+
+		log.info("Logout request");
+
+		authenticationService.logout(refreshToken);
+		deleteRefreshTokenCookie(response);
+
+		return ResponseEntity.noContent().build();
+	}
+
+	private AuthenticationContext createAuthContext(HttpServletRequest request) {
+		String ipAddress = request.getRemoteAddr();
+		String userAgent = request.getHeader("User-Agent");
+		String channel = request.getHeader("X-Channel");
+		if (channel == null)
+			channel = "WEB";
 
 		return new AuthenticationContext(
 				ipAddress,
-				userAgent,
+				userAgent != null ? userAgent : "Unknown",
 				channel,
 				Instant.now(),
-				false  // TODO: 실제 위험 감지 로직
-		);
+				false);
 	}
 
-	private String extractClientIp(HttpServletRequest request) {
-		String xForwardedFor = request.getHeader("X-Forwarded-For");
-		if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-			return xForwardedFor.split(",")[0];
-		}
-		return request.getRemoteAddr();
+	private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
+		ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE, refreshToken)
+				.httpOnly(true)
+				.secure(true) // Production에서는 true
+				.path("/")
+				.maxAge(7 * 24 * 60 * 60) // 7일
+				.sameSite("Strict")
+				.build();
+		response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 	}
 
-	private String determineChannel(HttpServletRequest request) {
-		String userAgent = request.getHeader("User-Agent") != null 
-				? request.getHeader("User-Agent").toLowerCase() 
-				: "";
-		
-		if (userAgent.contains("mobile") || userAgent.contains("android") || userAgent.contains("iphone")) {
-			return "MOBILE_APP";
-		}
-		return "WEB";
+	private void deleteRefreshTokenCookie(HttpServletResponse response) {
+		ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE, "")
+				.httpOnly(true)
+				.path("/")
+				.maxAge(0)
+				.build();
+		response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 	}
 }

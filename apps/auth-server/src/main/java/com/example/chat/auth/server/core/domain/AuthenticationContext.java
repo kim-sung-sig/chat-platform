@@ -3,6 +3,8 @@ package com.example.chat.auth.server.core.domain;
 import java.time.Instant;
 import java.util.Objects;
 
+import com.example.chat.auth.server.core.domain.credential.Device;
+
 /**
  * 로그인 시도 한 번의 맥락
  * - IP 주소
@@ -17,12 +19,12 @@ public class AuthenticationContext {
 
     private final String ipAddress;
     private final String userAgent;
-    private final String channel;        // WEB, MOBILE_APP, etc
+    private final String channel; // WEB, MOBILE_APP, etc
     private final Instant attemptTime;
     private final boolean suspiciousActivity;
 
     public AuthenticationContext(String ipAddress, String userAgent, String channel,
-                               Instant attemptTime, boolean suspiciousActivity) {
+            Instant attemptTime, boolean suspiciousActivity) {
         this.ipAddress = Objects.requireNonNull(ipAddress, "ipAddress cannot be null");
         this.userAgent = Objects.requireNonNull(userAgent, "userAgent cannot be null");
         this.channel = Objects.requireNonNull(channel, "channel cannot be null");
@@ -48,6 +50,14 @@ public class AuthenticationContext {
 
     public boolean isSuspiciousActivity() {
         return suspiciousActivity;
+    }
+
+    public Device getDevice() {
+        return Device.builder()
+                .deviceId(ipAddress) // 임시로 IP를 ID로 사용하거나, UserAgent 파싱 필요
+                .platform(channel)
+                .browser(userAgent)
+                .build();
     }
 
     @Override

@@ -9,8 +9,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.example.chat.auth.server.core.domain.AuthLevel;
+import com.example.chat.auth.server.core.domain.RefreshToken;
 import com.example.chat.auth.server.core.domain.Token;
 import com.example.chat.auth.server.core.domain.TokenType;
+import com.example.chat.auth.server.core.domain.credential.Device;
+import com.example.chat.auth.server.core.repository.RefreshTokenRepository;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
@@ -33,25 +36,28 @@ public class TokenService {
     private final long accessTokenTtlMinutes;
     private final long refreshTokenTtlDays;
     private final long mfaTokenTtlMinutes;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     public TokenService(
             @Value("${auth.jwt.secret:your-256-bit-secret-key-change-this-in-production-environment}") String secretKey,
             @Value("${auth.jwt.access-ttl-minutes:15}") long accessTokenTtlMinutes,
             @Value("${auth.jwt.refresh-ttl-days:7}") long refreshTokenTtlDays,
-            @Value("${auth.jwt.mfa-ttl-minutes:5}") long mfaTokenTtlMinutes) {
+            @Value("${auth.jwt.mfa-ttl-minutes:5}") long mfaTokenTtlMinutes,
+            RefreshTokenRepository refreshTokenRepository) {
         this.secretKey = secretKey;
         this.accessTokenTtlMinutes = accessTokenTtlMinutes;
         this.refreshTokenTtlDays = refreshTokenTtlDays;
         this.mfaTokenTtlMinutes = mfaTokenTtlMinutes;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     /**
      * 완전 인증 토큰 생성 (FULL_ACCESS)
      * - AuthLevel에 따라 TTL 차등 적용
      */
-    public Token createFullAccessToken(UUID principalId, String identifier, AuthLevel authLevel) {
+    public Token createFullAccessToken(UUID principalId, String identifier, AuthLevel authLevel, Device device) {
         Instant now = Instant.now();
-        
+
         // AuthLevel에 따른 TTL 조정
         long ttlMinutes = calculateTtl(authLevel);
         Instant expiresAt = now.plus(ttlMinutes, ChronoUnit.MINUTES);
@@ -59,19 +65,30 @@ public class TokenService {
 
         // Access Token
         String accessToken = buildJwt(principalId, identifier, authLevel, TokenType.FULL_ACCESS, expiresAt);
-        
+
         // Refresh Token (AuthLevel 정보도 포함)
-        String refreshToken = buildJwt(principalId, identifier, authLevel, TokenType.FULL_ACCESS, refreshExpiresAt);
+        String refreshTokenVal = buildJwt(principalId, identifier, authLevel, TokenType.FULL_ACCESS, refreshExpiresAt);
+
+        // Save Refresh Token to repository
+        RefreshToken refreshToken = RefreshToken.builder()
+                .id(UUID.randomUUID())
+                .principalId(principalId)
+                .device(device)
+                .tokenValue(refreshTokenVal)
+                .expiryAt(refreshExpiresAt)
+                .createdAt(now)
+                .lastUsedAt(now)
+                .build();
+        refreshTokenRepository.save(refreshToken);
 
         return new Token(
                 accessToken,
-                refreshToken,
+                refreshTokenVal,
                 expiresAt,
                 refreshExpiresAt,
                 principalId,
                 authLevel,
-                TokenType.FULL_ACCESS
-        );
+                TokenType.FULL_ACCESS);
     }
 
     /**
@@ -80,8 +97,8 @@ public class TokenService {
      * - refresh token 없음
      * - MFA 완료 API만 접근 가능
      */
-    public Token createMfaPendingToken(UUID principalId, String identifier, 
-                                      AuthLevel currentLevel, String mfaSessionId) {
+    public Token createMfaPendingToken(UUID principalId, String identifier,
+            AuthLevel currentLevel, String mfaSessionId) {
         Instant now = Instant.now();
         Instant expiresAt = now.plus(mfaTokenTtlMinutes, ChronoUnit.MINUTES);
 
@@ -89,20 +106,19 @@ public class TokenService {
 
         return new Token(
                 accessToken,
-                null,  // MFA 토큰은 refresh 불가
+                null, // MFA 토큰은 refresh 불가
                 expiresAt,
                 null,
                 principalId,
                 currentLevel,
-                TokenType.MFA_PENDING
-        );
+                TokenType.MFA_PENDING);
     }
 
     /**
      * JWT 생성
      */
-    private String buildJwt(UUID principalId, String identifier, AuthLevel authLevel, 
-                           TokenType tokenType, Instant expiresAt) {
+    private String buildJwt(UUID principalId, String identifier, AuthLevel authLevel,
+            TokenType tokenType, Instant expiresAt) {
         try {
             JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                     .subject(principalId.toString())
@@ -117,8 +133,7 @@ public class TokenService {
 
             SignedJWT signedJWT = new SignedJWT(
                     new JWSHeader(JWSAlgorithm.HS256),
-                    claimsSet
-            );
+                    claimsSet);
 
             signedJWT.sign(new MACSigner(secretKey.getBytes()));
             return signedJWT.serialize();
@@ -132,7 +147,7 @@ public class TokenService {
      * MFA 토큰 생성 (특별한 claim 추가)
      */
     private String buildMfaJwt(UUID principalId, String identifier, AuthLevel authLevel,
-                              String mfaSessionId, Instant expiresAt) {
+            String mfaSessionId, Instant expiresAt) {
         try {
             JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                     .subject(principalId.toString())
@@ -140,8 +155,8 @@ public class TokenService {
                     .claim("auth_level", authLevel.name())
                     .claim("auth_level_value", authLevel.getLevel())
                     .claim("token_type", TokenType.MFA_PENDING.name())
-                    .claim("mfa_session_id", mfaSessionId)  // MFA 세션 ID 포함
-                    .claim("mfa_role", "MFA_USER")          // MFA 전용 role
+                    .claim("mfa_session_id", mfaSessionId) // MFA 세션 ID 포함
+                    .claim("mfa_role", "MFA_USER") // MFA 전용 role
                     .issueTime(new Date())
                     .expirationTime(Date.from(expiresAt))
                     .jwtID(UUID.randomUUID().toString())
@@ -149,8 +164,7 @@ public class TokenService {
 
             SignedJWT signedJWT = new SignedJWT(
                     new JWSHeader(JWSAlgorithm.HS256),
-                    claimsSet
-            );
+                    claimsSet);
 
             signedJWT.sign(new MACSigner(secretKey.getBytes()));
             return signedJWT.serialize();
@@ -168,9 +182,9 @@ public class TokenService {
      */
     private long calculateTtl(AuthLevel authLevel) {
         return switch (authLevel) {
-            case HIGH -> accessTokenTtlMinutes * 4;    // 60분
-            case MEDIUM -> accessTokenTtlMinutes * 2;  // 30분
-            case LOW -> accessTokenTtlMinutes;         // 15분
+            case HIGH -> accessTokenTtlMinutes * 4; // 60분
+            case MEDIUM -> accessTokenTtlMinutes * 2; // 30분
+            case LOW -> accessTokenTtlMinutes; // 15분
         };
     }
 
@@ -180,7 +194,7 @@ public class TokenService {
     public JWTClaimsSet verify(String token) {
         try {
             SignedJWT signedJWT = SignedJWT.parse(token);
-            
+
             // 서명 검증
             JWSVerifier verifier = new MACVerifier(secretKey.getBytes());
             if (!signedJWT.verify(verifier)) {
@@ -217,5 +231,36 @@ public class TokenService {
         JWTClaimsSet claims = verify(token);
         String typeName = (String) claims.getClaim("token_type");
         return TokenType.valueOf(typeName);
+    }
+
+    /**
+     * 리프레시 토큰을 이용한 토큰 갱신
+     */
+    public Token rotateRefreshToken(String refreshTokenVal, Device device) {
+        // 1. 토큰 검증 및 파싱 (Stateless 검증)
+        JWTClaimsSet claims = verify(refreshTokenVal);
+
+        // 2. 저장소 조회 (Stateful 검증)
+        RefreshToken refreshToken = refreshTokenRepository.findByTokenValue(refreshTokenVal)
+                .orElseThrow(() -> new RuntimeException("Refresh token not found"));
+
+        // 3. 만료 및 디바이스 확인
+        if (refreshToken.isExpired()) {
+            throw new RuntimeException("Refresh token expired");
+        }
+        if (!refreshToken.getDevice().isSameDevice(device)) {
+            throw new RuntimeException("Device mismatch");
+        }
+
+        // 4. 새로운 토큰 발급
+        UUID principalId = refreshToken.getPrincipalId();
+        String identifier = (String) claims.getClaim("identifier");
+        AuthLevel authLevel = AuthLevel.valueOf((String) claims.getClaim("auth_level"));
+
+        // 기존 토큰 삭제 (Rotation)
+        refreshTokenRepository.deleteByTokenValue(refreshTokenVal);
+
+        // 새로운 토큰 생성 및 저장
+        return createFullAccessToken(principalId, identifier, authLevel, device);
     }
 }

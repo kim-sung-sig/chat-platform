@@ -9,18 +9,18 @@ import lombok.experimental.UtilityClass;
 public final class HeaderConstants {
 
     // Authorization
-    final String AUTHORIZATION = "Authorization";
-    final String BEARER_PREFIX = "Bearer ";
+    public final String AUTHORIZATION = "Authorization";
+    public final String BEARER_PREFIX = "Bearer ";
 
     // Custom Headers
-    final String X_USER_ID = "X-User-Id";
-    final String X_TENANT_ID = "X-Tenant-Id";
-    final String X_REQUEST_ID = "X-Request-Id";
-    final String X_TRACE_ID = "X-Trace-Id";
-    final String X_SPAN_ID = "X-Span-Id";
+    public final String X_USER_ID = "X-User-Id";
+    public final String X_TENANT_ID = "X-Tenant-Id";
+    public final String X_REQUEST_ID = "X-Request-Id";
+    public final String X_TRACE_ID = "X-Trace-Id";
+    public final String X_SPAN_ID = "X-Span-Id";
 
     // Content Type
-    final String CONTENT_TYPE = "Content-Type";
-    final String APPLICATION_JSON = "application/json";
-    final String APPLICATION_JSON_UTF8 = "application/json;charset=UTF-8";
+    public final String CONTENT_TYPE = "Content-Type";
+    public final String APPLICATION_JSON = "application/json";
+    public final String APPLICATION_JSON_UTF8 = "application/json;charset=UTF-8";
 }

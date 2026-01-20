@@ -1,21 +1,23 @@
 package com.example.chat.auth.jwt.config;
 
-import com.example.chat.auth.jwt.error.AuthErrorCode;
-import com.example.chat.auth.jwt.error.AuthExceptions;
-import com.example.chat.auth.jwt.error.JwtAuthenticationException;
-import com.example.chat.common.core.exception.ErrorResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import com.example.chat.auth.jwt.error.AuthErrorCode;
+import com.example.chat.auth.jwt.error.AuthExceptions;
+import com.example.chat.auth.jwt.error.JwtAuthenticationException;
+import com.example.chat.common.web.response.ErrorResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * JWT 인증 실패 시 에러 응답을 처리하는 핸들러
@@ -30,8 +32,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 	public void commence(
 			HttpServletRequest request,
 			HttpServletResponse response,
-			AuthenticationException authException
-	) throws IOException {
+			AuthenticationException authException) throws IOException {
 
 		log.error("JWT Authentication failed: {}", authException.getMessage());
 
@@ -46,8 +47,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 		response.setCharacterEncoding(StandardCharsets.UTF_8.name());
 		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
-		ErrorResponse errorResponse = ErrorResponse.of(authEx, request.getRequestURI());
-
+		ErrorResponse errorResponse = ErrorResponse.of(authEx);
 		response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
 	}
 }

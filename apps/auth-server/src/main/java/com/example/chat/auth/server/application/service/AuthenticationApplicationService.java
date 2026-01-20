@@ -11,9 +11,11 @@ import com.example.chat.auth.server.core.domain.Credential;
 import com.example.chat.auth.server.core.domain.MfaRequirement;
 import com.example.chat.auth.server.core.domain.Principal;
 import com.example.chat.auth.server.core.domain.Token;
+import com.example.chat.auth.server.core.domain.credential.Device;
 import com.example.chat.auth.server.core.domain.policy.AuthPolicy;
 import com.example.chat.auth.server.core.repository.CredentialRepository;
 import com.example.chat.auth.server.core.repository.PrincipalRepository;
+import com.example.chat.auth.server.core.repository.RefreshTokenRepository;
 import com.example.chat.auth.server.core.service.CredentialAuthenticationEngine;
 import com.example.chat.auth.server.core.service.TokenService;
 
@@ -37,17 +39,20 @@ public class AuthenticationApplicationService {
     private final CredentialAuthenticationEngine authenticationEngine;
     private final AuthPolicy authPolicy;
     private final TokenService tokenService;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     public AuthenticationApplicationService(PrincipalRepository principalRepository,
-                                          CredentialRepository credentialRepository,
-                                          CredentialAuthenticationEngine authenticationEngine,
-                                          AuthPolicy authPolicy,
-                                          TokenService tokenService) {
+            CredentialRepository credentialRepository,
+            CredentialAuthenticationEngine authenticationEngine,
+            AuthPolicy authPolicy,
+            TokenService tokenService,
+            RefreshTokenRepository refreshTokenRepository) {
         this.principalRepository = principalRepository;
         this.credentialRepository = credentialRepository;
         this.authenticationEngine = authenticationEngine;
         this.authPolicy = authPolicy;
         this.tokenService = tokenService;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     /**
@@ -77,24 +82,24 @@ public class AuthenticationApplicationService {
 
     /**
      * 인증 실행
-     * @param identifier 사용자 식별자 (이메일, 사용자명 등)
-     * @param credentialType 자격증명 타입
+     * 
+     * @param identifier         사용자 식별자 (이메일, 사용자명 등)
+     * @param credentialType     자격증명 타입
      * @param providedCredential 제공된 자격증명
-     * @param context 인증 컨텍스트 (IP, Device, 시간대 등)
+     * @param context            인증 컨텍스트 (IP, Device, 시간대 등)
      * @return 인증 결과 + JWT 토큰
      */
     public AuthenticationResult authenticate(String identifier,
-                                            String credentialType,
-                                            Credential providedCredential,
-                                            AuthenticationContext context) {
+            String credentialType,
+            Credential providedCredential,
+            AuthenticationContext context) {
 
         // 1️⃣ Principal 로드
         Optional<Principal> principalOpt = principalRepository.findByIdentifier(identifier);
         if (principalOpt.isEmpty()) {
             return new AuthenticationResult(
                     AuthResult.failure("User not found"),
-                    null
-            );
+                    null);
         }
 
         Principal principal = principalOpt.get();
@@ -103,8 +108,7 @@ public class AuthenticationApplicationService {
         if (!principal.isActive()) {
             return new AuthenticationResult(
                     AuthResult.failure("Account is inactive"),
-                    null
-            );
+                    null);
         }
 
         // 2️⃣ 저장된 자격증명 검색
@@ -114,8 +118,7 @@ public class AuthenticationApplicationService {
         if (storedCredentialOpt.isEmpty()) {
             return new AuthenticationResult(
                     AuthResult.failure("No credentials found for this authentication method"),
-                    null
-            );
+                    null);
         }
 
         Credential storedCredential = storedCredentialOpt.get();
@@ -124,8 +127,7 @@ public class AuthenticationApplicationService {
         AuthResult authResult = authenticationEngine.authenticate(
                 storedCredential,
                 providedCredential,
-                context
-        );
+                context);
 
         if (!authResult.isAuthenticated()) {
             return new AuthenticationResult(authResult, null);
@@ -141,14 +143,12 @@ public class AuthenticationApplicationService {
                     principal.getId(),
                     principal.getIdentifier(),
                     authResult.getAuthLevel(),
-                    mfaSessionId
-            );
+                    mfaSessionId);
 
             AuthResult partialResult = AuthResult.partialSuccess(
                     authResult.getAuthLevel(),
                     authResult.getCompletedCredentials(),
-                    mfaRequirement
-            );
+                    mfaRequirement);
 
             return new AuthenticationResult(partialResult, mfaToken);
         }
@@ -158,9 +158,36 @@ public class AuthenticationApplicationService {
         Token fullAccessToken = tokenService.createFullAccessToken(
                 principal.getId(),
                 principal.getIdentifier(),
-                authResult.getAuthLevel()
-        );
+                authResult.getAuthLevel(),
+                context.getDevice());
 
         return new AuthenticationResult(authResult, fullAccessToken);
+    }
+
+    /**
+     * 토큰 갱신
+     */
+    public AuthenticationResult refreshToken(String refreshTokenVal, Device device) {
+        try {
+            Token newToken = tokenService.rotateRefreshToken(refreshTokenVal, device);
+
+            // AuthResult success 생성 (completedCredentials 정보는 토큰에서 알 수 없으므로 우선 빈 값)
+            AuthResult authResult = AuthResult.success(newToken.getAuthLevel(), java.util.Collections.emptySet());
+
+            return new AuthenticationResult(authResult, newToken);
+        } catch (Exception e) {
+            return new AuthenticationResult(
+                    AuthResult.failure("Invalid refresh token: " + e.getMessage()),
+                    null);
+        }
+    }
+
+    /**
+     * 로그아웃
+     */
+    public void logout(String refreshToken) {
+        if (refreshToken != null && !refreshToken.isEmpty()) {
+            refreshTokenRepository.deleteByTokenValue(refreshToken);
+        }
     }
 }

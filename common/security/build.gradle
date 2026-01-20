@@ -25,6 +25,7 @@ dependencies {
 
 	// Common
 	implementation project(':common:core')
+	implementation project(':common:web')
 
 	// Lombok
 	compileOnly 'org.projectlombok:lombok'

@@ -13,12 +13,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CompleteMfaRequest {
 
-    @NotBlank(message = "sessionId cannot be blank")
-    private String sessionId;  // 1차 인증에서 받은 MFA 세션 ID
+    @NotBlank(message = "mfaToken cannot be blank")
+    private String mfaToken; // MFA_PENDING JWT 토큰
+
+    @NotBlank(message = "mfaSessionId cannot be blank")
+    private String mfaSessionId; // 1차 인증에서 받은 MFA 세션 ID
 
     @NotBlank(message = "mfaMethod cannot be blank")
-    private String mfaMethod;  // OTP, BACKUP_CODE
+    private String mfaMethod; // OTP, BACKUP_CODE
 
-    @NotBlank(message = "code cannot be blank")
-    private String code;       // MFA 코드
+    @NotBlank(message = "otpCode cannot be blank")
+    private String otpCode; // MFA 코드
 }

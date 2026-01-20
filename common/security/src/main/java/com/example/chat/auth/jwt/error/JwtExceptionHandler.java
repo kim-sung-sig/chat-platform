@@ -1,13 +1,14 @@
 package com.example.chat.auth.jwt.error;
 
-import com.example.chat.common.core.exception.ErrorResponse;
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import com.example.chat.common.web.response.ErrorResponse;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * JWT 관련 예외를 처리하는 글로벌 예외 핸들러
@@ -18,32 +19,27 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class JwtExceptionHandler {
 
 	@ExceptionHandler(AuthException.class)
-	public ResponseEntity<ErrorResponse> handleAuthException(AuthException ex, HttpServletRequest request) {
+	public ResponseEntity<ErrorResponse> handleAuthException(AuthException ex) {
 		log.error("Auth exception occurred: {}", ex.getMessage());
 
-		var errorResponse = ErrorResponse.of(ex, request.getRequestURI());
-		return toResponseEntity(errorResponse);
+		ErrorResponse errorResponse = ErrorResponse.of(ex);
+		return errorResponse.toResponseEntity();
 	}
 
 	@ExceptionHandler(AuthenticationException.class)
-	public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex, HttpServletRequest request) {
+	public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
 		log.error("Authentication exception occurred: {}", ex.getMessage());
 
-		var errorResponse = ErrorResponse.of(AuthErrorCode.INVALID_TOKEN, request.getRequestURI());
-		return toResponseEntity(errorResponse);
+		ErrorResponse errorResponse = ErrorResponse.of(AuthErrorCode.INVALID_TOKEN);
+		return errorResponse.toResponseEntity();
 	}
 
 	@ExceptionHandler(AccessDeniedException.class)
-	public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex, HttpServletRequest request) {
+	public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
 		log.error("Access denied exception occurred: {}", ex.getMessage());
 
-		var errorResponse = ErrorResponse.of(AuthErrorCode.INSUFFICIENT_SCOPE, request.getRequestURI());
-		return toResponseEntity(errorResponse);
+		ErrorResponse errorResponse = ErrorResponse.of(AuthErrorCode.INSUFFICIENT_SCOPE);
+		return errorResponse.toResponseEntity();
 	}
 
-	private ResponseEntity<ErrorResponse> toResponseEntity(ErrorResponse errorResponse) {
-		return ResponseEntity
-				.status(errorResponse.getStatus())
-				.body(errorResponse);
-	}
 }
