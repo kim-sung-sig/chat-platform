@@ -3,6 +3,7 @@ package com.example.chat.auth.server.infrastructure.oauth;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -72,7 +73,9 @@ public class KakaoOAuth2Service implements SocialOAuth2Service {
         ResponseEntity<Map<String, Object>> response = restClient.post()
                 .uri("https://kauth.kakao.com/oauth/token")
                 .header(HttpHeaders.CONTENT_TYPE,
-                        new MediaType(MediaType.APPLICATION_FORM_URLENCODED, StandardCharsets.UTF_8).toString())
+                        new MediaType(
+                                Objects.requireNonNull(MediaType.APPLICATION_FORM_URLENCODED),
+                                Objects.requireNonNull(StandardCharsets.UTF_8)).toString())
                 .body(params)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
@@ -115,7 +118,9 @@ public class KakaoOAuth2Service implements SocialOAuth2Service {
                 .uri("https://kapi.kakao.com/v2/user/me")
                 .header(HttpHeaders.AUTHORIZATION, HeaderConstants.BEARER_PREFIX + accessToken)
                 .header(HttpHeaders.CONTENT_TYPE,
-                        new MediaType(MediaType.APPLICATION_FORM_URLENCODED, StandardCharsets.UTF_8).toString())
+                        new MediaType(
+                                Objects.requireNonNull(MediaType.APPLICATION_FORM_URLENCODED),
+                                Objects.requireNonNull(StandardCharsets.UTF_8)).toString())
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
                     log.error(

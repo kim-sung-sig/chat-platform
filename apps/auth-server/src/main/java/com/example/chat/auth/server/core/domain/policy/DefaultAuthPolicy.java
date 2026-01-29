@@ -1,18 +1,20 @@
 package com.example.chat.auth.server.core.domain.policy;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 import com.example.chat.auth.server.core.domain.AuthLevel;
 import com.example.chat.auth.server.core.domain.AuthenticationContext;
 import com.example.chat.auth.server.core.domain.MfaRequirement;
 import com.example.chat.auth.server.core.domain.MfaType;
+import org.springframework.stereotype.Component;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * 기본 인증 정책 구현
  * - 의심스러운 활동이나 특정 채널에서는 MFA 요구
  */
+@Component
 public class DefaultAuthPolicy implements AuthPolicy {
 
     @Override

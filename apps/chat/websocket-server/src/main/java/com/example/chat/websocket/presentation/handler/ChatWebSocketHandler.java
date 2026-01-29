@@ -1,8 +1,9 @@
 package com.example.chat.websocket.presentation.handler;
 
-import java.time.Instant;
-import java.util.Map;
-
+import com.example.chat.websocket.domain.session.ChatRoomSessionManager;
+import com.example.chat.websocket.domain.session.ChatSession;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
@@ -10,11 +11,9 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import com.example.chat.websocket.domain.session.ChatRoomSessionManager;
-import com.example.chat.websocket.domain.session.ChatSession;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.time.Instant;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * WebSocket 핸들러
@@ -41,7 +40,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         // Early return: roomId 없으면 연결 종료
         if (roomId == null) {
             log.warn("RoomId not found in session attributes. Closing connection.");
-            session.close(CloseStatus.BAD_DATA);
+            session.close(Objects.requireNonNull(CloseStatus.BAD_DATA));
             return;
         }
 

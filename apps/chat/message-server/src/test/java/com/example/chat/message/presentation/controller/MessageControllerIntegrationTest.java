@@ -15,6 +15,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Map;
+import java.util.Objects;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -59,8 +60,8 @@ class MessageControllerIntegrationTest extends AbstractIntegrationTest {
 
 		// When & Then
 		mockMvc.perform(post("/api/messages")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(request)))
+				.contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
+				.content(objectMapper.writeValueAsString(request)))
 				.andDo(print())
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.id").exists())
@@ -81,14 +82,13 @@ class MessageControllerIntegrationTest extends AbstractIntegrationTest {
 				.payload(Map.of(
 						"imageUrl", "https://example.com/image.jpg",
 						"width", 1024,
-						"height", 768
-				))
+						"height", 768))
 				.build();
 
 		// When & Then
 		mockMvc.perform(post("/api/messages")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(request)))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
 				.andDo(print())
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.messageType").value("IMAGE"));
@@ -106,8 +106,8 @@ class MessageControllerIntegrationTest extends AbstractIntegrationTest {
 				.build();
 
 		String originalResponse = mockMvc.perform(post("/api/messages")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(originalRequest)))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(originalRequest)))
 				.andReturn()
 				.getResponse()
 				.getContentAsString();
@@ -123,8 +123,8 @@ class MessageControllerIntegrationTest extends AbstractIntegrationTest {
 
 		// When & Then
 		mockMvc.perform(post("/api/messages/reply")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(replyRequest)))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(replyRequest)))
 				.andDo(print())
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.replyToMessageId").value(originalMessage.getId()));
@@ -143,8 +143,8 @@ class MessageControllerIntegrationTest extends AbstractIntegrationTest {
 
 		// When & Then
 		mockMvc.perform(post("/api/messages")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(request)))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
 				.andDo(print())
 				.andExpect(status().isBadRequest());
 	}
@@ -161,8 +161,8 @@ class MessageControllerIntegrationTest extends AbstractIntegrationTest {
 
 		// When & Then
 		mockMvc.perform(post("/api/messages")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(request)))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
 				.andDo(print())
 				.andExpect(status().isBadRequest());
 	}
@@ -179,8 +179,8 @@ class MessageControllerIntegrationTest extends AbstractIntegrationTest {
 
 		// When & Then: 인증 없이 요청
 		mockMvc.perform(post("/api/messages")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(request)))
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
 				.andDo(print())
 				.andExpect(status().isUnauthorized());
 	}

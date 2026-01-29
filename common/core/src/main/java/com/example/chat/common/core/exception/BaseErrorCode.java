@@ -11,6 +11,11 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum BaseErrorCode implements ErrorCode {
 
+	// 2xx Success
+	SUCCESS("CMN-200", "요청이 성공적으로 처리되었습니다", 200),
+	CREATED("CMN-201", "리소스가 성공적으로 생성되었습니다", 201),
+	NO_CONTENT("CMN-204", "처리할 내용이 없습니다", 204),
+
 	// 4xx Client Errors
 	BAD_REQUEST("CMN-400", "잘못된 요청입니다", 400),
 	UNAUTHORIZED("CMN-401", "인증이 필요합니다", 401),

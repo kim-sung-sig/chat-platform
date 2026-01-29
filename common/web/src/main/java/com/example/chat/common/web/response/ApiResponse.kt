@@ -1,34 +1,31 @@
-package com.example.chat.common.web.response;
+package com.example.chat.common.web.response
 
-import org.springframework.util.StringUtils;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude
+import org.springframework.http.ResponseEntity
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record ApiResponse<T>(
-    int status,
-    String message,
-    T data
+data class ApiResponse<T>(
+	val status: Int,
+	val message: String?,
+	val data: T?
 ) {
-    public ApiResponse {
-        if (!StringUtils.hasText(message)) {
-            message = switch (status) {
-                case 200 -> "OK";
-                case 201 -> "Created";
-                default -> "Unknown Status";
-            };
-        }
-    }
+	companion object {
+		fun <T> ok(data: T?) =
+			ApiResponse<T?>(status = 200, message = "OK", data = data)
 
-    public static ApiResponse<Void> ok() {
-        return ok(null);
-    }
+		fun ok(): ApiResponse<Void?> =
+			ok<Void?>(null)
 
-    public static <T> ApiResponse<T> ok(T data) {
-        return new ApiResponse<>(
-            200,
-            "OK",
-            data
-        );
-    }
+		fun <T> created(data: T?) =
+			ApiResponse<T?>(status = 201, message = "Created", data = data)
+
+		fun created(): ApiResponse<Void?> =
+			created<Void?>(null)
+
+		fun noContent() =
+			 ApiResponse<Void?>(status = 204, message = "No Content", data = null)
+	}
+
+	fun toResponseEntity(): ResponseEntity<ApiResponse<T>> =
+		ResponseEntity.status(this.status).body(this)
 }
