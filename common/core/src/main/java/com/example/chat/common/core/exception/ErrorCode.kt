@@ -1,12 +1,10 @@
-package com.example.chat.common.core.exception;
+package com.example.chat.common.core.exception
 
 /**
  * 에러 코드 인터페이스
  */
-public interface ErrorCode {
-	String getCode();
-
-	String getMessage();
-
-	int getStatus();
+interface ErrorCode {
+	val code: String
+	val message: String
+	val status: Int
 }

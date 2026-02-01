@@ -1,7 +1,7 @@
-package com.example.chat.common.core.exception;
+package com.example.chat.common.core.exception
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.AllArgsConstructor
+import lombok.Getter
 
 /**
  * 기본 에러 코드
@@ -9,7 +9,11 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
-public enum BaseErrorCode implements ErrorCode {
+enum class BaseErrorCode(
+	override val code: String,
+	override val message: String,
+	override val status: Int
+) : ErrorCode {
 
 	// 2xx Success
 	SUCCESS("CMN-200", "요청이 성공적으로 처리되었습니다", 200),
@@ -32,10 +36,4 @@ public enum BaseErrorCode implements ErrorCode {
 	// Validation Errors
 	VALIDATION_ERROR("CMN-VAL-001", "입력값 검증에 실패했습니다", 400),
 
-	// Business Logic Errors
-	BUSINESS_LOGIC_ERROR("CMN-BIZ-001", "비즈니스 로직 오류가 발생했습니다", 400);
-
-	private final String code;
-	private final String message;
-	private final int status;
 }

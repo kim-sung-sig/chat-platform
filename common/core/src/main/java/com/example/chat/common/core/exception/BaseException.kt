@@ -1,48 +1,7 @@
-package com.example.chat.common.core.exception;
+package com.example.chat.common.core.exception
 
-import lombok.Getter;
-
-@Getter
-public class BaseException extends RuntimeException {
-
-	private final ErrorCode errorCode;
-	private final Object[] args;
-
-	public BaseException(ErrorCode errorCode) {
-		super(errorCode.getMessage());
-		this.errorCode = errorCode;
-		this.args = null;
-	}
-
-	public BaseException(ErrorCode errorCode, String message) {
-		super(message);
-		this.errorCode = errorCode;
-		this.args = null;
-	}
-
-	public BaseException(ErrorCode errorCode, Throwable cause) {
-		super(errorCode.getMessage(), cause);
-		this.errorCode = errorCode;
-		this.args = null;
-	}
-
-	public BaseException(ErrorCode errorCode, String message, Throwable cause) {
-		super(message, cause);
-		this.errorCode = errorCode;
-		this.args = null;
-	}
-
-	public BaseException(ErrorCode errorCode, Object... args) {
-		super(errorCode.getMessage());
-		this.errorCode = errorCode;
-		this.args = args;
-	}
-
-	public String getCode() {
-		return errorCode.getCode();
-	}
-
-	public int getStatus() {
-		return errorCode.getStatus();
-	}
-}
+open class BaseException(
+	val errorCode: ErrorCode,
+	val args: Array<out Any?>? = null,
+	cause: Throwable? = null
+) : RuntimeException(errorCode.message, cause)

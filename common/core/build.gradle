@@ -1,5 +1,10 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
 	id 'java-library'
+	id 'org.jetbrains.kotlin.jvm'
+	id 'org.jetbrains.kotlin.plugin.spring'
 }
 
 group = 'com.example.chat'
@@ -16,17 +21,12 @@ repositories {
 }
 
 dependencies {
-	// Lombok
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
+	implementation 'org.jetbrains.kotlin:kotlin-stdlib'
+	implementation 'org.jetbrains.kotlin:kotlin-reflect'
+	implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
 
-	// jackson (JSON 처리)
-	implementation 'com.fasterxml.jackson.core:jackson-databind'
-	implementation 'com.fasterxml.jackson.core:jackson-annotations'
-	implementation 'com.fasterxml.jackson.core:jackson-core'
-
-	// SLF4J (로깅)
-	api 'org.slf4j:slf4j-api'
+	// kotlin-logging
+	implementation 'io.github.oshai:kotlin-logging-jvm:5.1.0'
 
 	// Test
 	testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -35,5 +35,12 @@ dependencies {
 
 test {
 	useJUnitPlatform()
+}
+
+tasks.withType(KotlinCompile).configureEach {
+	compilerOptions {
+		jvmTarget.set(JvmTarget.JVM_21)
+		freeCompilerArgs.add("-Xjsr305=strict")
+	}
 }
 
