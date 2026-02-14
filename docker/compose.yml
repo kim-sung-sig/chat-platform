@@ -71,13 +71,15 @@ services:
 
   ms-redis:
     image: redis:7.4.1
+    container_name: redis
     restart: unless-stopped
     ports:
       - "16379:6379"
     volumes:
       - ./data/redis:/data
+    command: redis-server --requirepass ${REDIS_PASSWORD:-dev_password} --appendonly yes
     environment:
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-dev_password}
 
   ms-kafka:
     image: apache/kafka:latest
@@ -115,12 +117,14 @@ services:
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "ms-kafka:9092"
 
   ms-redis-ui:
-    image: rediscommander/redis-commander:latest
+    image: redis/redisinsight:latest
     container_name: redis-ui
     restart: unless-stopped
     depends_on:
       - ms-redis
     ports:
-      - "18083:8081"
+      - "18083:5540"
+    volumes:
+      - ./data/redisinsight:/data
     environment:
-      REDIS_HOSTS: "local:ms-redis:6379"
+      - REDIS_HOSTS=local:ms-redis:6379:0:${REDIS_PASSWORD:-dev_password}
