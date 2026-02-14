@@ -102,7 +102,7 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
     volumes:
-      - ./data/kafka:/var/lib/kafka/data
+      - ./data/kafka:/tmp/kafka-logs
 
   ms-kafka-ui:
     image: provectuslabs/kafka-ui:latest
