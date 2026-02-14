@@ -37,3 +37,20 @@ enum class BaseErrorCode(
 	VALIDATION_ERROR("CMN-VAL-001", "입력값 검증에 실패했습니다", 400),
 
 }
+
+fun main() {
+	val errorCode = BaseErrorCode.BAD_REQUEST
+	println("Code: ${errorCode.code}, Message: ${errorCode.message}, Status: ${errorCode.status}")
+
+	val error = BaseException(
+		errorCode = errorCode,
+		args = arrayOf("Invalid parameter 'id'"),
+		cause = IllegalArgumentException("ID must be a positive integer")
+	)
+
+	println(error.errorCode)
+	println(error.errorCode.message)
+	println(error.errorCode.code)
+	println(error.errorCode.status)
+	println(error.message)
+}

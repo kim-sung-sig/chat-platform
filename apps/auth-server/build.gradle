@@ -1,5 +1,7 @@
 plugins {
-	id 'java'
+	id 'org.jetbrains.kotlin.jvm'
+	id 'org.jetbrains.kotlin.plugin.spring'
+	id 'org.jetbrains.kotlin.plugin.jpa'
 	id 'org.springframework.boot'
 	id 'io.spring.dependency-management'
 }
@@ -9,6 +11,11 @@ dependencies {
 	implementation project(':common:core')
 	implementation project(':common:logging')
 	implementation project(':common:web')
+
+	// Kotlin
+	implementation 'org.jetbrains.kotlin:kotlin-reflect'
+	implementation 'org.jetbrains.kotlin:kotlin-stdlib'
+	implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
 
 	// Web
 	implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -28,15 +35,19 @@ dependencies {
 	// JSON - Jackson (CredentialMapper에서 사용)
 	implementation 'com.fasterxml.jackson.core:jackson-databind'
 
-	// Lombok
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
-
 	// Test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 }
 
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+	compilerOptions {
+		jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+		freeCompilerArgs.add("-Xjsr305=strict")
+	}
+}
+
 tasks.named('test') {
 	useJUnitPlatform()
 }
+

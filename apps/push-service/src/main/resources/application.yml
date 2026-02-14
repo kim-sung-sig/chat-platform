@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: push-service
+  threads:
+    virtual:
+      enabled: true
+
+  datasource:
+    url: jdbc:postgresql://localhost:15432/pushsystem
+    username: dev_user
+    password: dev_password
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  kafka:
+    bootstrap-servers: localhost:29092
+    consumer:
+      group-id: push-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+push:
+  scheduler:
+    delay: 5000
+
+server:
+  port: 18081
+
+logging:
+  level:
+    com.example.chat.push: DEBUG
+    org.springframework.kafka: INFO

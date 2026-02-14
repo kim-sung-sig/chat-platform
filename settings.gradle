@@ -9,6 +9,7 @@ rootProject.name = 'chat-platform'
 // Apps - 실행 가능한 애플리케이션
 // ============================================
 include("apps:auth-server")
+include("apps:push-service")
 include("apps:chat:message-server")
 include("apps:chat:system-server")
 include("apps:chat:websocket-server")
