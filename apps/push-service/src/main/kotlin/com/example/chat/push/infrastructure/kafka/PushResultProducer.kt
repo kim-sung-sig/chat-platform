@@ -9,10 +9,9 @@ private val logger = KotlinLogging.logger {}
 
 @Component
 class PushResultProducer(
-    private val kafkaTemplate: KafkaTemplate<String, String>,
-    private val objectMapper: ObjectMapper
+        private val kafkaTemplate: KafkaTemplate<String, String>,
+        private val objectMapper: ObjectMapper
 ) {
-
     fun sendResult(result: PushResultEvent) {
         val topic = "push-result-events"
         val message = objectMapper.writeValueAsString(result)
@@ -22,8 +21,8 @@ class PushResultProducer(
 }
 
 data class PushResultEvent(
-    val pushMessageId: Long,
-    val targetUserId: String,
-    val status: String,
-    val errorMessage: String? = null
+        val pushMessageId: Long,
+        val targetUserId: String,
+        val status: String,
+        val errorMessage: String? = null
 )

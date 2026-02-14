@@ -7,18 +7,16 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class PushMessageService(
-    private val pushMessageRepository: PushMessageRepository
-) {
-
+class PushMessageService(private val pushMessageRepository: PushMessageRepository) {
     @Transactional
     fun savePushMessage(event: NotificationEvent): PushMessage {
-        val pushMessage = PushMessage(
-            targetUserId = event.targetUserId,
-            title = event.title,
-            content = event.content,
-            pushType = event.pushType
-        )
+        val pushMessage =
+                PushMessage(
+                        targetUserId = event.targetUserId,
+                        title = event.title,
+                        content = event.content,
+                        pushType = event.pushType
+                )
         return pushMessageRepository.save(pushMessage)
     }
 }

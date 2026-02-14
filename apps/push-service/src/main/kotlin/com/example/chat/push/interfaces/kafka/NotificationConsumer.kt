@@ -10,10 +10,9 @@ private val logger = KotlinLogging.logger {}
 
 @Component
 class NotificationConsumer(
-    private val pushMessageService: PushMessageService,
-    private val objectMapper: ObjectMapper
+        private val pushMessageService: PushMessageService,
+        private val objectMapper: ObjectMapper
 ) {
-
     @KafkaListener(topics = ["notification-events"], groupId = "push-service-group")
     fun consume(message: String) {
         logger.info { "Consumed notification event: $message" }
@@ -27,8 +26,8 @@ class NotificationConsumer(
 }
 
 data class NotificationEvent(
-    val targetUserId: String,
-    val title: String,
-    val content: String,
-    val pushType: String
+        val targetUserId: String,
+        val title: String,
+        val content: String,
+        val pushType: String
 )

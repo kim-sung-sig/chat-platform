@@ -1,7 +1,8 @@
-
 package com.example.chat.auth.server.api.dto.factory
 
 import com.example.chat.auth.server.api.dto.request.AuthenticateRequest
+import com.example.chat.auth.server.common.exception.AuthException
+import com.example.chat.auth.server.common.exception.AuthServerErrorCode
 import com.example.chat.auth.server.core.domain.Credential
 import com.example.chat.auth.server.core.domain.credential.OtpCredential
 import com.example.chat.auth.server.core.domain.credential.PasswordCredential
@@ -9,24 +10,25 @@ import com.example.chat.auth.server.core.domain.credential.SocialCredential
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.stereotype.Component
 
-/**
- * Credential Factory
- */
+/** Credential Factory */
 @Component
 class CredentialFactory {
-
     private val objectMapper = ObjectMapper()
 
     fun createFromRequest(request: AuthenticateRequest): Credential {
-        val type = request.credentialType ?: throw IllegalArgumentException("credentialType is required")
-        val data = request.credentialData ?: throw IllegalArgumentException("credentialData is required")
+        val type =
+                request.credentialType
+                        ?: throw AuthException(AuthServerErrorCode.INVALID_CREDENTIALS)
+        val data =
+                request.credentialData
+                        ?: throw AuthException(AuthServerErrorCode.INVALID_CREDENTIALS)
 
         return when (type.uppercase()) {
             "PASSWORD" -> createPasswordCredential(data)
             "SOCIAL" -> createSocialCredential(data)
             "OTP" -> createOtpCredential(data)
-            "PASSKEY" -> throw UnsupportedOperationException("Passkey not yet implemented")
-            else -> throw IllegalArgumentException("Unknown credential type: $type")
+            "PASSKEY" -> throw AuthException(AuthServerErrorCode.BAD_REQUEST)
+            else -> throw AuthException(AuthServerErrorCode.INVALID_CREDENTIALS)
         }
     }
 
@@ -39,12 +41,17 @@ class CredentialFactory {
             val json = objectMapper.readTree(jsonData)
             val provider = json.get("provider").asText()
             val token = json.get("token").asText()
-            val email = if (json.has("email")) json.get("email").asText() else null
+            val email =
+                    if (json.has("email")) {
+                        json.get("email").asText()
+                    } else {
+                        null
+                    }
 
             val socialUserId = extractUserIdFromToken(provider, token)
             SocialCredential(provider, socialUserId, email, false)
         } catch (e: Exception) {
-            throw IllegalArgumentException("Invalid social credential data", e)
+            throw AuthException(AuthServerErrorCode.INVALID_CREDENTIALS, cause = e)
         }
     }
 
@@ -56,7 +63,7 @@ class CredentialFactory {
 
             OtpCredential(code, deliveryMethod)
         } catch (e: Exception) {
-            throw IllegalArgumentException("Invalid OTP credential data", e)
+            throw AuthException(AuthServerErrorCode.INVALID_CREDENTIALS, cause = e)
         }
     }
 

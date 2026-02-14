@@ -5,5 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface JpaCredentialRepository : JpaRepository<CredentialEntity, UUID> {
     fun findByPrincipalIdAndType(principalId: UUID, type: String): Optional<CredentialEntity>
+
     fun deleteByPrincipalIdAndType(principalId: UUID, type: String)
 }

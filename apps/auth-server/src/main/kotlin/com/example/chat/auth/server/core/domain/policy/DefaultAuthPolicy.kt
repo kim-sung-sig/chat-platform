@@ -9,13 +9,17 @@ import org.springframework.stereotype.Component
 /** 기본 인증 정책 구현 */
 @Component
 class DefaultAuthPolicy : AuthPolicy {
-
     override fun checkMfaRequirement(
             context: AuthenticationContext,
             sessionId: String
     ): MfaRequirement {
         if (context.isSuspiciousActivity) {
-            return MfaRequirement(true, setOf(MfaType.OTP), emptySet(), sessionId)
+            return MfaRequirement(
+                    isRequired = true,
+                    requiredMethods = setOf(MfaType.OTP),
+                    completedMethods = emptySet(),
+                    sessionId = sessionId
+            )
         }
         return MfaRequirement.none(sessionId)
     }

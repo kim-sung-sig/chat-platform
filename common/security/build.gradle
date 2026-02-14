@@ -1,5 +1,7 @@
 plugins {
 	id 'java-library'
+	id 'org.jetbrains.kotlin.jvm'
+	id 'org.jetbrains.kotlin.plugin.spring'
 }
 
 dependencies {
@@ -13,21 +15,27 @@ dependencies {
 	api 'jakarta.servlet:jakarta.servlet-api'
 
 	// ===== 내부 구현 전용 =====
+	// Kotlin
+	implementation 'org.jetbrains.kotlin:kotlin-reflect'
+	implementation 'org.jetbrains.kotlin:kotlin-stdlib'
+
 	// Spring Boot Configuration Properties
 	implementation 'org.springframework.boot:spring-boot'
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
 	// Jackson for JSON processing
 	implementation 'com.fasterxml.jackson.core:jackson-databind'
+	implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
 
 	// Logging
 	implementation 'org.slf4j:slf4j-api'
+	implementation 'io.github.oshai:kotlin-logging-jvm:5.1.0'
 
 	// Common
 	implementation project(':common:core')
 	implementation project(':common:web')
 
-	// Lombok
+	// Lombok (Java 호환성을 위해 유지하거나 제거 가능, Kotlin에서는 불필요하지만 기존 Java 코드가 있을 수 있으므로 일단 유지)
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 

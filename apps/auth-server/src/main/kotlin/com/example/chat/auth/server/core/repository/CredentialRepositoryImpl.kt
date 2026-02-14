@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional
 @Repository
 class CredentialRepositoryImpl(private val jpaRepository: JpaCredentialRepository) :
         CredentialRepository {
-
     override fun findByPrincipalId(
             principalId: UUID,
             credentialType: String

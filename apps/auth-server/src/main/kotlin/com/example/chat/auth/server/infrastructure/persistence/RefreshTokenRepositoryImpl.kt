@@ -1,20 +1,16 @@
-
 package com.example.chat.auth.server.infrastructure.persistence
 
 import com.example.chat.auth.server.core.domain.RefreshToken
 import com.example.chat.auth.server.core.repository.RefreshTokenRepository
+import java.util.*
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
 
 @Repository
-class RefreshTokenRepositoryImpl(
-    private val jpaRepository: JpaRefreshTokenRepository
-) : RefreshTokenRepository {
-
+class RefreshTokenRepositoryImpl(private val jpaRepository: JpaRefreshTokenRepository) :
+        RefreshTokenRepository {
     override fun findByTokenValue(tokenValue: String): Optional<RefreshToken> {
-        return jpaRepository.findByTokenValue(tokenValue)
-            .map { it.toDomain() }
+        return jpaRepository.findByTokenValue(tokenValue).map { it.toDomain() }
     }
 
     @Transactional

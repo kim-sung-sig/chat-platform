@@ -1,11 +1,6 @@
 package com.example.chat.auth.server.core.domain
 
-/**
- * 인증 시도의 결과
- * - "로그인 성공/실패"가 아니라 "현재 인증 상태"를 나타냄
- * - MFA가 필요할 수도 있음
- * - 여러 자격증명으로 부분 인증될 수도 있음
- */
+/** 인증 시도의 결과 */
 data class AuthResult
 private constructor(
         val isAuthenticated: Boolean,
@@ -20,7 +15,13 @@ private constructor(
 
     companion object {
         fun success(authLevel: AuthLevel, completedCredentials: Set<CredentialType>): AuthResult {
-            return AuthResult(true, authLevel, completedCredentials, null, null)
+            return AuthResult(
+                    isAuthenticated = true,
+                    authLevel = authLevel,
+                    completedCredentials = completedCredentials,
+                    mfaRequirement = null,
+                    failureReason = null
+            )
         }
 
         fun successWithMfa(
@@ -28,7 +29,13 @@ private constructor(
                 completedCredentials: Set<CredentialType>,
                 mfaRequirement: MfaRequirement
         ): AuthResult {
-            return AuthResult(true, authLevel, completedCredentials, mfaRequirement, null)
+            return AuthResult(
+                    isAuthenticated = true,
+                    authLevel = authLevel,
+                    completedCredentials = completedCredentials,
+                    mfaRequirement = mfaRequirement,
+                    failureReason = null
+            )
         }
 
         fun partialSuccess(
@@ -36,11 +43,23 @@ private constructor(
                 completedCredentials: Set<CredentialType>,
                 mfaRequirement: MfaRequirement
         ): AuthResult {
-            return AuthResult(false, authLevel, completedCredentials, mfaRequirement, null)
+            return AuthResult(
+                    isAuthenticated = false,
+                    authLevel = authLevel,
+                    completedCredentials = completedCredentials,
+                    mfaRequirement = mfaRequirement,
+                    failureReason = null
+            )
         }
 
         fun failure(reason: String): AuthResult {
-            return AuthResult(false, null, emptySet(), null, reason)
+            return AuthResult(
+                    isAuthenticated = false,
+                    authLevel = null,
+                    completedCredentials = emptySet(),
+                    mfaRequirement = null,
+                    failureReason = reason
+            )
         }
     }
 }

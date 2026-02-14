@@ -5,7 +5,10 @@ import java.util.*
 
 interface RefreshTokenRepository {
     fun findByTokenValue(tokenValue: String): Optional<RefreshToken>
+
     fun save(refreshToken: RefreshToken)
+
     fun deleteByTokenValue(tokenValue: String)
+
     fun deleteByPrincipalId(principalId: UUID)
 }
