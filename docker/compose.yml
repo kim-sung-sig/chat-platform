@@ -71,7 +71,7 @@ services:
 
   ms-redis:
     image: redis:7.4.1
-    container_name: redis
+    container_name: ms-redis
     restart: unless-stopped
     ports:
       - "16379:6379"
@@ -83,16 +83,16 @@ services:
 
   ms-kafka:
     image: apache/kafka:latest
-    container_name: kafka
+    container_name: ms-kafka
     restart: unless-stopped
     ports:
-      - "29092:9092"
+      - "29092:29092"
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: 'broker,controller'
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@ms-kafka:9093'
-      KAFKA_LISTENERS: 'PLAINTEXT://ms-kafka:9092,CONTROLLER://ms-kafka:9093,PLAINTEXT_HOST://0.0.0.0:9094'
+      KAFKA_LISTENERS: 'PLAINTEXT://ms-kafka:9092,CONTROLLER://ms-kafka:9093,PLAINTEXT_HOST://0.0.0.0:29092'
       KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://ms-kafka:9092,PLAINTEXT_HOST://localhost:29092'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
@@ -118,7 +118,7 @@ services:
 
   ms-redis-ui:
     image: redis/redisinsight:latest
-    container_name: redis-ui
+    container_name: ms-redis-ui
     restart: unless-stopped
     depends_on:
       - ms-redis
