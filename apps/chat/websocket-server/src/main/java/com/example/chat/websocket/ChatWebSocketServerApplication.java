@@ -10,13 +10,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @EnableRabbit
 public class ChatWebSocketServerApplication {
 
-	private static final Logger logger = LoggerFactory.getLogger(ChatWebSocketServerApplication.class);
+	private static final Logger log = LoggerFactory.getLogger(ChatWebSocketServerApplication.class);
 
 	public static void main(String[] args) {
 		// TODO: 프로파일/환경변수 확인 로직 추가 (local/dev/staging/prod)
-		logger.info("Starting ChatWebSocketServerApplication - initializing WebSocket endpoints and connectors");
+		log.info("Starting ChatWebSocketServerApplication - initializing WebSocket endpoints and connectors");
 		SpringApplication.run(ChatWebSocketServerApplication.class, args);
-		logger.info("ChatWebSocketServerApplication started");
+		log.info("ChatWebSocketServerApplication started");
 
 		// TODO: 애플리케이션 종료시 graceful shutdown hooks, health check 등록, 리소스 정리 구현
 	}

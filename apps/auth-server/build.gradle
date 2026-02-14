@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
 	id 'org.jetbrains.kotlin.jvm'
 	id 'org.jetbrains.kotlin.plugin.spring'
@@ -24,6 +27,7 @@ dependencies {
 	implementation 'org.jetbrains.kotlin:kotlin-reflect'
 	implementation 'org.jetbrains.kotlin:kotlin-stdlib'
 	implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
+	implementation 'io.github.oshai:kotlin-logging-jvm:5.1.0'
 
 	// Web
 	implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -48,9 +52,9 @@ dependencies {
 	testImplementation 'org.springframework.security:spring-security-test'
 }
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+tasks.withType(KotlinCompile).configureEach {
 	compilerOptions {
-		jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+		jvmTarget.set(JvmTarget.JVM_21)
 		freeCompilerArgs.add("-Xjsr305=strict")
 	}
 }
@@ -58,4 +62,3 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
 tasks.named('test') {
 	useJUnitPlatform()
 }
-

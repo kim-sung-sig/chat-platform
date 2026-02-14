@@ -18,7 +18,7 @@ import java.util.UUID;
  * TODO: X-Trace-Id 헤더 우선 사용, 샘플링 및 민감정보 마스킹 추가
  */
 public class RequestLoggingFilter extends OncePerRequestFilter {
-	private static final Logger logger = LoggerFactory.getLogger(RequestLoggingFilter.class);
+	private static final Logger log = LoggerFactory.getLogger(RequestLoggingFilter.class);
 	private static final String HEADER_TRACE_ID = "X-Trace-Id";
 
 	@Override
@@ -32,7 +32,7 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
 
 		try {
 			MdcUtil.putTraceId(traceId);
-			logger.debug("[MSG] incoming request method={} uri={} traceId={} generated={}", request.getMethod(), request.getRequestURI(), traceId, generated);
+			log.debug("[MSG] incoming request method={} uri={} traceId={} generated={}", request.getMethod(), request.getRequestURI(), traceId, generated);
 			filterChain.doFilter(request, response);
 		} finally {
 			MdcUtil.removeTraceId();

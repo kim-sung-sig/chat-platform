@@ -1,8 +1,11 @@
 package com.example.chat.auth.server.application.service
 
-import com.example.chat.auth.server.common.exception.AuthErrorCode
 import com.example.chat.auth.server.common.exception.AuthException
-import com.example.chat.auth.server.core.domain.*
+import com.example.chat.auth.server.common.exception.AuthServerErrorCode
+import com.example.chat.auth.server.core.domain.AuthResult
+import com.example.chat.auth.server.core.domain.AuthenticationContext
+import com.example.chat.auth.server.core.domain.Credential
+import com.example.chat.auth.server.core.domain.Token
 import com.example.chat.auth.server.core.domain.credential.Device
 import com.example.chat.auth.server.core.domain.policy.AuthPolicy
 import com.example.chat.auth.server.core.repository.CredentialRepository
@@ -10,8 +13,8 @@ import com.example.chat.auth.server.core.repository.PrincipalRepository
 import com.example.chat.auth.server.core.repository.RefreshTokenRepository
 import com.example.chat.auth.server.core.service.CredentialAuthenticationEngine
 import com.example.chat.auth.server.core.service.TokenService
-import java.util.*
 import org.springframework.stereotype.Service
+import java.util.*
 
 /** 인증 Application Service */
 @Service
@@ -39,24 +42,24 @@ class AuthenticationApplicationService(
         // 1️⃣ Principal 로드
         val principal =
                 principalRepository.findByIdentifier(identifier).orElse(null)
-                        ?: throw AuthException(AuthErrorCode.PRINCIPAL_NOT_FOUND)
+                    ?: throw AuthException(AuthServerErrorCode.PRINCIPAL_NOT_FOUND)
 
         // 활성 계정 확인
         if (!principal.active) {
-            throw AuthException(AuthErrorCode.PRINCIPAL_INACTIVE)
+            throw AuthException(AuthServerErrorCode.PRINCIPAL_INACTIVE)
         }
 
         // 2️⃣ 저장된 자격증명 검색
         val storedCredential =
                 credentialRepository.findByPrincipalId(principal.id, credentialType).orElse(null)
-                        ?: throw AuthException(AuthErrorCode.INVALID_CREDENTIALS)
+                    ?: throw AuthException(AuthServerErrorCode.INVALID_CREDENTIALS)
 
         // 3️⃣ 자격증명 검증
         val authResult =
                 authenticationEngine.authenticate(storedCredential, providedCredential, context)
 
         if (!authResult.isAuthenticated) {
-            throw AuthException(AuthErrorCode.INVALID_CREDENTIALS)
+            throw AuthException(AuthServerErrorCode.INVALID_CREDENTIALS)
         }
 
         // 4️⃣ 정책에 따라 MFA 필요 여부 확인

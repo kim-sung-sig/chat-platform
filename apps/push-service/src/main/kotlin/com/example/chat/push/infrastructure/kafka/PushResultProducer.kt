@@ -5,7 +5,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Component
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 @Component
 class PushResultProducer(
@@ -15,7 +15,7 @@ class PushResultProducer(
     fun sendResult(result: PushResultEvent) {
         val topic = "push-result-events"
         val message = objectMapper.writeValueAsString(result)
-        logger.info { "Publishing push result: $message" }
+        log.info { "Publishing push result: $message" }
         kafkaTemplate.send(topic, message)
     }
 }

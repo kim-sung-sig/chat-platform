@@ -19,12 +19,9 @@ class SseController(
         @PathVariable userId: String
     ): SseEmitter {
         val emitter = SseEmitter(30 * 60 * 1000L) // 30 mins timeout
-        
         // Send initial connect event
         emitter.send(SseEmitter.event().name("connect").data("Connected for user: $userId"))
-        
         sseSessionManager.add(userId, emitter)
-        
         return emitter
     }
 }

@@ -6,21 +6,24 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Component
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 @Component
 class NotificationConsumer(
         private val pushMessageService: PushMessageService,
         private val objectMapper: ObjectMapper
 ) {
-    @KafkaListener(topics = ["notification-events"], groupId = "push-service-group")
+    @KafkaListener(
+        topics = ["notification-events"],
+        groupId = "\${spring.kafka.consumer.group-id:push-service-group}"
+    )
     fun consume(message: String) {
-        logger.info { "Consumed notification event: $message" }
+        log.info { "Consumed notification event: $message" }
         try {
             val event = objectMapper.readValue(message, NotificationEvent::class.java)
             pushMessageService.savePushMessage(event)
         } catch (e: Exception) {
-            logger.error(e) { "Failed to process notification event" }
+            log.error(e) { "Failed to process notification event" }
         }
     }
 }
