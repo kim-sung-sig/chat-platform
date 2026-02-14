@@ -4,6 +4,14 @@ plugins {
 	id 'org.jetbrains.kotlin.plugin.jpa'
 	id 'org.springframework.boot'
 	id 'io.spring.dependency-management'
+	id 'org.jlleitschuh.gradle.ktlint' version '12.1.0'
+}
+
+ktlint {
+	verbose = true
+	outputToConsole = true
+	coloredOutput = true
+	ignoreFailures = true // 일단 포맷팅 수동 적용을 위해 무시는 하되 경고는 보도록 설정
 }
 
 dependencies {
