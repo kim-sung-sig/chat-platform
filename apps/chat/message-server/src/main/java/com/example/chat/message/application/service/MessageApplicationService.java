@@ -14,6 +14,7 @@ import com.example.chat.domain.user.UserRepository;
 import com.example.chat.message.application.dto.request.SendMessageRequest;
 import com.example.chat.message.application.dto.response.MessageResponse;
 import com.example.chat.message.infrastructure.messaging.MessageEventPublisher;
+import com.example.chat.message.infrastructure.kafka.KafkaMessageProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

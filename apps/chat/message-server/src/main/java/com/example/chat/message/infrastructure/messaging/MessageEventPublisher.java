@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class MessageEventPublisher {
 
-	private static final String MESSAGE_SENT_CHANNEL_PREFIX = "chat:message:sent:";
+	private static final String MESSAGE_SENT_CHANNEL_PREFIX = "chat:room:";
 
 	private final RedisTemplate<String, String> redisTemplate;
 	private final ObjectMapper objectMapper;

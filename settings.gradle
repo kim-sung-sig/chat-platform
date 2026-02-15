@@ -14,11 +14,19 @@ include("apps:chat:message-server")
 include("apps:chat:system-server")
 include("apps:chat:websocket-server")
 
+// Gradle Kotlin DSL build files for chat modules
+project(":apps:chat:message-server").buildFileName = "build.gradle.kts"
+project(":apps:chat:system-server").buildFileName = "build.gradle.kts"
+project(":apps:chat:websocket-server").buildFileName = "build.gradle.kts"
+
 // ============================================
 // Apps - Chat 관련 라이브러리 모듈
 // ============================================
 include("apps:chat:libs:chat-domain")
 include("apps:chat:libs:chat-storage")
+
+project(":apps:chat:libs:chat-domain").buildFileName = "build.gradle.kts"
+project(":apps:chat:libs:chat-storage").buildFileName = "build.gradle.kts"
 
 // ============================================
 // Common - 유틸리티 & 횡단 관심사
