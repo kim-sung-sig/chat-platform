@@ -1,7 +1,7 @@
 package com.example.chat.auth.server.core.service
 
-import com.example.chat.auth.server.common.exception.AuthErrorCode
 import com.example.chat.auth.server.common.exception.AuthException
+import com.example.chat.auth.server.common.exception.AuthServerErrorCode
 import com.example.chat.auth.server.core.domain.AuthLevel
 import com.example.chat.auth.server.core.domain.AuthResult
 import com.example.chat.auth.server.core.domain.AuthenticationContext
@@ -24,7 +24,7 @@ class SocialAuthService(socialServicesList: List<SocialOAuth2Service>) {
                     SocialType.valueOf(credential.provider.uppercase())
                 } catch (e: IllegalArgumentException) {
                     throw AuthException(
-                            AuthErrorCode.SOCIAL_AUTH_FAILED,
+                        AuthServerErrorCode.SOCIAL_AUTH_FAILED,
                             arrayOf("Unsupported social provider: ${credential.provider}")
                     )
                 }
@@ -32,7 +32,7 @@ class SocialAuthService(socialServicesList: List<SocialOAuth2Service>) {
         val socialOAuth2Service =
                 socialServices[socialType]
                         ?: throw AuthException(
-                                AuthErrorCode.SOCIAL_AUTH_FAILED,
+                            AuthServerErrorCode.SOCIAL_AUTH_FAILED,
                                 arrayOf("Social service not configured for: $socialType")
                         )
 
@@ -43,7 +43,7 @@ class SocialAuthService(socialServicesList: List<SocialOAuth2Service>) {
                     completedCredentials = setOf(CredentialType.SOCIAL)
             )
         } catch (e: Exception) {
-            throw AuthException(AuthErrorCode.SOCIAL_AUTH_FAILED, cause = e)
+            throw AuthException(AuthServerErrorCode.SOCIAL_AUTH_FAILED, cause = e)
         }
     }
 }

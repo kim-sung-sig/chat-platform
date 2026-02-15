@@ -1,7 +1,7 @@
 package com.example.chat.auth.server.core.service
 
-import com.example.chat.auth.server.common.exception.AuthErrorCode
 import com.example.chat.auth.server.common.exception.AuthException
+import com.example.chat.auth.server.common.exception.AuthServerErrorCode
 import com.example.chat.auth.server.core.domain.AuthLevel
 import com.example.chat.auth.server.core.domain.AuthResult
 import com.example.chat.auth.server.core.domain.AuthenticationContext
@@ -19,7 +19,7 @@ class OtpService {
             context: AuthenticationContext
     ): AuthResult {
         if (providedOtp.code != storedOtp.code) {
-            throw AuthException(AuthErrorCode.INVALID_MFA_CODE)
+            throw AuthException(AuthServerErrorCode.INVALID_MFA_CODE)
         }
 
         return AuthResult.success(

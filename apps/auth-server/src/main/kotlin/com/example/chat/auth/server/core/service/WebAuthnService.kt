@@ -1,14 +1,14 @@
 package com.example.chat.auth.server.core.service
 
-import com.example.chat.auth.server.common.exception.AuthErrorCode
 import com.example.chat.auth.server.common.exception.AuthException
+import com.example.chat.auth.server.common.exception.AuthServerErrorCode
 import com.example.chat.auth.server.core.domain.AuthLevel
 import com.example.chat.auth.server.core.domain.AuthResult
 import com.example.chat.auth.server.core.domain.AuthenticationContext
 import com.example.chat.auth.server.core.domain.CredentialType
 import com.example.chat.auth.server.core.domain.credential.PasskeyCredential
-import java.util.*
 import org.springframework.stereotype.Service
+import java.util.*
 
 /** WebAuthn / Passkey 인증 서비스 */
 @Service
@@ -22,7 +22,7 @@ class WebAuthnService {
             attestationObject: String
     ): AuthResult {
         if (!verifySignature(credential, challenge, clientData, attestationObject)) {
-            throw AuthException(AuthErrorCode.INVALID_CREDENTIALS)
+            throw AuthException(AuthServerErrorCode.INVALID_CREDENTIALS)
         }
 
         return AuthResult.success(

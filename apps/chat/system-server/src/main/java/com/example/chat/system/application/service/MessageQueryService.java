@@ -1,6 +1,6 @@
 package com.example.chat.system.application.service;
 
-import com.example.chat.common.auth.context.UserContextHolder;
+import com.example.chat.auth.core.util.SecurityUtils;
 import com.example.chat.domain.channel.ChannelId;
 import com.example.chat.domain.common.Cursor;
 import com.example.chat.domain.message.Message;
@@ -148,14 +148,10 @@ public class MessageQueryService {
 	 */
 	@SuppressWarnings("unused")
 	private UserId getUserIdFromContext() {
-		com.example.chat.common.auth.model.UserId authUserId = UserContextHolder.getUserId();
+		String userIdStr = SecurityUtils.getCurrentUserId()
+				.orElseThrow(() -> new IllegalStateException("User not authenticated"));
 
-		// Early Return: 인증되지 않은 경우
-		if (authUserId == null) {
-			throw new IllegalStateException("User not authenticated");
-		}
-
-		return UserId.of(String.valueOf(authUserId.getValue()));
+		return UserId.of(userIdStr);
 	}
 
 	/**

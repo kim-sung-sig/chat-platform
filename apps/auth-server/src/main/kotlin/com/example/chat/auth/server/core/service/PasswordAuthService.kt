@@ -1,7 +1,7 @@
 package com.example.chat.auth.server.core.service
 
-import com.example.chat.auth.server.common.exception.AuthErrorCode
 import com.example.chat.auth.server.common.exception.AuthException
+import com.example.chat.auth.server.common.exception.AuthServerErrorCode
 import com.example.chat.auth.server.core.domain.AuthLevel
 import com.example.chat.auth.server.core.domain.AuthResult
 import com.example.chat.auth.server.core.domain.AuthenticationContext
@@ -26,7 +26,7 @@ class PasswordAuthService(private val passwordEncoder: PasswordEncoder) {
                 )
 
         if (!matches) {
-            throw AuthException(AuthErrorCode.INVALID_CREDENTIALS)
+            throw AuthException(AuthServerErrorCode.INVALID_CREDENTIALS)
         }
 
         return AuthResult.success(

@@ -13,6 +13,7 @@ object SecurityUtils {
     /**
      * 현재 인증된 사용자 정보 조회
      */
+    @JvmStatic
     fun getCurrentUser(): Optional<AuthenticatedUser> {
         val authentication = SecurityContextHolder.getContext().authentication ?: return Optional.empty()
         val principal = authentication.principal
@@ -26,6 +27,7 @@ object SecurityUtils {
     /**
      * 현재 사용자 ID 조회
      */
+    @JvmStatic
     fun getCurrentUserId(): Optional<String> {
         return getCurrentUser().map { it.userId }
     }
@@ -33,6 +35,7 @@ object SecurityUtils {
     /**
      * 현재 사용자가 특정 역할을 가지고 있는지 확인
      */
+    @JvmStatic
     fun hasRole(role: String): Boolean {
         return getCurrentUser()
             .map { it.hasRole(role) }
@@ -42,6 +45,7 @@ object SecurityUtils {
     /**
      * 현재 사용자가 관리자인지 확인
      */
+    @JvmStatic
     fun isAdmin(): Boolean {
         return getCurrentUser()
             .map { it.isAdmin() }

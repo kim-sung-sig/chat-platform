@@ -1,23 +1,6 @@
 package com.example.chat.system.service;
 
-import java.time.Instant;
-import java.time.ZoneId;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.quartz.CronScheduleBuilder;
-import org.quartz.JobBuilder;
-import org.quartz.JobDetail;
-import org.quartz.JobKey;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.Trigger;
-import org.quartz.TriggerBuilder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.example.chat.common.auth.context.UserContextHolder;
+import com.example.chat.auth.core.util.SecurityUtils;
 import com.example.chat.domain.channel.Channel;
 import com.example.chat.domain.channel.ChannelId;
 import com.example.chat.domain.message.Message;
@@ -32,9 +15,24 @@ import com.example.chat.domain.user.UserId;
 import com.example.chat.system.dto.request.CreateOneTimeScheduleRequest;
 import com.example.chat.system.dto.request.CreateRecurringScheduleRequest;
 import com.example.chat.system.dto.response.ScheduleResponse;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.quartz.CronScheduleBuilder;
+import org.quartz.JobBuilder;
+import org.quartz.JobDetail;
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.Trigger;
+import org.quartz.TriggerBuilder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 스케줄 서비스
@@ -190,14 +188,10 @@ public class ScheduleService {
 	 * 인증된 사용자 ID 조회 (common-auth 컨텍스트 → domain UserId로 변환)
 	 */
 	private UserId getUserIdFromContext() {
-		com.example.chat.common.auth.model.UserId authUserId = UserContextHolder.getUserId();
+		String userIdStr = SecurityUtils.getCurrentUserId()
+				.orElseThrow(() -> new IllegalStateException("User not authenticated"));
 
-		// Early return: 인증되지 않은 사용자
-		if (authUserId == null) {
-			throw new IllegalStateException("User not authenticated");
-		}
-
-		return UserId.of(String.valueOf(authUserId.getValue()));
+		return UserId.of(userIdStr);
 	}
 
 	/**

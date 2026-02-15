@@ -1,13 +1,16 @@
 package com.example.chat.auth.server.application.service
 
-import com.example.chat.auth.server.common.exception.AuthErrorCode
 import com.example.chat.auth.server.common.exception.AuthException
-import com.example.chat.auth.server.core.domain.*
+import com.example.chat.auth.server.common.exception.AuthServerErrorCode
+import com.example.chat.auth.server.core.domain.AuthLevel
+import com.example.chat.auth.server.core.domain.AuthResult
+import com.example.chat.auth.server.core.domain.CredentialType
+import com.example.chat.auth.server.core.domain.Token
 import com.example.chat.auth.server.core.domain.credential.Device
 import com.example.chat.auth.server.core.service.OtpService
 import com.example.chat.auth.server.core.service.TokenService
-import java.util.*
 import org.springframework.stereotype.Service
+import java.util.*
 
 /** MFA Application Service */
 @Service
@@ -32,12 +35,12 @@ class MfaApplicationService(
         // 세션 아이디 확인
         val tokenSessionId = claims.getClaim("mfa_session_id") as? String
         if (tokenSessionId != mfaSessionId) {
-            throw AuthException(AuthErrorCode.MFA_SESSION_EXPIRED)
+            throw AuthException(AuthServerErrorCode.MFA_SESSION_EXPIRED)
         }
 
         // 2️⃣ OTP 검증 (임시 구현)
         if ("123456" != code) {
-            throw AuthException(AuthErrorCode.INVALID_MFA_CODE)
+            throw AuthException(AuthServerErrorCode.INVALID_MFA_CODE)
         }
 
         // 3️⃣ MFA 성공 → AuthLevel 격상
