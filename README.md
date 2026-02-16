@@ -1,13 +1,15 @@
 # 채팅 플랫폼 (Chat Platform)
 
 > **DDD + EDA 기반의 확장 가능한 채팅 플랫폼**  
-> Spring Boot 3.5.6 | Java 21 | PostgreSQL | Redis | WebSocket | Quartz
+> Spring Boot 3.5.6 | Spring Cloud 2024.0.0 | Kotlin | PostgreSQL | Redis | WebSocket | Kafka
 
 [![Build](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com)
 [![Tests](https://img.shields.io/badge/tests-63%20passed-brightgreen)](https://github.com)
 [![Coverage](https://img.shields.io/badge/coverage-80%25-yellow)](https://github.com)
 [![Java](https://img.shields.io/badge/Java-21-orange)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.6-brightgreen)](https://spring.io/projects/spring-boot)
+[![Spring Cloud](https://img.shields.io/badge/Spring%20Cloud-2024.0.0-blue)](https://spring.io/projects/spring-cloud)
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.9.25-7F52FF)](https://kotlinlang.org/)
 
 ---
 
@@ -21,20 +23,22 @@
 - ✅ **예약 메시지** - 단발성 및 주기적 메시지 스케줄링
 - ✅ **커서 페이징** - 대용량 메시지 조회 최적화
 - ✅ **멀티 인스턴스** - Redis Pub/Sub 기반 분산 환경 지원
+- ✅ **마이크로서비스 아키텍처** - Spring Cloud Netflix 기반
 
 ### 기술 스택
 
-| 카테고리              | 기술                               |
-|-------------------|----------------------------------|
-| **Backend**       | Spring Boot 3.5.6, Java 21       |
-| **Database**      | PostgreSQL 15, Flyway            |
-| **Cache**         | Redis 7                          |
-| **Message Queue** | Redis Pub/Sub                    |
-| **Scheduler**     | Quartz 2.5.0                     |
-| **WebSocket**     | Spring WebSocket, STOMP          |
-| **Testing**       | JUnit 5, AssertJ, TestContainers |
-| **API Docs**      | Swagger/OpenAPI 3.0              |
-| **Build**         | Gradle 8.14.3                    |
+| 카테고리              | 기술                                                    |
+|-------------------|-------------------------------------------------------|
+| **Backend**       | Spring Boot 3.5.6, Kotlin 1.9.25, Java 21             |
+| **MSA**           | Spring Cloud 2024.0.0, Config Server, Eureka, Gateway |
+| **Database**      | PostgreSQL 15, Flyway                                 |
+| **Cache**         | Redis 7                                               |
+| **Message Queue** | Kafka 3.9, Redis Pub/Sub                              |
+| **Scheduler**     | Quartz 2.5.0                                          |
+| **WebSocket**     | Spring WebSocket, STOMP                               |
+| **Testing**       | JUnit 5, AssertJ, TestContainers                      |
+| **API Docs**      | Swagger/OpenAPI 3.0                                   |
+| **Build**         | Gradle 8.14.3                                         |
 
 ---
 
@@ -43,39 +47,47 @@
 ### Multi-Module 구조
 ```
 chat-platform/
-├── chat-domain/              # 순수 도메인 계층 (DDD)
-│   ├── message/              # Message Aggregate
-│   ├── channel/              # Channel Aggregate
-│   ├── schedule/             # ScheduleRule Aggregate
-│   ├── user/                 # User Aggregate
-│   └── service/              # Domain Services
+├── infrastructure/           # Spring Cloud 인프라 (Kotlin)
+│   ├── config-server/        # Config Server (Port: 8888)
+│   ├── eureka-server/        # Service Discovery (Port: 8761)
+│   └── api-gateway/          # API Gateway (Port: 8000)
 │
-├── chat-storage/             # 영속성 계층 (Hexagonal)
-│   ├── entity/               # JPA Entities
-│   ├── repository/           # JPA Repositories
-│   ├── adapter/              # Repository Adapters
-│   └── mapper/               # Domain ↔ Entity Mappers
+├── apps/chat/libs/
+│   ├── chat-domain/          # 순수 도메인 계층 (DDD)
+│   │   ├── message/          # Message Aggregate
+│   │   ├── channel/          # Channel Aggregate
+│   │   ├── schedule/         # ScheduleRule Aggregate
+│   │   ├── user/             # User Aggregate
+│   │   └── service/          # Domain Services
+│   │
+│   └── chat-storage/         # 영속성 계층 (Hexagonal)
+│       ├── entity/           # JPA Entities
+│       ├── repository/       # JPA Repositories
+│       ├── adapter/          # Repository Adapters
+│       └── mapper/           # Domain ↔ Entity Mappers
 │
-├── chat-message-server/      # 메시지 발송 서버 (Port: 8081)
-│   ├── application/          # Application Services
-│   ├── presentation/         # REST Controllers
-│   └── infrastructure/       # Redis, Event Publisher
+├── apps/chat/
+│   ├── message-server/       # 메시지 발송 서버 (Port: 8081) - Kotlin
+│   │   ├── application/      # Application Services
+│   │   ├── presentation/     # REST Controllers
+│   │   └── infrastructure/   # Redis, Event Publisher, Kafka
+│   │
+│   ├── system-server/        # 시스템 관리 서버 (Port: 8082) - Java
+│   │   ├── application/      # Channel, Schedule Services
+│   │   ├── controller/       # REST Controllers
+│   │   ├── job/              # Quartz Jobs
+│   │   └── infrastructure/   # Quartz, Lock, WebClient
+│   │
+│   └── websocket-server/     # WebSocket 서버 (Port: 20002) - Kotlin
+│       ├── handler/          # WebSocket Handlers
+│       ├── session/          # Session Manager (Redis)
+│       └── subscriber/       # Redis Subscriber
 │
-├── chat-system-server/       # 시스템 관리 서버 (Port: 8082)
-│   ├── application/          # Channel, Schedule Services
-│   ├── controller/           # REST Controllers
-│   ├── job/                  # Quartz Jobs
-│   └── infrastructure/       # Quartz, Lock, WebClient
-│
-├── chat-websocket-server/    # WebSocket 서버 (Port: 20002)
-│   ├── handler/              # WebSocket Handlers
-│   ├── session/              # Session Manager (Redis)
-│   └── subscriber/           # Redis Subscriber
-│
-└── common-*/                 # 공통 모듈
-    ├── common-util/          # Exception, Util, Constants
-    ├── common-auth/          # JWT, Authentication
-    └── common-logging/       # Logging
+└── common/                   # 공통 모듈
+    ├── core/                 # Exception, Util, Constants
+    ├── security/             # JWT, Authentication (Kotlin)
+    ├── web/                  # Web Common
+    └── logging/              # Logging
 ```
 
 ### DDD 패턴 적용

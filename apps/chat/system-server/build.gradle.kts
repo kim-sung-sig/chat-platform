@@ -41,6 +41,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
 
+    // Spring Cloud
+    implementation("org.springframework.cloud:spring-cloud-starter-config")
+    implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
+
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     testImplementation("org.springframework.security:spring-security-test")
@@ -89,4 +93,3 @@ tasks.named("asciidoctor") {
     inputs.dir(snippetsDir)
     dependsOn("test")
 }
-

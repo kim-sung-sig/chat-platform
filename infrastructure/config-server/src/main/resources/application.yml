@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: config-server
+  cloud:
+    config:
+      server:
+        # Native 프로필 사용 (로컬 파일 시스템 기반)
+        native:
+          search-locations: classpath:/config-repo
+        # Git 사용 시 (실제 프로덕션에서 사용)
+        # git:
+        #   uri: https://github.com/your-org/config-repo
+        #   default-label: main
+  profiles:
+    active: native
+
+server:
+  port: 8888
+
+# Actuator 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,refresh
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    org.springframework.cloud.config: DEBUG

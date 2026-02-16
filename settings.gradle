@@ -6,6 +6,17 @@ pluginManagement {
 rootProject.name = 'chat-platform'
 
 // ============================================
+// Infrastructure - Spring Cloud 인프라
+// ============================================
+include("infrastructure:config-server")
+include("infrastructure:eureka-server")
+include("infrastructure:api-gateway")
+
+project(":infrastructure:config-server").buildFileName = "build.gradle.kts"
+project(":infrastructure:eureka-server").buildFileName = "build.gradle.kts"
+project(":infrastructure:api-gateway").buildFileName = "build.gradle.kts"
+
+// ============================================
 // Apps - 실행 가능한 애플리케이션
 // ============================================
 include("apps:auth-server")

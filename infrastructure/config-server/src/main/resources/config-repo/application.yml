@@ -1,0 +1,43 @@
+# 공통 설정 (모든 서비스에 적용)
+spring:
+  profiles:
+    active: local
+
+# Database 공통 설정
+db:
+  source:
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+  replica:
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+
+# Redis 공통 설정
+redis:
+  host: localhost
+  port: 16379
+  password: dev_password
+
+# Actuator 공통 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+# Logging 공통 설정
+logging:
+  level:
+    root: INFO
+    com.example.chat: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"

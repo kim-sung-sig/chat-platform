@@ -1,0 +1,33 @@
+# System Server 전용 설정
+server:
+  port: 8082
+
+spring:
+  application:
+    name: chat-system-server
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+# 데이터베이스 설정
+db:
+  source:
+    jdbc-url: jdbc:postgresql://localhost:15432/chat_db
+    username: chat_user
+    password: chat_password
+  replica:
+    jdbc-url: jdbc:postgresql://localhost:15433/chat_db
+    username: chat_user
+    password: chat_password
+
+# Quartz 설정
+quartz:
+  scheduler:
+    instance-name: ChatSystemScheduler
+    thread-pool:
+      thread-count: 10

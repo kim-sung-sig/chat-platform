@@ -1,0 +1,85 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      # Discovery Locator 활성화 (Eureka에서 자동으로 라우트 생성)
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+
+      # 수동 라우트 설정
+      routes:
+        # Message Server 라우트
+        - id: chat-message-server
+          uri: lb://chat-message-server
+          predicates:
+            - Path=/api/messages/**
+          filters:
+            - RewritePath=/api/messages/(?<segment>.*), /${segment}
+
+        # System Server 라우트
+        - id: chat-system-server
+          uri: lb://chat-system-server
+          predicates:
+            - Path=/api/channels/**,/api/schedules/**
+          filters:
+            - RewritePath=/api/(?<segment>.*), /${segment}
+
+        # WebSocket Server 라우트 (WebSocket 프로토콜 지원)
+        - id: chat-websocket-server
+          uri: lb:ws://chat-websocket-server
+          predicates:
+            - Path=/ws/**
+
+      # 전역 CORS 설정
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origins:
+              - "http://localhost:3000"
+              - "http://localhost:8080"
+            allowed-methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowed-headers: "*"
+            allow-credentials: true
+            max-age: 3600
+
+server:
+  port: 8000
+
+# Eureka Client 설정
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+
+# Actuator 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,gateway
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+
+# Logging
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty: INFO
+    com.example.chat.gateway: DEBUG
