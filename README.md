@@ -17,13 +17,23 @@
 
 ### 핵심 기능
 
+#### 채팅 기능
 - ✅ **실시간 채팅** - WebSocket 기반 실시간 메시지 전송
 - ✅ **다양한 채널 타입** - 일대일, 그룹, 공개, 비공개 채널
 - ✅ **메시지 타입** - 텍스트, 이미지, 파일, 시스템 메시지
 - ✅ **예약 메시지** - 단발성 및 주기적 메시지 스케줄링
 - ✅ **커서 페이징** - 대용량 메시지 조회 최적화
+
+#### 친구 및 채팅방 관리 (NEW ⭐)
+
+- ✅ **친구 관리** - 요청/수락/거절/차단, 별칭, 즐겨찾기 (12 APIs)
+- ✅ **채팅방 메타데이터** - 알림 설정, 읽기 상태, 읽지 않은 수 (8 APIs)
+- ✅ **고급 채팅방 조회** - 필터링, 정렬, 검색, 통합 정보 제공 (1 API)
+
+#### 인프라
 - ✅ **멀티 인스턴스** - Redis Pub/Sub 기반 분산 환경 지원
-- ✅ **마이크로서비스 아키텍처** - Spring Cloud Netflix 기반
+- ✅ **마이크로서비스** - Spring Cloud Netflix 기반
+- ✅ **이벤트 기반** - Domain Events, Kafka 통합
 
 ### 기술 스택
 
@@ -31,8 +41,8 @@
 |-------------------|-------------------------------------------------------|
 | **Backend**       | Spring Boot 3.5.6, Kotlin 1.9.25, Java 21             |
 | **MSA**           | Spring Cloud 2024.0.0, Config Server, Eureka, Gateway |
-| **Database**      | PostgreSQL 15, Flyway                                 |
-| **Cache**         | Redis 7                                               |
+| **Database**      | PostgreSQL 17.6, Flyway                               |
+| **Cache**         | Redis 7.4.1                                           |
 | **Message Queue** | Kafka 3.9, Redis Pub/Sub                              |
 | **Scheduler**     | Quartz 2.5.0                                          |
 | **WebSocket**     | Spring WebSocket, STOMP                               |
@@ -43,6 +53,13 @@
 ---
 
 ## 🏗️ 아키텍처
+
+### 설계 패턴
+
+- **DDD (Domain-Driven Design)** - Aggregate, Value Object, Domain Service
+- **CQRS** - Command/Query 분리, 읽기/쓰기 최적화
+- **EDA (Event-Driven Architecture)** - Domain Events, 느슨한 결합
+- **Hexagonal Architecture** - Ports & Adapters, 외부 의존성 격리
 
 ### Multi-Module 구조
 ```
@@ -466,6 +483,54 @@ public class DistributedLockService {
 - [ ] MSA 전환 (Kubernetes)
 - [ ] 모니터링 (Prometheus + Grafana)
 - [ ] 성능 테스트 (JMeter, 1000 TPS)
+
+---
+
+## 📚 프로젝트 문서
+
+### 🎯 필독 문서
+
+1. **[PROJECT_COMPLETION.md](./PROJECT_COMPLETION.md)** ⭐⭐⭐
+	- 프로젝트 최종 완료 보고 (한눈에 보기)
+	- Phase별 완료 현황
+	- 생성 파일 및 API 통계
+
+2. **[GETTING_STARTED.md](./GETTING_STARTED.md)** ⭐⭐
+	- 프로젝트 실행 가이드
+	- 환경 설정, Docker Compose
+	- 문제 해결 (Troubleshooting)
+
+3. **[API_ENDPOINTS.md](./API_ENDPOINTS.md)** ⭐⭐
+	- 21개 REST API 상세 문서
+	- Request/Response 예시
+	- cURL 테스트 예제
+
+### 📖 상세 문서
+
+4. **[FINAL_PROJECT_SUMMARY.md](./FINAL_PROJECT_SUMMARY.md)**
+	- 프로젝트 전체 종합 보고서
+	- 아키텍처 총정리
+	- 설계 결정사항
+
+5. **[FRIEND_AND_CHANNEL_ENHANCEMENT_DESIGN.md](./FRIEND_AND_CHANNEL_ENHANCEMENT_DESIGN.md)**
+	- 친구 및 채팅방 관리 설계 문서
+	- Phase별 상세 요구사항
+	- 데이터 모델 설계
+
+6. **[OVERALL_PROGRESS_REPORT.md](./OVERALL_PROGRESS_REPORT.md)**
+	- 전체 진행 상황
+	- Phase별 통계
+	- 다음 단계 계획
+
+### 📊 Phase별 보고서
+
+7. **[PHASE1_COMPLETION_REPORT.md](./PHASE1_COMPLETION_REPORT.md)** - 친구 관리 시스템
+8. **[PHASE2_COMPLETION_REPORT.md](./PHASE2_COMPLETION_REPORT.md)** - 채팅방 메타데이터
+9. **[PHASE3_COMPLETION_REPORT.md](./PHASE3_COMPLETION_REPORT.md)** - 채팅방 고급 조회
+
+### 📋 기타 문서
+
+10. **[IMPLEMENTATION_PLAN_SUMMARY.md](./IMPLEMENTATION_PLAN_SUMMARY.md)** - 구현 계획
 
 ---
 
