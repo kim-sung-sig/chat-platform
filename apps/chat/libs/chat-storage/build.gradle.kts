@@ -1,5 +1,7 @@
 plugins {
-    id("java")
+    kotlin("jvm")
+    kotlin("plugin.jpa")
+    kotlin("plugin.spring")
     id("org.springframework.boot")
     id("io.spring.dependency-management")
 }
@@ -7,9 +9,21 @@ plugins {
 group = "com.example.chat"
 version = "0.0.1-SNAPSHOT"
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+kotlin {
+    jvmToolchain(21)
+    compilerOptions {
+        freeCompilerArgs.add("-Xjsr305=strict")
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            setSrcDirs(emptyList<String>())
+        }
+        kotlin {
+            setSrcDirs(listOf("src/main/kotlin"))
+        }
     }
 }
 
@@ -33,6 +47,9 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     runtimeOnly("org.postgresql:postgresql")
 
     implementation("com.querydsl:querydsl-jpa:${querydslVersion}:jakarta")
@@ -43,11 +60,7 @@ dependencies {
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
 
-    compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
-
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testCompileOnly("org.projectlombok:lombok")
-    testAnnotationProcessor("org.projectlombok:lombok")
+    testImplementation("io.mockk:mockk:1.13.9")
 }
 
