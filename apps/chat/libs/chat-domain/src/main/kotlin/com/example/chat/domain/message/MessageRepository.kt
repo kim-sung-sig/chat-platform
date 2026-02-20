@@ -33,5 +33,9 @@ interface MessageRepository {
      * 메시지 삭제
      */
     fun delete(id: MessageId)
-}
 
+    /**
+     * 여러 채널의 마지막 메시지 배치 조회
+     */
+    fun findLastMessageByChannelIds(channelIds: List<ChannelId>): Map<ChannelId, Message>
+}

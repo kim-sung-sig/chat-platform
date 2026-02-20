@@ -79,7 +79,54 @@ class User private constructor(
         /**
          * 시스템 사용자 ID (시스템 메시지용)
          */
+        @JvmField
         val SYSTEM_USER_ID: UserId = UserId.of("system")
+
+        /** Java-friendly builder() */
+        @JvmStatic
+        fun builder(): Builder = Builder()
+
+        /** Java builder for User */
+        class Builder {
+            private var id: UserId? = null
+            private var username: String? = null
+            private var email: String? = null
+            private var password: String? = null
+            private var status: UserStatus? = null
+            private var createdAt: Instant? = null
+            private var updatedAt: Instant? = null
+            private var lastActiveAt: Instant? = null
+
+            fun id(id: UserId) = apply { this.id = id }
+            fun username(username: String) = apply { this.username = username }
+            fun email(email: String) = apply { this.email = email }
+            fun password(password: String) = apply { this.password = password }
+            fun status(status: UserStatus) = apply { this.status = status }
+            fun createdAt(createdAt: Instant) = apply { this.createdAt = createdAt }
+            fun updatedAt(updatedAt: Instant) = apply { this.updatedAt = updatedAt }
+            fun lastActiveAt(lastActiveAt: Instant?) = apply { this.lastActiveAt = lastActiveAt }
+
+            fun build(): User {
+                val id = this.id ?: UserId.generate()
+                val username = this.username ?: throw IllegalStateException("username is required")
+                val email = this.email ?: throw IllegalStateException("email is required")
+                val password = this.password ?: ""
+                val status = this.status ?: UserStatus.ACTIVE
+                val createdAt = this.createdAt ?: Instant.now()
+                val updatedAt = this.updatedAt ?: Instant.now()
+
+                return User(
+                    id = id,
+                    _username = username,
+                    _email = email,
+                    _password = password,
+                    _status = status,
+                    createdAt = createdAt,
+                    _updatedAt = updatedAt,
+                    _lastActiveAt = lastActiveAt
+                )
+            }
+        }
 
         /**
          * 새로운 사용자 생성
@@ -124,4 +171,3 @@ class User private constructor(
         }
     }
 }
-

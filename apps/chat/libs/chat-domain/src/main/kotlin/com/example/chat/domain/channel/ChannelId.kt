@@ -13,9 +13,10 @@ data class ChannelId(
     }
 
     companion object {
+        @JvmStatic
         fun of(value: String): ChannelId = ChannelId(value)
 
+        @JvmStatic
         fun generate(): ChannelId = ChannelId(UUID.randomUUID().toString())
     }
 }
-

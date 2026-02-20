@@ -97,7 +97,7 @@ data class Friendship(
 	/**
 	 * 친구 별칭 설정
 	 */
-	fun setNickname(nickname: String) {
+	fun updateNickname(nickname: String) {
 		// Early Return: 수락된 친구 관계만 별칭 설정 가능
 		require(isAccepted()) {
 			throw DomainException("Can only set nickname for accepted friends")

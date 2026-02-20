@@ -3,9 +3,12 @@ package com.example.chat.auth.server.api
 import com.example.chat.auth.server.api.dto.factory.CredentialFactory
 import com.example.chat.auth.server.api.dto.request.AuthenticateRequest
 import com.example.chat.auth.server.api.dto.request.CompleteMfaRequest
+import com.example.chat.auth.server.api.dto.request.SignupRequest
 import com.example.chat.auth.server.api.dto.response.AuthResponse
+import com.example.chat.auth.server.api.dto.response.SignupResponse
 import com.example.chat.auth.server.application.service.AuthenticationApplicationService
 import com.example.chat.auth.server.application.service.MfaApplicationService
+import com.example.chat.auth.server.application.service.SignupApplicationService
 import com.example.chat.auth.server.core.domain.AuthenticationContext
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
@@ -25,8 +28,19 @@ private const val REFRESH_TOKEN_COOKIE = "refresh_token"
 class AuthApi(
         private val authenticationService: AuthenticationApplicationService,
         private val mfaService: MfaApplicationService,
-        private val credentialFactory: CredentialFactory
+        private val credentialFactory: CredentialFactory,
+        private val signupService: SignupApplicationService
 ) {
+
+    /** 회원가입 */
+    @PostMapping("/signup")
+    fun signup(
+            @Valid @RequestBody request: SignupRequest
+    ): ResponseEntity<SignupResponse> {
+        log.info { "Signup request for: ${request.email}" }
+        val response = signupService.signup(request)
+        return ResponseEntity.status(201).body(response)
+    }
 
     /** 인증 실행 (Login) */
     @PostMapping("/authenticate")

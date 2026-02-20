@@ -10,7 +10,7 @@ import com.example.chat.domain.user.UserId
 import com.example.chat.system.application.dto.response.ChannelMetadataResponse
 import com.example.chat.system.application.dto.response.toResponse
 import com.example.chat.system.exception.ResourceNotFoundException
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 

@@ -86,6 +86,7 @@ class Message private constructor(
         /**
          * 새로운 메시지 생성
          */
+        @JvmStatic
         fun create(
             channelId: ChannelId,
             senderId: UserId,
@@ -109,30 +110,29 @@ class Message private constructor(
          */
         @JvmStatic
         fun fromStorage(
-            id: MessageId,
-            channelId: ChannelId,
-            senderId: UserId,
-            content: MessageContent,
-            type: MessageType,
-            status: MessageStatus,
-            createdAt: Instant,
-            sentAt: Instant?,
-            deliveredAt: Instant?,
-            readAt: Instant?
-        ): Message {
-            return Message(
-                id = id,
-                channelId = channelId,
-                senderId = senderId,
-                content = content,
-                type = type,
-                _status = status,
-                createdAt = createdAt,
-                _sentAt = sentAt,
-                _deliveredAt = deliveredAt,
-                _readAt = readAt
-            )
-        }
-    }
-}
-
+             id: MessageId,
+             channelId: ChannelId,
+             senderId: UserId,
+             content: MessageContent,
+             type: MessageType,
+             status: MessageStatus,
+             createdAt: Instant,
+             sentAt: Instant?,
+             deliveredAt: Instant?,
+             readAt: Instant?
+         ): Message {
+             return Message(
+                 id = id,
+                 channelId = channelId,
+                 senderId = senderId,
+                 content = content,
+                 type = type,
+                 _status = status,
+                 createdAt = createdAt,
+                 _sentAt = sentAt,
+                 _deliveredAt = deliveredAt,
+                 _readAt = readAt
+             )
+         }
+     }
+ }

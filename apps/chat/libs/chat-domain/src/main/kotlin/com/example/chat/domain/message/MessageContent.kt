@@ -19,6 +19,7 @@ data class MessageContent(
         /**
          * 텍스트 메시지 생성
          */
+        @JvmStatic
         fun text(text: String): MessageContent {
             require(text.isNotBlank()) { "Text content cannot be null or blank" }
             return MessageContent(text = text)
@@ -27,6 +28,7 @@ data class MessageContent(
         /**
          * 이미지 메시지 생성
          */
+        @JvmStatic
         fun image(mediaUrl: String, fileName: String? = null, fileSize: Long? = null): MessageContent {
             require(mediaUrl.isNotBlank()) { "Media URL cannot be null or blank" }
             return MessageContent(
@@ -40,6 +42,7 @@ data class MessageContent(
         /**
          * 파일 메시지 생성
          */
+        @JvmStatic
         fun file(mediaUrl: String, fileName: String, fileSize: Long? = null, mimeType: String): MessageContent {
             require(mediaUrl.isNotBlank()) { "Media URL cannot be null or blank" }
             require(fileName.isNotBlank()) { "File name cannot be null or blank" }
@@ -52,4 +55,3 @@ data class MessageContent(
         }
     }
 }
-

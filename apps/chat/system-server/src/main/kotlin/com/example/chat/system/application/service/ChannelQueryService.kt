@@ -12,7 +12,7 @@ import com.example.chat.domain.user.UserRepository
 import com.example.chat.system.application.dto.response.ChannelListItem
 import com.example.chat.system.application.query.ChannelListQuery
 import com.example.chat.system.application.query.ChannelSortBy
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
@@ -122,7 +122,7 @@ class ChannelQueryService(
 			channelName = channel.name,
 			channelDescription = channel.description,
 			channelType = channel.type,
-			active = channel.isActive,
+			active = channel.active,
 			lastMessageId = lastMessageId,
 			lastMessageContent = lastMessageContent,
 			lastMessageSenderId = lastMessageSenderId,

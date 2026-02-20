@@ -107,7 +107,7 @@ class MessageApplicationService(
 	private fun findChannelById(channelIdStr: String): Channel {
 		val channelId = ChannelId.of(channelIdStr)
 		return channelRepository.findById(channelId)
-			.orElseThrow { IllegalArgumentException("Channel not found: $channelIdStr") }
+			?: throw IllegalArgumentException("Channel not found: $channelIdStr")
 	}
 
 	/**
@@ -115,7 +115,7 @@ class MessageApplicationService(
 	 */
 	private fun findUserById(userId: UserId): User {
 		return userRepository.findById(userId)
-			.orElseThrow { IllegalArgumentException("User not found: ${userId.value}") }
+			?: throw IllegalArgumentException("User not found: ${userId.value}")
 	}
 
 	/**
@@ -236,7 +236,7 @@ class MessageApplicationService(
 			channelId = message.channelId.value,
 			senderId = message.senderId.value,
 			messageType = message.type,
-			content = message.content.text,  // 간단히 text만 반환
+			content = message.content.text ?: "",
 			status = message.status,
 			createdAt = message.createdAt,
 			sentAt = message.sentAt

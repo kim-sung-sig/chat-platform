@@ -13,9 +13,10 @@ data class MessageId(
     }
 
     companion object {
+        @JvmStatic
         fun of(value: String): MessageId = MessageId(value)
 
+        @JvmStatic
         fun generate(): MessageId = MessageId(UUID.randomUUID().toString())
     }
 }
-

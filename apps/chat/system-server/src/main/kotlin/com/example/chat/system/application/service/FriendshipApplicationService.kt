@@ -14,7 +14,7 @@ import com.example.chat.domain.user.UserRepository
 import com.example.chat.system.application.dto.response.FriendshipResponse
 import com.example.chat.system.application.dto.response.toResponse
 import com.example.chat.system.exception.ResourceNotFoundException
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -59,6 +59,7 @@ class FriendshipApplicationService(
 				existing.isBlocked() -> throw DomainException("Cannot send request to blocked user")
 				existing.isPending() -> throw DomainException("Friend request already sent")
 				existing.isAccepted() -> throw DomainException("Already friends")
+				else -> Unit
 			}
 		}
 
@@ -256,7 +257,7 @@ class FriendshipApplicationService(
 			UserId.of(friendId)
 		) ?: throw ResourceNotFoundException("Friendship not found")
 
-		friendship.setNickname(nickname)
+		friendship.updateNickname(nickname)
 		val saved = friendshipRepository.save(friendship)
 
 		logger.info { "Nickname set successfully" }

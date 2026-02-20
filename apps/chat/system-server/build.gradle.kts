@@ -1,5 +1,7 @@
 plugins {
     id("java")
+    kotlin("jvm")
+    kotlin("plugin.spring")
     id("org.springframework.boot")
     id("io.spring.dependency-management")
     id("org.asciidoctor.jvm.convert") version "3.3.2"
@@ -72,6 +74,7 @@ dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
+    implementation("io.github.oshai:kotlin-logging-jvm:5.1.0")
 
     testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
 
@@ -87,6 +90,10 @@ dependencies {
 tasks.named<Test>("test") {
     useJUnitPlatform()
     outputs.dir(snippetsDir)
+}
+
+tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+    mainClass.set("com.example.chat.system.ChatSystemServerApplicationKt")
 }
 
 tasks.named("asciidoctor") {

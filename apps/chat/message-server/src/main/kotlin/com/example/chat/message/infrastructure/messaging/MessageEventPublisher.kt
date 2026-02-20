@@ -63,7 +63,7 @@ class MessageEventPublisher(
 			channelId = message.channelId.value,
 			senderId = message.senderId.value,
 			messageType = message.type.name,
-			content = message.content.text,
+			content = message.content.text ?: "",
 			status = message.status.name,
 			sentAt = message.sentAt
 		)

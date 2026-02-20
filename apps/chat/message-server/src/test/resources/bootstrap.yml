@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: chat-message-server-test
+  cloud:
+    config:
+      enabled: false
+      fail-fast: false
+    discovery:
+      enabled: false

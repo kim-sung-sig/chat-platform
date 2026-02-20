@@ -33,7 +33,7 @@ class MessageDomainService {
      * @return 생성된 메시지 (Aggregate Root)
      * @throws DomainException 도메인 규칙 위반 시
      */
-    fun createTextMessage(channel: Channel, sender: User, text: String): Message {
+    fun createTextMessage(channel: Channel, sender: User, text: String?): Message {
         // Early Return: 텍스트 내용 사전 검증
         validateTextContent(text)
 
@@ -41,7 +41,7 @@ class MessageDomainService {
         validateMessageSendingPermission(channel, sender)
 
         // Message 생성 (Aggregate 생성)
-        val content = MessageContent.text(text)
+        val content = MessageContent.text(text!!)
         return Message.create(channel.id, sender.id, content, MessageType.TEXT)
     }
 
@@ -51,7 +51,7 @@ class MessageDomainService {
     fun createImageMessage(
         channel: Channel,
         sender: User,
-        mediaUrl: String,
+        mediaUrl: String?,
         fileName: String? = null,
         fileSize: Long? = null
     ): Message {
@@ -63,7 +63,7 @@ class MessageDomainService {
         validateMessageSendingPermission(channel, sender)
 
         // Message 생성
-        val content = MessageContent.image(mediaUrl, fileName, fileSize)
+        val content = MessageContent.image(mediaUrl!!, fileName, fileSize)
         return Message.create(channel.id, sender.id, content, MessageType.IMAGE)
     }
 
@@ -73,8 +73,8 @@ class MessageDomainService {
     fun createFileMessage(
         channel: Channel,
         sender: User,
-        mediaUrl: String,
-        fileName: String,
+        mediaUrl: String?,
+        fileName: String?,
         fileSize: Long? = null,
         mimeType: String
     ): Message {
@@ -87,7 +87,7 @@ class MessageDomainService {
         validateMessageSendingPermission(channel, sender)
 
         // Message 생성
-        val content = MessageContent.file(mediaUrl, fileName, fileSize, mimeType)
+        val content = MessageContent.file(mediaUrl!!, fileName!!, fileSize, mimeType)
         return Message.create(channel.id, sender.id, content, MessageType.FILE)
     }
 
@@ -96,15 +96,15 @@ class MessageDomainService {
      *
      * 시스템 메시지는 User 검증이 불필요
      */
-    fun createSystemMessage(channel: Channel, text: String): Message {
+    fun createSystemMessage(channel: Channel, text: String?): Message {
         // Early Return: 입력값 검증
         validateTextContent(text)
 
         // Early Return: 채널 상태 검증
-        require(channel.active) { "Cannot send system message to inactive channel" }
+        if (!channel.active) throw DomainException("Cannot send system message to inactive channel")
 
         // 시스템 계정으로 메시지 생성
-        val content = MessageContent.text(text)
+        val content = MessageContent.text(text!!)
         return Message.create(channel.id, User.SYSTEM_USER_ID, content, MessageType.SYSTEM)
     }
 
@@ -122,21 +122,19 @@ class MessageDomainService {
      */
     private fun validateMessageSendingPermission(channel: Channel, sender: User) {
         // Early Return: 채널 활성화 확인
-        require(channel.active) { "Channel is not active" }
+        if (!channel.active) throw DomainException("Channel is not active")
 
         // Early Return: 채널 멤버십 확인
-        require(channel.isMember(sender.id)) { "User is not a member of the channel" }
+        if (!channel.isMember(sender.id)) throw DomainException("User is not a member of the channel")
 
         // Early Return: 사용자 차단 여부 확인
-        require(!sender.isBanned()) { "User is banned and cannot send messages" }
+        if (sender.isBanned()) throw DomainException("User is banned and cannot send messages")
 
         // Early Return: 사용자 정지 여부 확인
-        require(!sender.isSuspended()) { "User is suspended and cannot send messages" }
+        if (sender.isSuspended()) throw DomainException("User is suspended and cannot send messages")
 
         // Early Return: 사용자 메시지 발송 가능 여부 확인
-        require(sender.canSendMessage()) {
-            "User is not allowed to send messages (status: ${sender.status})"
-        }
+        if (!sender.canSendMessage()) throw DomainException("User is not allowed to send messages (status: ${sender.status})")
     }
 
     // ============================================================
@@ -146,9 +144,9 @@ class MessageDomainService {
     /**
      * 텍스트 내용 검증
      */
-    private fun validateTextContent(text: String) {
+    private fun validateTextContent(text: String?) {
         // Early Return: null/blank 체크
-        require(text.isNotBlank()) { "Text content cannot be null or blank" }
+        require(!text.isNullOrBlank()) { "Text content cannot be null or blank" }
 
         // Early Return: 길이 제한 체크
         require(text.length <= 5000) { "Text content exceeds maximum length (5000 characters)" }
@@ -157,17 +155,17 @@ class MessageDomainService {
     /**
      * 미디어 URL 검증
      */
-    private fun validateMediaUrl(mediaUrl: String) {
+    private fun validateMediaUrl(mediaUrl: String?) {
         // Early Return
-        require(mediaUrl.isNotBlank()) { "Media URL cannot be null or blank" }
+        require(!mediaUrl.isNullOrBlank()) { "Media URL cannot be null or blank" }
     }
 
     /**
      * 파일명 검증
      */
-    private fun validateFileName(fileName: String) {
+    private fun validateFileName(fileName: String?) {
         // Early Return: null/blank 체크
-        require(fileName.isNotBlank()) { "File name cannot be null or blank" }
+        require(!fileName.isNullOrBlank()) { "File name cannot be null or blank" }
 
         // Early Return: 길이 제한 체크
         require(fileName.length <= 255) { "File name is too long (max 255 characters)" }
@@ -182,7 +180,7 @@ class MessageDomainService {
 
         // Early Return: 크기 제한 체크
         val maxImageSize = 10 * 1024 * 1024L // 10MB
-        require(fileSize <= maxImageSize) { "Image file size exceeds maximum allowed size (10MB)" }
+        if (fileSize > maxImageSize) throw DomainException("Image file size exceeds maximum allowed size (10MB)")
     }
 
     /**
@@ -194,7 +192,6 @@ class MessageDomainService {
 
         // Early Return: 크기 제한 체크
         val maxFileSize = 50 * 1024 * 1024L // 50MB
-        require(fileSize <= maxFileSize) { "File size exceeds maximum allowed size (50MB)" }
+        if (fileSize > maxFileSize) throw DomainException("File size exceeds maximum allowed size (50MB)")
     }
 }
-

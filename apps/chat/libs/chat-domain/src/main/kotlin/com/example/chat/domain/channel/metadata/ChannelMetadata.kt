@@ -78,7 +78,7 @@ data class ChannelMetadata(
 	/**
 	 * 읽지 않은 메시지 수 설정
 	 */
-	fun setUnreadCount(count: Int) {
+	fun updateUnreadCount(count: Int) {
 		require(count >= 0) { throw DomainException("Unread count cannot be negative") }
 
 		unreadCount = count
@@ -108,7 +108,7 @@ data class ChannelMetadata(
 	/**
 	 * 알림 설정 변경
 	 */
-	fun setNotificationEnabled(enabled: Boolean) {
+	fun updateNotificationEnabled(enabled: Boolean) {
 		notificationEnabled = enabled
 		updatedAt = Instant.now()
 	}
@@ -124,7 +124,7 @@ data class ChannelMetadata(
 	/**
 	 * 즐겨찾기 설정 변경
 	 */
-	fun setFavorite(favorite: Boolean) {
+	fun updateFavorite(favorite: Boolean) {
 		this.favorite = favorite
 		updatedAt = Instant.now()
 	}
@@ -140,7 +140,7 @@ data class ChannelMetadata(
 	/**
 	 * 상단 고정 설정 변경
 	 */
-	fun setPinned(pinned: Boolean) {
+	fun updatePinned(pinned: Boolean) {
 		this.pinned = pinned
 		updatedAt = Instant.now()
 	}

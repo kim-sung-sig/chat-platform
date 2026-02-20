@@ -26,7 +26,9 @@ class PasswordAuthService(private val passwordEncoder: PasswordEncoder) {
                 )
 
         if (!matches) {
-            throw AuthException(AuthServerErrorCode.INVALID_CREDENTIALS)
+            // 테스트는 잘못된 비밀번호일 때 예외가 아닌 실패 결과를 기대하므로
+            // AuthResult.failure("Invalid password") 를 반환하도록 변경합니다.
+            return AuthResult.failure("Invalid password")
         }
 
         return AuthResult.success(

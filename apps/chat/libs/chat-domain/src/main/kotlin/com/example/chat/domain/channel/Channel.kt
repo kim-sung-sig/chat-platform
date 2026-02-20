@@ -96,6 +96,7 @@ class Channel private constructor(
         /**
          * 새로운 채널 생성
          */
+        @JvmStatic
         fun create(name: String, type: ChannelType, ownerId: UserId): Channel {
             val memberIds = mutableSetOf(ownerId) // 생성자는 자동으로 멤버에 포함
 
@@ -141,4 +142,3 @@ class Channel private constructor(
         }
     }
 }
-

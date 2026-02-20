@@ -7,10 +7,6 @@ import com.example.chat.domain.user.UserId
 
 /**
  * 채널 도메인 서비스
- *
- * DDD Domain Service의 역할:
- * - Channel Aggregate 생성 시 복잡한 도메인 규칙 검증
- * - User + Channel Aggregate 간 협력 조율
  */
 class ChannelDomainService {
 
@@ -26,12 +22,9 @@ class ChannelDomainService {
      * @return 생성된 채널 (Aggregate Root)
      */
     fun createDirectChannel(user1: User, user2: User): Channel {
-        // Early Return: 동일 사용자 체크
-        require(user1.id != user2.id) { "Cannot create direct channel with same user" }
-
-        // Early Return: 사용자 활성 상태 검증
-        require(user1.canSendMessage()) { "User1 is not in active status" }
-        require(user2.canSendMessage()) { "User2 is not in active status" }
+        if (user1.id == user2.id) throw DomainException("Cannot create direct channel with same user")
+        if (!user1.canSendMessage()) throw DomainException("User1 is not in active status")
+        if (!user2.canSendMessage()) throw DomainException("User2 is not in active status")
 
         // 채널 생성
         val channelName = generateDirectChannelName(user1.id, user2.id)
@@ -47,40 +40,31 @@ class ChannelDomainService {
      * @param name 채널명
      * @param owner 채널 소유자 (Aggregate Root)
      */
-    fun createGroupChannel(name: String, owner: User): Channel {
+    fun createGroupChannel(name: String?, owner: User): Channel {
         // Early Return: 입력값 검증
         validateChannelName(name)
-
-        // Early Return: 소유자 상태 검증
-        require(owner.canSendMessage()) { "Owner is not in active status" }
-
-        return Channel.create(name, ChannelType.GROUP, owner.id)
+        if (!owner.canSendMessage()) throw DomainException("Owner is not in active status")
+        return Channel.create(name!!, ChannelType.GROUP, owner.id)
     }
 
     /**
      * 공개 채널 생성
      */
-    fun createPublicChannel(name: String, owner: User): Channel {
+    fun createPublicChannel(name: String?, owner: User): Channel {
         // Early Return: 입력값 검증
         validateChannelName(name)
-
-        // Early Return: 소유자 상태 검증
-        require(owner.canSendMessage()) { "Owner is not in active status" }
-
-        return Channel.create(name, ChannelType.PUBLIC, owner.id)
+        if (!owner.canSendMessage()) throw DomainException("Owner is not in active status")
+        return Channel.create(name!!, ChannelType.PUBLIC, owner.id)
     }
 
     /**
      * 비공개 채널 생성
      */
-    fun createPrivateChannel(name: String, owner: User): Channel {
+    fun createPrivateChannel(name: String?, owner: User): Channel {
         // Early Return: 입력값 검증
         validateChannelName(name)
-
-        // Early Return: 소유자 상태 검증
-        require(owner.canSendMessage()) { "Owner is not in active status" }
-
-        return Channel.create(name, ChannelType.PRIVATE, owner.id)
+        if (!owner.canSendMessage()) throw DomainException("Owner is not in active status")
+        return Channel.create(name!!, ChannelType.PRIVATE, owner.id)
     }
 
     /**
@@ -92,16 +76,9 @@ class ChannelDomainService {
      * - 이미 멤버가 아니어야 함
      */
     fun addMemberToChannel(channel: Channel, user: User) {
-        // Early Return: 채널 상태 검증
-        require(channel.active) { "Cannot add member to inactive channel" }
-
-        // Early Return: 사용자 상태 검증
-        require(user.canSendMessage()) { "User is not in active status" }
-
-        // Early Return: 중복 멤버 체크
-        require(!channel.isMember(user.id)) { "User is already a member of the channel" }
-
-        // 멤버 추가
+        if (!channel.active) throw DomainException("Cannot add member to inactive channel")
+        if (!user.canSendMessage()) throw DomainException("User is not in active status")
+        if (channel.isMember(user.id)) throw DomainException("User is already a member of the channel")
         channel.addMember(user.id)
     }
 
@@ -113,13 +90,8 @@ class ChannelDomainService {
      * - 멤버여야 제거 가능
      */
     fun removeMemberFromChannel(channel: Channel, user: User) {
-        // Early Return: 소유자 제거 방지
-        require(!channel.isOwner(user.id)) { "Cannot remove channel owner" }
-
-        // Early Return: 멤버 여부 체크
-        require(channel.isMember(user.id)) { "User is not a member of the channel" }
-
-        // 멤버 제거
+        if (channel.isOwner(user.id)) throw DomainException("Cannot remove channel owner")
+        if (!channel.isMember(user.id)) throw DomainException("User is not a member of the channel")
         channel.removeMember(user.id)
     }
 
@@ -130,9 +102,8 @@ class ChannelDomainService {
     /**
      * 채널명 검증
      */
-    private fun validateChannelName(name: String) {
-        // Early Return: null/blank 체크
-        require(name.isNotBlank()) { "Channel name cannot be null or blank" }
+    private fun validateChannelName(name: String?) {
+        require(!name.isNullOrBlank()) { "Channel name cannot be null or blank" }
 
         // Early Return: 길이 제한 체크
         require(name.length <= 100) { "Channel name exceeds maximum length (100)" }
@@ -145,4 +116,3 @@ class ChannelDomainService {
         return "direct_${user1.value}_${user2.value}"
     }
 }
-

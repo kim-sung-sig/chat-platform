@@ -9,29 +9,7 @@ spring:
           enabled: true
           lower-case-service-id: true
 
-      # 수동 라우트 설정
-      routes:
-        # Message Server 라우트
-        - id: chat-message-server
-          uri: lb://chat-message-server
-          predicates:
-            - Path=/api/messages/**
-          filters:
-            - RewritePath=/api/messages/(?<segment>.*), /${segment}
-
-        # System Server 라우트
-        - id: chat-system-server
-          uri: lb://chat-system-server
-          predicates:
-            - Path=/api/channels/**,/api/schedules/**
-          filters:
-            - RewritePath=/api/(?<segment>.*), /${segment}
-
-        # WebSocket Server 라우트 (WebSocket 프로토콜 지원)
-        - id: chat-websocket-server
-          uri: lb:ws://chat-websocket-server
-          predicates:
-            - Path=/ws/**
+      # 라우트 설정은 GatewayRouteConfig.kt 참고
 
       # 전역 CORS 설정
       globalcors:
@@ -52,7 +30,7 @@ spring:
             max-age: 3600
 
 server:
-  port: 8000
+  port: 8080
 
 # Eureka Client 설정
 eureka:

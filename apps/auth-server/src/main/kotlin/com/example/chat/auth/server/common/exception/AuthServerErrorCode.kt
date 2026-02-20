@@ -13,6 +13,10 @@ enum class AuthServerErrorCode(
     PRINCIPAL_NOT_FOUND("AUTH-401-002", "존재하지 않는 사용자입니다", 401),
     PRINCIPAL_INACTIVE("AUTH-401-003", "비활성화된 계정입니다", 401),
 
+    // Signup Errors
+    DUPLICATE_IDENTIFIER("AUTH-409-001", "이미 사용 중인 이메일입니다", 409),
+    WEAK_PASSWORD("AUTH-400-001", "비밀번호는 8자 이상이어야 합니다", 400),
+
     // Token Errors
     TOKEN_EXPIRED("AUTH-401-010", "토큰이 만료되었습니다", 401),
     INVALID_TOKEN("AUTH-401-011", "유효하지 않은 토큰입니다", 401),
