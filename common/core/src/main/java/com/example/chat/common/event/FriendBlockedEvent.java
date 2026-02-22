@@ -1,0 +1,12 @@
+package com.example.chat.common.event;
+
+import java.time.Instant;
+
+/**
+ * 친구 차단 이벤트
+ */
+public record FriendBlockedEvent(
+        String userId,
+        String blockedId,
+        Instant occurredAt) {
+}

@@ -1,50 +1,30 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
-	id 'java-library'
-	id 'org.jetbrains.kotlin.jvm'
-	id 'org.jetbrains.kotlin.plugin.spring'
+    id 'java-library'
 }
 
 group = 'com.example.chat'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
-	}
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	implementation 'org.jetbrains.kotlin:kotlin-stdlib'
-	implementation 'org.jetbrains.kotlin:kotlin-reflect'
-	implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
-
-	// kotlin-logging
-	implementation 'io.github.oshai:kotlin-logging-jvm:5.1.0'
-
-	// Test
-	testImplementation 'org.junit.jupiter:junit-jupiter'
-	testImplementation 'org.assertj:assertj-core'
+    // Test
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.assertj:assertj-core'
 }
 
 test {
-	useJUnitPlatform()
-}
-
-tasks.withType(KotlinCompile).configureEach {
-	compilerOptions {
-		jvmTarget.set(JvmTarget.JVM_21)
-		freeCompilerArgs.add("-Xjsr305=strict")
-	}
+    useJUnitPlatform()
 }
 
 tasks.withType(JavaCompile).configureEach {
-	options.encoding = "UTF-8"
+    options.encoding = "UTF-8"
 }
-

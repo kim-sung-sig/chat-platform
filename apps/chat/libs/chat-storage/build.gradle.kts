@@ -1,7 +1,5 @@
 plugins {
-    kotlin("jvm")
-    kotlin("plugin.jpa")
-    kotlin("plugin.spring")
+    id("java-library")
     id("org.springframework.boot")
     id("io.spring.dependency-management")
 }
@@ -9,37 +7,23 @@ plugins {
 group = "com.example.chat"
 version = "0.0.1-SNAPSHOT"
 
-kotlin {
-    jvmToolchain(21)
-    compilerOptions {
-        freeCompilerArgs.add("-Xjsr305=strict")
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
-}
-
-sourceSets {
-    main {
-        java {
-            setSrcDirs(emptyList<String>())
-        }
-        kotlin {
-            setSrcDirs(listOf("src/main/kotlin"))
-        }
-    }
-}
-
-tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
-    enabled = false
-}
-
-tasks.named<Jar>("jar") {
-    enabled = true
 }
 
 repositories {
     mavenCentral()
 }
 
-val querydslVersion by extra { "5.0.0" }
+configurations {
+    compileOnly {
+        extendsFrom(configurations.annotationProcessor.get())
+    }
+}
+
+val querydslVersion = "5.0.0"
 
 dependencies {
     implementation(project(":common:core"))
@@ -47,9 +31,6 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     runtimeOnly("org.postgresql:postgresql")
 
     implementation("com.querydsl:querydsl-jpa:${querydslVersion}:jakarta")
@@ -60,7 +41,20 @@ dependencies {
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
 
+    compileOnly("org.projectlombok:lombok:1.18.30")
+    annotationProcessor("org.projectlombok:lombok:1.18.30")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("io.mockk:mockk:1.13.9")
 }
 
+tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+    enabled = false
+}
+
+tasks.named<Jar>("jar") {
+    enabled = true
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
