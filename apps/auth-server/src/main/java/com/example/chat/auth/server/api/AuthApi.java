@@ -24,10 +24,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
-@Slf4j
 public class AuthApi {
 
     private final AuthenticationApplicationService authenticationService;
@@ -108,9 +108,8 @@ public class AuthApi {
             return ResponseEntity.status(401).build();
         }
 
-        AuthenticationApplicationService.AuthenticationResult result = authenticationService.refreshToken(
-                refreshToken,
-                createAuthContext(request).getDevice());
+        AuthenticationApplicationService.AuthenticationResult result =
+                authenticationService.refreshToken(refreshToken, createAuthContext(request).getDevice());
 
         if (result.authResult().authenticated()) {
             if (result.token() != null && result.token().refreshToken() != null) {
@@ -140,8 +139,7 @@ public class AuthApi {
         String ipAddress = request.getRemoteAddr();
         String userAgent = request.getHeader("User-Agent");
         String channel = request.getHeader("X-Channel");
-        if (channel == null)
-            channel = "WEB";
+        if (channel == null) channel = "WEB";
 
         return new AuthenticationContext(
                 ipAddress,

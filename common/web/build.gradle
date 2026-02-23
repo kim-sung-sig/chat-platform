@@ -1,10 +1,5 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     id 'java-library'
-    id 'org.jetbrains.kotlin.jvm'
-    id 'org.jetbrains.kotlin.plugin.spring'
 }
 
 group = 'com.example.chat'
@@ -28,24 +23,13 @@ dependencies {
     api 'org.springframework.boot:spring-boot-starter-web'
     api 'org.springframework.boot:spring-boot-starter-validation'
 
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib'
-    implementation 'org.jetbrains.kotlin:kotlin-reflect'
-    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
-
-    // kotlin-logging
-    implementation 'io.github.oshai:kotlin-logging-jvm:5.1.0'
+    // Jackson
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
 
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
-test {
+tasks.named('test') {
     useJUnitPlatform()
-}
-
-tasks.withType(KotlinCompile).configureEach {
-    compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_21)
-        freeCompilerArgs.add("-Xjsr305=strict")
-    }
 }

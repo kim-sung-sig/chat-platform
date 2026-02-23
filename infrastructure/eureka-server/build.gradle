@@ -1,0 +1,32 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+}
+group = 'com.example.chat'
+version = '0.0.1-SNAPSHOT'
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+repositories {
+    mavenCentral()
+}
+dependencies {
+    // Spring Cloud Eureka Server
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-server'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+tasks.named('test') {
+    useJUnitPlatform()
+}
+tasks.named('bootJar') {
+    mainClass = 'com.example.chat.eureka.EurekaServerApplication'
+}
+tasks.named('jar') {
+    enabled = false
+}

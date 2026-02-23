@@ -212,8 +212,8 @@ public class ChannelQueryService {
             case CREATED_AT -> comparator = Comparator.comparing(ChannelListItem::createdAt,
                     Comparator.nullsLast(Comparator.naturalOrder()));
             case LAST_ACTIVITY -> {
-                comparator = Comparator.comparing(ChannelListItem::pinned).reversed()
-                        .thenComparator((a, b) -> {
+                comparator = Comparator.<ChannelListItem, Boolean>comparing(ChannelListItem::pinned).reversed()
+                        .thenComparing((a, b) -> {
                             Instant timeA = a.lastActivityAt() != null ? a.lastActivityAt()
                                     : (a.lastMessageTime() != null ? a.lastMessageTime() : a.createdAt());
                             Instant timeB = b.lastActivityAt() != null ? b.lastActivityAt()

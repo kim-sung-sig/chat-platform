@@ -85,8 +85,8 @@ public class FriendshipApplicationService {
 
         // 4. Domain Service를 통한 친구 요청 생성 (양방향)
         var result = friendshipDomainService.requestFriendship(requester, target);
-        Friendship requestToTarget = result.requestToTarget();
-        Friendship requestFromTarget = result.requestFromTarget();
+        Friendship requestToTarget = result.getRequestToTarget();
+        Friendship requestFromTarget = result.getRequestFromTarget();
 
         // 5. 저장
         Friendship saved = friendshipRepository.save(requestToTarget);

@@ -1,48 +1,27 @@
-pluginManagement {
-	plugins {
-		id 'org.jetbrains.kotlin.jvm' version '2.3.0'
-	}
-}
 rootProject.name = 'chat-platform'
-
 // ============================================
 // Infrastructure - Spring Cloud 인프라
 // ============================================
-include("infrastructure:config-server")
-include("infrastructure:eureka-server")
-include("infrastructure:api-gateway")
-
-project(":infrastructure:config-server").buildFileName = "build.gradle.kts"
-project(":infrastructure:eureka-server").buildFileName = "build.gradle.kts"
-project(":infrastructure:api-gateway").buildFileName = "build.gradle.kts"
-
+include('infrastructure:config-server')
+include('infrastructure:eureka-server')
+include('infrastructure:api-gateway')
 // ============================================
 // Apps - 실행 가능한 애플리케이션
 // ============================================
-include("apps:auth-server")
-include("apps:push-service")
-include("apps:chat:message-server")
-include("apps:chat:system-server")
-include("apps:chat:websocket-server")
-
-// Gradle Kotlin DSL build files for chat modules
-project(":apps:chat:message-server").buildFileName = "build.gradle.kts"
-project(":apps:chat:system-server").buildFileName = "build.gradle.kts"
-project(":apps:chat:websocket-server").buildFileName = "build.gradle.kts"
-
+include('apps:auth-server')
+include('apps:push-service')
+include('apps:chat:message-server')
+include('apps:chat:system-server')
+include('apps:chat:websocket-server')
 // ============================================
 // Apps - Chat 관련 라이브러리 모듈
 // ============================================
-include("apps:chat:libs:chat-domain")
-include("apps:chat:libs:chat-storage")
-
-project(":apps:chat:libs:chat-domain").buildFileName = "build.gradle.kts"
-project(":apps:chat:libs:chat-storage").buildFileName = "build.gradle.kts"
-
+include('apps:chat:libs:chat-domain')
+include('apps:chat:libs:chat-storage')
 // ============================================
 // Common - 유틸리티 & 횡단 관심사
 // ============================================
-include("common:core")              // Core - 공통 객체 및 유틸리티
-include("common:web")               // Web - Web 계층 공통
-include("common:security")          // JWT - 보안 통합 (JWT + OAuth2)
-include("common:logging")           // Logging - 로깅
+include('common:core')
+include('common:web')
+include('common:security')
+include('common:logging')
