@@ -43,17 +43,21 @@ eureka:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${server.port}
 
-# Actuator 설정
+# Micrometer Tracing
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,gateway
+        include: health,info,metrics,gateway,traces
   endpoint:
     health:
       show-details: always
     gateway:
       enabled: true
+  tracing:
+    sampling:
+      # 1.0 = 100% 샘플링
+      probability: 1.0
 
 # Logging
 logging:
@@ -61,3 +65,6 @@ logging:
     org.springframework.cloud.gateway: DEBUG
     reactor.netty: INFO
     com.example.chat.gateway: DEBUG
+  pattern:
+    # logback-spring.xml 에서 traceId/spanId MDC 패턴 처리
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] %logger{36} [%X{traceId:-NO_TRACE},%X{spanId:-NO_SPAN}] : %msg%n"

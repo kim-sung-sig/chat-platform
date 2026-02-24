@@ -36,6 +36,10 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
     implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+
+    // Micrometer Tracing - Brave 구현체 (traceId/spanId MDC 자동 주입)
+    implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testCompileOnly 'org.projectlombok:lombok'

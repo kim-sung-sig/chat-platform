@@ -33,6 +33,9 @@ dependencies {
 	implementation 'org.springframework.kafka:spring-kafka'
 	implementation 'com.fasterxml.jackson.core:jackson-databind'
 
+	// Micrometer Tracing - Brave 구현체 (traceId/spanId MDC 자동 주입)
+	implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+
 	runtimeOnly 'org.postgresql:postgresql'
 
 	compileOnly 'org.projectlombok:lombok'

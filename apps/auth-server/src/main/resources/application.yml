@@ -21,3 +21,9 @@ logging:
   level:
     com.example.chat.auth: DEBUG
     org.springframework.security: DEBUG
+
+# Micrometer Tracing
+management:
+  tracing:
+    sampling:
+      probability: 1.0

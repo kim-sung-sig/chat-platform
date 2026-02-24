@@ -34,6 +34,12 @@ push:
 server:
   port: 18081
 
+# Micrometer Tracing
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+
 logging:
   level:
     com.example.chat.push: DEBUG

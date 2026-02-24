@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    common:logging 모듈에서 제공하는 공통 Tracing 로그 패턴.
+
+    사용법: 각 서비스의 logback-spring.xml 에서 아래와 같이 include 한다.
+    <include resource="logback-tracing-pattern.xml"/>
+
+    Micrometer Tracing(Brave) 이 MDC 에 자동으로 주입하는 키:
+      traceId : 서비스 간 전파되는 128-bit trace 식별자
+      spanId  : 현재 작업 단위 식별자
+-->
+<included>
+    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
+
+    <property
+        name="TRACING_CONSOLE_PATTERN"
+        value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){magenta} %clr([%-5level]) [%thread] %clr(%logger{36}){cyan} [%X{traceId:-NO_TRACE},%X{spanId:-NO_SPAN}] : %msg%n"/>
+</included>

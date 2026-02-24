@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
+
+    <!--
+        Micrometer Tracing 이 MDC 에 자동으로 traceId / spanId 를 주입한다.
+        %X{traceId}  : Micrometer Tracing 이 설정한 W3C TraceContext 의 traceId
+        %X{spanId}   : 현재 Span 의 spanId
+    -->
+    <property
+        name="CONSOLE_LOG_PATTERN"
+        value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){magenta} %clr([%-5level]) [%thread] %clr(%logger{36}){cyan} [%X{traceId:-NO_TRACE},%X{spanId:-NO_SPAN}] : %msg%n" />
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="com.example.chat" level="DEBUG"/>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+    </root>
+
+</configuration>

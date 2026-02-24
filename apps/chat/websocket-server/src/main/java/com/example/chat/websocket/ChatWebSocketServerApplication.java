@@ -1,11 +1,13 @@
 package com.example.chat.websocket;
 
+import com.example.chat.common.logging.annotation.EnableTracingLogging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+@EnableTracingLogging
 @SpringBootApplication
 @EnableRabbit
 public class ChatWebSocketServerApplication {

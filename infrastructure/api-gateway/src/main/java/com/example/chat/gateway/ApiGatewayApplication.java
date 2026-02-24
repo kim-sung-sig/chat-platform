@@ -1,5 +1,6 @@
 package com.example.chat.gateway;
 
+import com.example.chat.common.logging.annotation.EnableTracingLogging;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -13,6 +14,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
  * - 인증
  * - Rate Limiting
  */
+@EnableTracingLogging
 @EnableDiscoveryClient
 @SpringBootApplication
 public class ApiGatewayApplication {

@@ -38,6 +38,8 @@ dependencies {
     implementation 'org.flywaydb:flyway-core'
     runtimeOnly 'org.flywaydb:flyway-database-postgresql'
     implementation 'org.springframework.kafka:spring-kafka'
+    // Micrometer Tracing - Brave 구현체 (traceId/spanId MDC 자동 주입)
+    implementation 'io.micrometer:micrometer-tracing-bridge-brave'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testCompileOnly 'org.projectlombok:lombok'

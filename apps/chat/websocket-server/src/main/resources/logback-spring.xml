@@ -1,24 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <!-- WebSocket server uses the same structured logging format. -->
-    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
-
+    <!-- common:logging 모듈의 공통 traceId/spanId 패턴을 가져온다 -->
+    <include resource="logback-tracing-pattern.xml"/>
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
-            <providers>
-                <timestamp/>
-                <pattern>
-                    <pattern>{"severity":"%level"}</pattern>
-                </pattern>
-                <loggerName/>
-                <threadName/>
-                <message/>
-                <mdc/>
-                <stackTrace/>
-            </providers>
+        <encoder>
+            <pattern>${TRACING_CONSOLE_PATTERN}</pattern>
         </encoder>
     </appender>
-
+    <logger name="com.example.chat" level="DEBUG"/>
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
     </root>

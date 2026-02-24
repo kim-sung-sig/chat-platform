@@ -37,8 +37,18 @@ dependencies {
     // Spring Web (Filter 용)
     implementation 'org.springframework:spring-web'
 
+    // Spring Boot AutoConfiguration (TracingFilterAutoConfiguration 용)
+    compileOnly 'org.springframework.boot:spring-boot-autoconfigure'
+
     // Jakarta Servlet
     compileOnly 'jakarta.servlet:jakarta.servlet-api'
+
+    // Micrometer Tracing (공통 API - 구현체는 각 서비스에서 선택)
+    api 'io.micrometer:micrometer-tracing'
+
+    // WebFlux (Reactive 필터 optional 컴파일)
+    compileOnly 'org.springframework:spring-webflux'
+    compileOnly 'io.projectreactor:reactor-core'
 
     // Test
     testImplementation 'org.junit.jupiter:junit-jupiter'
