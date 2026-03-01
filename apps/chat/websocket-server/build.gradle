@@ -27,7 +27,10 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
     implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
     // Micrometer Tracing - Brave 구현체 (traceId/spanId MDC 자동 주입)
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+    implementation 'io.micrometer:micrometer-observation'
+    implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     testCompileOnly 'org.projectlombok:lombok'

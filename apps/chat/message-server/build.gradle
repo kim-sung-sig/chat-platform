@@ -26,6 +26,7 @@ dependencies {
     implementation project(':apps:chat:libs:chat-domain')
     implementation project(':apps:chat:libs:chat-storage')
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -39,6 +40,10 @@ dependencies {
 
     // Micrometer Tracing - Brave 구현체 (traceId/spanId MDC 자동 주입)
     implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+    // Micrometer Observation (최신 Spring Boot Tracing 필수)
+    implementation 'io.micrometer:micrometer-observation'
+    // Brave 리포터 (Tracer 빈 생성 보장을 위해 추가)
+    implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

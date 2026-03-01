@@ -1,5 +1,7 @@
 package com.example.chat.domain.friendship;
 
+import org.springframework.lang.NonNull;
+
 import java.util.UUID;
 
 /**
@@ -18,10 +20,5 @@ public record FriendshipId(String value) {
 
     public static FriendshipId generate() {
         return new FriendshipId(UUID.randomUUID().toString());
-    }
-
-    @Override
-    public String toString() {
-        return value;
     }
 }

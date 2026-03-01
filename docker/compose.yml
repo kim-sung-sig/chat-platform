@@ -128,3 +128,10 @@ services:
       - ./data/redisinsight:/data
     environment:
       - REDIS_HOSTS=local:ms-redis:6379:0:${REDIS_PASSWORD:-dev_password}
+
+  ms-zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: ms-zipkin
+    restart: unless-stopped
+    ports:
+      - "9411:9411"

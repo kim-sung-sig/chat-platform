@@ -56,7 +56,10 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
 	// logging
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+	implementation 'io.micrometer:micrometer-observation'
+	implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
 
 	// lombok
 	compileOnly 'org.projectlombok:lombok'

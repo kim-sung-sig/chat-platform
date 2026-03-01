@@ -16,7 +16,7 @@ public class TestQuartzConfig {
 
     @Bean
     @Primary
-    public SchedulerFactoryBean schedulerFactoryBean() {
+    SchedulerFactoryBean schedulerFactoryBean() {
         SchedulerFactoryBean schedulerFactory = new SchedulerFactoryBean();
         schedulerFactory.setAutoStartup(false);
         return schedulerFactory;
