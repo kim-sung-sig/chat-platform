@@ -1,9 +1,10 @@
 package com.example.chat.auth.server;
 
-import com.example.chat.common.logging.annotation.EnableTracingLogging;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+
+import com.example.chat.common.logging.annotation.EnableTracingLogging;
 
 @EnableTracingLogging
 @EnableDiscoveryClient

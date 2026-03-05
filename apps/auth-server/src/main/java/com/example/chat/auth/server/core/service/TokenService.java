@@ -37,7 +37,7 @@ public class TokenService {
     private final RefreshTokenRepository refreshTokenRepository;
 
     public TokenService(
-            @Value("${auth.jwt.secret:your-256-bit-secret-key-change-this-in-production-environment}") String secretKey,
+            @Value("${auth.jwt.secret:your-256-bit-secret-key-change-this-in-production-environment-please-use-strong-key}") String secretKey,
             @Value("${auth.jwt.access-ttl-minutes:15}") long accessTokenTtlMinutes,
             @Value("${auth.jwt.refresh-ttl-days:7}") long refreshTokenTtlDays,
             @Value("${auth.jwt.mfa-ttl-minutes:5}") long mfaTokenTtlMinutes,

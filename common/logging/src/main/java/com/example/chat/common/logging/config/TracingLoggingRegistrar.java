@@ -26,6 +26,18 @@ public class TracingLoggingRegistrar implements ImportBeanDefinitionRegistrar {
     private static final String SERVLET_CLASS = "jakarta.servlet.http.HttpServletRequest";
     private static final String REACTOR_CLASS = "reactor.core.publisher.Mono";
 
+    static {
+        // Reactor Context를 MDC 등 ThreadLocal에 자동 전파하도록 설정 (Micrometer Tracing 필수)
+        // 클래스 로딩 시점에 한 번만 실행되도록 static 블록 활용
+        try {
+            if (ClassUtils.isPresent("reactor.core.publisher.Hooks", TracingLoggingRegistrar.class.getClassLoader())) {
+                reactor.core.publisher.Hooks.enableAutomaticContextPropagation();
+            }
+        } catch (Throwable ignored) {
+            // Reactor가 클래스패스에 없을 경우 무시
+        }
+    }
+
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata,
             BeanDefinitionRegistry registry) {
@@ -50,7 +62,7 @@ public class TracingLoggingRegistrar implements ImportBeanDefinitionRegistrar {
                 .genericBeanDefinition(FilterRegistrationBean.class)
                 .addPropertyReference("filter", "tracingFilter")
                 .addPropertyValue("urlPatterns", new String[] { "/*" })
-                .addPropertyValue("order", Ordered.HIGHEST_PRECEDENCE + 1)
+                .addPropertyValue("order", Ordered.HIGHEST_PRECEDENCE + 5)
                 .addPropertyValue("name", "tracingFilterRegistration");
         registry.registerBeanDefinition("tracingFilterRegistration",
                 registrationBuilder.getBeanDefinition());

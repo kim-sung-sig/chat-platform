@@ -1,7 +1,5 @@
 package com.example.chat.gateway.filter;
 
-import io.micrometer.tracing.Span;
-import io.micrometer.tracing.Tracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -10,6 +8,9 @@ import org.springframework.core.Ordered;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
+
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
 import reactor.core.publisher.Mono;
 
 /**
@@ -42,13 +43,18 @@ public class LoggingFilter implements GlobalFilter, Ordered {
 
         log.info("[Gateway Request] {} {} from {}", request.getMethod(), request.getURI().getPath(), remoteAddress);
 
-        return chain.filter(exchange).then(Mono.fromRunnable(() -> {
+        // 응답 커밋 전에 Trace ID 헤더 주입
+        exchange.getResponse().beforeCommit(() -> Mono.fromRunnable(() -> {
             Span currentSpan = tracer.currentSpan();
             if (currentSpan != null) {
                 String traceId = currentSpan.context().traceId();
-                exchange.getResponse().getHeaders().set(TRACE_ID_RESPONSE_HEADER, traceId);
+                if (!exchange.getResponse().isCommitted()) {
+                    exchange.getResponse().getHeaders().set(TRACE_ID_RESPONSE_HEADER, traceId);
+                }
             }
+        }));
 
+        return chain.filter(exchange).then(Mono.fromRunnable(() -> {
             long duration = System.currentTimeMillis() - startTime;
             log.info("[Gateway Response] {} {} - status={} duration={}ms",
                     request.getMethod(),

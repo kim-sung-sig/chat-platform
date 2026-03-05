@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/api/channels")
+@RequestMapping("/api/v1/channels")
 @Tag(name = "Channel Metadata", description = "채팅방 메타데이터 API")
 @RequiredArgsConstructor
 @Slf4j

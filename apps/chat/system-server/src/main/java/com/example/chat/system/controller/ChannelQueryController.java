@@ -1,5 +1,6 @@
 package com.example.chat.system.controller;
 
+import com.example.chat.auth.core.util.SecurityUtils;
 import com.example.chat.domain.channel.ChannelType;
 import com.example.chat.system.application.dto.response.ChannelListItem;
 import com.example.chat.system.application.query.ChannelListQuery;
@@ -23,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
  * - Application Service 위임
  */
 @RestController
-@RequestMapping("/api/channels")
+@RequestMapping("/api/v1/channels")
 @Tag(name = "Channel Query", description = "채팅방 조회 API")
 @RequiredArgsConstructor
 @Slf4j
@@ -31,10 +32,66 @@ public class ChannelQueryController {
 
     private final ChannelQueryService channelQueryService;
 
+    /**
+     * 내 채팅방 목록 조회 (JWT 토큰 기반)
+     * GET /api/v1/channels/my
+     */
+    @GetMapping("/my")
+    @Operation(
+            summary = "내 채팅방 목록 조회",
+            description = "JWT 토큰으로 인증된 사용자의 채팅방 목록 조회"
+    )
+    public ResponseEntity<Page<ChannelListItem>> getMyChannelList(
+            @Parameter(description = "채널 타입 필터 (DIRECT, GROUP, PUBLIC, PRIVATE)")
+            @RequestParam(required = false) ChannelType type,
+
+            @Parameter(description = "즐겨찾기만 보기")
+            @RequestParam(required = false) Boolean onlyFavorites,
+
+            @Parameter(description = "읽지 않은 메시지가 있는 것만 보기")
+            @RequestParam(required = false) Boolean onlyUnread,
+
+            @Parameter(description = "상단 고정만 보기")
+            @RequestParam(required = false) Boolean onlyPinned,
+
+            @Parameter(description = "검색 키워드 (채널명, 상대방 이름)")
+            @RequestParam(required = false) String search,
+
+            @Parameter(description = "정렬 기준 (LAST_ACTIVITY, NAME, UNREAD_COUNT, CREATED_AT)")
+            @RequestParam(required = false, defaultValue = "LAST_ACTIVITY") ChannelSortBy sortBy,
+
+            @Parameter(description = "정렬 방향 (ASC, DESC)")
+            @RequestParam(required = false, defaultValue = "DESC") ChannelListQuery.SortDirection direction,
+
+            @Parameter(description = "페이지 번호 (0부터 시작)")
+            @RequestParam(required = false, defaultValue = "0") int page,
+
+            @Parameter(description = "페이지 크기")
+            @RequestParam(required = false, defaultValue = "20") int size) {
+
+        String userId = SecurityUtils.getCurrentUserId()
+                .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
+
+        log.info("GET /api/v1/channels/my - userId: {}, type: {}, page: {}/{}", userId, type, page, size);
+
+        ChannelListQuery query = new ChannelListQuery(
+                userId, type, onlyFavorites, onlyUnread, onlyPinned, search, sortBy, direction, page, size);
+
+        Page<ChannelListItem> result = channelQueryService.getChannelList(query);
+
+        log.info("Found {} channels for user {} (total: {})", result.getNumberOfElements(), userId, result.getTotalElements());
+
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * 채팅방 목록 조회 (X-User-Id 헤더 기반, 내부 서비스 간 호출용)
+     * GET /api/v1/channels
+     */
     @GetMapping
     @Operation(
-            summary = "채팅방 목록 조회",
-            description = "다양한 필터링과 정렬 옵션을 지원하는 채팅방 목록 조회"
+            summary = "채팅방 목록 조회 (헤더 기반)",
+            description = "X-User-Id 헤더로 사용자를 지정하여 채팅방 목록 조회"
     )
     public ResponseEntity<Page<ChannelListItem>> getChannelList(
             @RequestHeader("X-User-Id") String userId,
@@ -66,8 +123,7 @@ public class ChannelQueryController {
             @Parameter(description = "페이지 크기")
             @RequestParam(required = false, defaultValue = "20") int size) {
 
-        log.info("GET /api/channels - userId: {}, type: {}, favorites: {}, unread: {}, search: '{}', page: {}/{}",
-                userId, type, onlyFavorites, onlyUnread, search, page, size);
+        log.info("GET /api/v1/channels - userId: {}, type: {}, page: {}/{}", userId, type, page, size);
 
         ChannelListQuery query = new ChannelListQuery(
                 userId, type, onlyFavorites, onlyUnread, onlyPinned, search, sortBy, direction, page, size);

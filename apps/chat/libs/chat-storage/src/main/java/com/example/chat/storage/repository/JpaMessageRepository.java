@@ -4,12 +4,14 @@ import com.example.chat.storage.entity.ChatMessageEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 /**
  * 메시지 JPA Repository
  */
+@Repository
 public interface JpaMessageRepository extends JpaRepository<ChatMessageEntity, String> {
 
     /**

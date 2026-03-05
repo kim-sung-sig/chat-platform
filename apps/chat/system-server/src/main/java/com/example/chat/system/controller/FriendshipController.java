@@ -24,7 +24,7 @@ import java.util.List;
  * - Application Service 위임
  */
 @RestController
-@RequestMapping("/api/friendships")
+@RequestMapping("/api/v1/friendships")
 @Tag(name = "Friendship", description = "친구 관리 API")
 @RequiredArgsConstructor
 @Slf4j
