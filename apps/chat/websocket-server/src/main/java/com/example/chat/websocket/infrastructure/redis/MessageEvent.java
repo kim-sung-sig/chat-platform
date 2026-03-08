@@ -1,58 +1,32 @@
 package com.example.chat.websocket.infrastructure.redis;
-
 import java.time.Instant;
-
-import com.example.chat.domain.message.MessageStatus;
-import com.example.chat.domain.message.MessageType;
-
+import com.example.chat.common.core.enums.MessageStatus;
+import com.example.chat.common.core.enums.MessageType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
 /**
- * Redis에서 수신한 메시지 이벤트
- * chat-message-server의 MessageSentEvent와 동일한 구조
+ * Redis 에서 수신한 메시지 이벤트
  */
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class MessageEvent {
-
-	private String messageId; // String (UUID)
-	private String channelId; // ChannelId
-	private String senderId; // UserId
-	private String messageType; // MessageType name (String)
-	private String content; // 텍스트 내용
-	private String status; // MessageStatus name (String)
-	private Instant sentAt;
-
-	/**
-	 * MessageType enum 반환
-	 */
-	public MessageType getMessageTypeEnum() {
-		if (messageType == null) {
-			return null;
-		}
-		try {
-			return MessageType.valueOf(messageType);
-		} catch (IllegalArgumentException e) {
-			return null;
-		}
-	}
-
-	/**
-	 * MessageStatus enum 반환
-	 */
-	public MessageStatus getStatusEnum() {
-		if (status == null) {
-			return null;
-		}
-		try {
-			return MessageStatus.valueOf(status);
-		} catch (IllegalArgumentException e) {
-			return null;
-		}
-	}
+    private String messageId;
+    private String channelId;
+    private String senderId;
+    private String messageType;
+    private String content;
+    private String status;
+    private Instant sentAt;
+    public MessageType getMessageTypeEnum() {
+        if (messageType == null) return null;
+        try { return MessageType.valueOf(messageType); } catch (IllegalArgumentException e) { return null; }
+    }
+    public MessageStatus getStatusEnum() {
+        if (status == null) return null;
+        try { return MessageStatus.valueOf(status); } catch (IllegalArgumentException e) { return null; }
+    }
 }

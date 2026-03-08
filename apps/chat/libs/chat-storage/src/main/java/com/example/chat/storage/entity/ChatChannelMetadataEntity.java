@@ -15,7 +15,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 /**
  * 채팅방 메타데이터 JPA Entity
@@ -31,7 +30,6 @@ import lombok.Setter;
         @UniqueConstraint(name = "uk_channel_user", columnNames = { "channel_id", "user_id" })
 })
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
@@ -80,16 +78,43 @@ public class ChatChannelMetadataEntity {
     @PrePersist
     public void prePersist() {
         Instant now = Instant.now();
-        if (createdAt == null)
-            createdAt = now;
-        if (updatedAt == null)
-            updatedAt = now;
-        if (lastActivityAt == null)
-            lastActivityAt = now;
+        if (createdAt == null) createdAt = now;
+        if (updatedAt == null) updatedAt = now;
+        if (lastActivityAt == null) lastActivityAt = now;
     }
 
     @PreUpdate
     public void preUpdate() {
         updatedAt = Instant.now();
+    }
+
+    // =============================================
+    // 비즈니스 메서드
+    // =============================================
+
+    public void toggleFavorite() {
+        this.favorite = !this.favorite;
+    }
+
+    public void togglePin() {
+        this.pinned = !this.pinned;
+    }
+
+    public void toggleNotification() {
+        this.notificationEnabled = !this.notificationEnabled;
+    }
+
+    public void markAsRead(String messageId) {
+        this.lastReadMessageId = messageId;
+        this.lastReadAt = Instant.now();
+        this.unreadCount = 0;
+    }
+
+    public void incrementUnread() {
+        this.unreadCount++;
+    }
+
+    public void recordActivity() {
+        this.lastActivityAt = Instant.now();
     }
 }

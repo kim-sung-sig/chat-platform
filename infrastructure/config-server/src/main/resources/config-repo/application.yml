@@ -1,29 +1,8 @@
-# 공통 설정 (모든 서비스에 적용)
-spring:
-  profiles:
-    active: local
-
-# Database 공통 설정
-db:
-  source:
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 20
-      minimum-idle: 5
-      connection-timeout: 30000
-  replica:
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 20
-      minimum-idle: 5
-      connection-timeout: 30000
-
-# Redis 공통 설정
-redis:
-  host: localhost
-  port: 16379
-  password: dev_password
-
+# 공통 설정 (모든 서비스에 공유)
+# JWT - 모든 서비스 공통 시크릿 (환경변수 JWT_SECRET_KEY 로 외부화)
+security:
+  jwt:
+    secret-key: ${JWT_SECRET_KEY:your-256-bit-secret-key-change-this-in-production-environment-please-use-strong-key}
 # Actuator 공통 설정
 management:
   endpoints:
@@ -33,11 +12,11 @@ management:
   endpoint:
     health:
       show-details: always
-
+  tracing:
+    sampling:
+      probability: 1.0
 # Logging 공통 설정
 logging:
   level:
     root: INFO
     com.example.chat: DEBUG
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"

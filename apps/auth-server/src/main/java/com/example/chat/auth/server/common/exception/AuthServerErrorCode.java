@@ -29,6 +29,15 @@ public enum AuthServerErrorCode implements ErrorCode {
     MFA_REQUIRED("AUTH-401-030", "MFA 추가 인증이 필요합니다", 401),
     INVALID_MFA_CODE("AUTH-401-031", "MFA 인증 코드가 일치하지 않습니다", 401),
     MFA_SESSION_EXPIRED("AUTH-401-032", "MFA 세션이 만료되었습니다", 401),
+    MFA_ALREADY_ENABLED("AUTH-409-030", "이미 활성화된 MFA 수단입니다", 409),
+    MFA_NOT_FOUND("AUTH-404-030", "등록된 MFA 수단을 찾을 수 없습니다", 404),
+    TOTP_SETUP_REQUIRED("AUTH-400-030", "TOTP 설정을 먼저 완료해야 합니다", 400),
+    INVALID_TOTP_CODE("AUTH-401-033", "TOTP 코드가 유효하지 않습니다", 401),
+
+    // Profile Errors
+    PROFILE_NOT_FOUND("AUTH-404-040", "프로필을 찾을 수 없습니다", 404),
+    INVALID_CURRENT_PASSWORD("AUTH-401-040", "현재 비밀번호가 일치하지 않습니다", 401),
+    SAME_PASSWORD("AUTH-400-040", "새 비밀번호는 기존 비밀번호와 달라야 합니다", 400),
 
     // OAuth Errors
     SOCIAL_AUTH_FAILED("AUTH-401-050", "소셜 인증에 실패했습니다", 401),

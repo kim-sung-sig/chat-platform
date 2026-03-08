@@ -19,10 +19,14 @@ import lombok.RequiredArgsConstructor;
 public class WebSocketConfig implements WebSocketConfigurer {
 
 	private final @NonNull ChatWebSocketHandler chatWebSocketHandler;
+	private final @NonNull com.example.chat.websocket.presentation.handler.WebRtcSignalingHandler webRtcSignalingHandler;
 
 	@Override
 	public void registerWebSocketHandlers(@NonNull WebSocketHandlerRegistry registry) {
 		registry.addHandler(chatWebSocketHandler, "/ws/chat")
 				.setAllowedOrigins("*"); // CORS 설정 (운영 환경에서는 명시적으로 지정)
+
+		registry.addHandler(webRtcSignalingHandler, "/ws/webrtc")
+				.setAllowedOrigins("*");
 	}
 }

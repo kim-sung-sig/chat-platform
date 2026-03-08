@@ -42,4 +42,9 @@ public class PasswordAuthService {
     public String hashPassword(String plainPassword) {
         return passwordEncoder.encode(plainPassword);
     }
+
+    /** 평문 비밀번호와 해시 일치 여부 */
+    public boolean matches(String plainPassword, String hashedPassword) {
+        return passwordEncoder.matches(plainPassword, hashedPassword);
+    }
 }

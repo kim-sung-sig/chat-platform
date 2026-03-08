@@ -1,0 +1,31 @@
+> Task :common:web:processResources NO-SOURCE
+> Task :apps:chat:chat-server:processResources UP-TO-DATE
+> Task :common:logging:processResources UP-TO-DATE
+> Task :common:security:processResources UP-TO-DATE
+> Task :apps:chat:libs:chat-storage:processResources UP-TO-DATE
+> Task :apps:chat:chat-server:check
+> Task :common:core:compileJava UP-TO-DATE
+> Task :common:core:processResources NO-SOURCE
+> Task :common:core:classes UP-TO-DATE
+> Task :common:core:jar UP-TO-DATE
+> Task :common:web:compileJava UP-TO-DATE
+> Task :common:logging:compileJava UP-TO-DATE
+> Task :apps:chat:libs:chat-storage:compileJava UP-TO-DATE
+> Task :common:web:classes UP-TO-DATE
+> Task :common:logging:classes UP-TO-DATE
+> Task :apps:chat:libs:chat-storage:classes UP-TO-DATE
+> Task :common:web:jar UP-TO-DATE
+> Task :apps:chat:libs:chat-storage:jar UP-TO-DATE
+> Task :common:logging:jar UP-TO-DATE
+> Task :common:security:compileJava UP-TO-DATE
+> Task :common:security:classes UP-TO-DATE
+> Task :common:security:jar UP-TO-DATE
+> Task :apps:chat:chat-server:compileJava UP-TO-DATE
+> Task :apps:chat:chat-server:classes UP-TO-DATE
+> Task :apps:chat:chat-server:bootJar UP-TO-DATE
+> Task :apps:chat:chat-server:jar UP-TO-DATE
+> Task :apps:chat:chat-server:assemble UP-TO-DATE
+> Task :apps:chat:chat-server:build
+
+BUILD SUCCESSFUL in 2s
+17 actionable tasks: 17 up-to-date

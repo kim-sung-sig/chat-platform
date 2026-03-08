@@ -37,4 +37,9 @@ public interface JpaChannelMemberRepository extends JpaRepository<ChatChannelMem
      * 채널의 모든 멤버 삭제
      */
     void deleteByChannelId(String channelId);
+
+    /**
+     * 채널 멤버 여부 확인
+     */
+    boolean existsByChannelIdAndUserId(String channelId, String userId);
 }

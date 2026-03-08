@@ -21,8 +21,7 @@ configurations {
 def querydslVersion = '5.0.0'
 dependencies {
     implementation project(':common:core')
-    implementation project(':common:logging')
-    implementation project(':apps:chat:libs:chat-domain')
+    // Phase 4 완료: chat-domain 의존성 제거됨 - enum은 chat-storage.enums 패키지로 이동
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     runtimeOnly 'org.postgresql:postgresql'
@@ -34,6 +33,7 @@ dependencies {
     implementation 'org.flywaydb:flyway-database-postgresql'
     compileOnly 'org.projectlombok:lombok:1.18.30'
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 tasks.named('bootJar') {

@@ -83,3 +83,38 @@ VALUES (
     ) ON CONFLICT (principal_id, credential_type) DO NOTHING;
 COMMENT ON TABLE principals IS '인증 주체 (사용자, 서비스 계정)';
 COMMENT ON TABLE credentials IS '자격증명 (비밀번호, OAuth, Passkey, OTP)';
+
+-- 사용자 프로필
+CREATE TABLE IF NOT EXISTS user_profiles (
+    principal_id  UUID         PRIMARY KEY,
+    nickname      VARCHAR(50)  NOT NULL,
+    avatar_url    VARCHAR(500),
+    phone_number  VARCHAR(20),
+    bio           VARCHAR(200),
+    created_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_user_profiles_principal FOREIGN KEY (principal_id) REFERENCES principals(id) ON DELETE CASCADE
+);
+COMMENT ON TABLE user_profiles IS '사용자 프로필 (표시 정보)';
+
+-- MFA 설정
+CREATE TABLE IF NOT EXISTS mfa_settings (
+    id            UUID         PRIMARY KEY,
+    principal_id  UUID         NOT NULL,
+    mfa_type      VARCHAR(30)  NOT NULL,
+    enabled       BOOLEAN      NOT NULL DEFAULT false,
+    totp_secret   VARCHAR(100),
+    created_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_mfa_settings_principal FOREIGN KEY (principal_id) REFERENCES principals(id) ON DELETE CASCADE,
+    CONSTRAINT uq_mfa_settings_principal_type UNIQUE (principal_id, mfa_type)
+);
+CREATE INDEX IF NOT EXISTS idx_mfa_settings_principal_id ON mfa_settings(principal_id);
+COMMENT ON TABLE mfa_settings IS 'MFA 설정 (TOTP, OTP 등 수단별 활성화 상태)';
+
+-- 테스트 프로필 데이터
+INSERT INTO user_profiles (principal_id, nickname)
+VALUES
+    ('550e8400-e29b-41d4-a716-446655440001', 'user'),
+    ('550e8400-e29b-41d4-a716-446655440002', 'admin')
+ON CONFLICT (principal_id) DO NOTHING;

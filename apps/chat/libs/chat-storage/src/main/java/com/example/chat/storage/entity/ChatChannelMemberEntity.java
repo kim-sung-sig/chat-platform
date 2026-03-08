@@ -16,7 +16,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 /**
  * 채널 멤버 JPA Entity
@@ -29,7 +28,6 @@ import lombok.Setter;
         @Index(name = "idx_channel_member_user", columnList = "user_id")
 })
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
@@ -53,5 +51,17 @@ public class ChatChannelMemberEntity {
         if (joinedAt == null || joinedAt.equals(Instant.EPOCH)) {
             joinedAt = Instant.now();
         }
+    }
+
+    // =============================================
+    // 팩토리 메서드
+    // =============================================
+
+    public static ChatChannelMemberEntity of(String channelId, String userId) {
+        return ChatChannelMemberEntity.builder()
+                .channelId(channelId)
+                .userId(userId)
+                .joinedAt(Instant.now())
+                .build();
     }
 }

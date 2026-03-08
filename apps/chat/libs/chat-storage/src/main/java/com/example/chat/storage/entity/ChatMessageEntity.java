@@ -2,8 +2,8 @@ package com.example.chat.storage.entity;
 
 import java.time.Instant;
 
-import com.example.chat.domain.message.MessageStatus;
-import com.example.chat.domain.message.MessageType;
+import com.example.chat.common.core.enums.MessageStatus;
+import com.example.chat.common.core.enums.MessageType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,7 +18,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "chat_messages", indexes = {
@@ -26,7 +25,6 @@ import lombok.Setter;
         @Index(name = "idx_chat_message_sender", columnList = "sender_id")
 })
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
@@ -83,5 +81,37 @@ public class ChatMessageEntity {
         if (createdAt == null || createdAt.equals(Instant.EPOCH)) {
             createdAt = Instant.now();
         }
+    }
+
+    // =============================================
+    // 비즈니스 메서드 - 상태 변경 캡슐화
+    // =============================================
+
+    public void markAsSent() {
+        if (this.messageStatus != MessageStatus.PENDING) {
+            throw new IllegalStateException("메시지가 PENDING 상태여야 SENT 로 전환 가능합니다. 현재 상태: " + this.messageStatus);
+        }
+        this.messageStatus = MessageStatus.SENT;
+        this.sentAt = Instant.now();
+    }
+
+    public void markAsDelivered() {
+        if (this.messageStatus != MessageStatus.SENT) {
+            throw new IllegalStateException("메시지가 SENT 상태여야 DELIVERED 로 전환 가능합니다. 현재 상태: " + this.messageStatus);
+        }
+        this.messageStatus = MessageStatus.DELIVERED;
+        this.deliveredAt = Instant.now();
+    }
+
+    public void markAsRead() {
+        if (this.messageStatus == MessageStatus.FAILED || this.messageStatus == MessageStatus.PENDING) {
+            throw new IllegalStateException("PENDING 또는 FAILED 상태의 메시지는 READ 로 전환 불가합니다. 현재 상태: " + this.messageStatus);
+        }
+        this.messageStatus = MessageStatus.READ;
+        this.readAt = Instant.now();
+    }
+
+    public void markAsFailed() {
+        this.messageStatus = MessageStatus.FAILED;
     }
 }

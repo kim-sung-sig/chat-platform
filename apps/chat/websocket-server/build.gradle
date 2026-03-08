@@ -17,7 +17,7 @@ dependencies {
     implementation project(':common:core')
     implementation project(':common:security')
     implementation project(':common:logging')
-    implementation project(':apps:chat:libs:chat-domain')
+    // Phase 4: chat-domain/chat-storage 불필요, enum은 common/core.enums로 이동됨
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'

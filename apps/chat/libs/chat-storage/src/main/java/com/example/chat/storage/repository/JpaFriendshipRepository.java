@@ -1,6 +1,6 @@
 package com.example.chat.storage.repository;
 
-import com.example.chat.domain.friendship.FriendshipStatus;
+import com.example.chat.common.core.enums.FriendshipStatus;
 import com.example.chat.storage.entity.ChatFriendshipEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

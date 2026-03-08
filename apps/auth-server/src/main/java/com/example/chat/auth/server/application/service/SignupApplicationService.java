@@ -7,8 +7,10 @@ import com.example.chat.auth.server.common.exception.AuthServerErrorCode;
 import com.example.chat.auth.server.core.domain.Principal;
 import com.example.chat.auth.server.core.domain.PrincipalType;
 import com.example.chat.auth.server.core.domain.credential.PasswordCredential;
+import com.example.chat.auth.server.core.domain.profile.UserProfile;
 import com.example.chat.auth.server.core.repository.CredentialRepository;
 import com.example.chat.auth.server.core.repository.PrincipalRepository;
+import com.example.chat.auth.server.core.repository.UserProfileRepository;
 import com.example.chat.auth.server.core.service.PasswordAuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,7 @@ public class SignupApplicationService {
     private final PrincipalRepository principalRepository;
     private final CredentialRepository credentialRepository;
     private final PasswordAuthService passwordAuthService;
+    private final UserProfileRepository userProfileRepository;
 
     @Transactional
     public SignupResponse signup(SignupRequest request) {
@@ -56,6 +59,13 @@ public class SignupApplicationService {
         String hashedPassword = passwordAuthService.hashPassword(request.password());
         PasswordCredential credential = new PasswordCredential(hashedPassword, true);
         credentialRepository.save(principal.getId(), credential);
+
+        // 5. 기본 UserProfile 생성 (nickname = 요청값 또는 이메일 앞부분)
+        String nickname = request.nickname() != null && !request.nickname().isBlank()
+                ? request.nickname()
+                : request.email().split("@")[0];
+        UserProfile profile = UserProfile.create(principal.getId(), nickname);
+        userProfileRepository.save(profile);
 
         log.info("Signup completed for principal: {}", principal.getId());
 

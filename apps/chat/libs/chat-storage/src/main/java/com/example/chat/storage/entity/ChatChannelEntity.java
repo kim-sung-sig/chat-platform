@@ -2,7 +2,7 @@ package com.example.chat.storage.entity;
 
 import java.time.Instant;
 
-import com.example.chat.domain.channel.ChannelType;
+import com.example.chat.common.core.enums.ChannelType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,7 +18,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 /**
  * 채널 JPA Entity
@@ -29,7 +28,6 @@ import lombok.Setter;
         @Index(name = "idx_chat_channel_type", columnList = "channel_type")
 })
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
@@ -76,5 +74,34 @@ public class ChatChannelEntity {
     @PreUpdate
     public void preUpdate() {
         updatedAt = Instant.now();
+    }
+
+    // =============================================
+    // 비즈니스 메서드 - 상태 변경 캡슐화
+    // =============================================
+
+    public void deactivate() {
+        if (!this.active) {
+            throw new IllegalStateException("이미 비활성화된 채널입니다: " + this.id);
+        }
+        this.active = false;
+    }
+
+    public void activate() {
+        if (this.active) {
+            throw new IllegalStateException("이미 활성화된 채널입니다: " + this.id);
+        }
+        this.active = true;
+    }
+
+    public void updateName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("채널 이름은 비어 있을 수 없습니다.");
+        }
+        this.name = name;
+    }
+
+    public void updateDescription(String description) {
+        this.description = description;
     }
 }

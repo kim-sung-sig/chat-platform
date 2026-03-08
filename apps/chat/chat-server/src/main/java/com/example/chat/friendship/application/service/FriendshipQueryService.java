@@ -1,0 +1,45 @@
+package com.example.chat.friendship.application.service;
+import com.example.chat.storage.repository.JpaFriendshipRepository;
+import com.example.chat.friendship.application.dto.response.FriendshipResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+import java.util.stream.Collectors;
+/**
+ * 친구 관계 Query Service (Phase 2: JPA Entity 직접 사용)
+ */
+@Service
+@Transactional(readOnly = true)
+public class FriendshipQueryService {
+    private static final Logger logger = LoggerFactory.getLogger(FriendshipQueryService.class);
+    private final JpaFriendshipRepository friendshipRepository;
+    public FriendshipQueryService(JpaFriendshipRepository friendshipRepository) {
+        this.friendshipRepository = friendshipRepository;
+    }
+    public List<FriendshipResponse> getFriendList(String userId) {
+        logger.debug("Getting friend list for user: {}", userId);
+        return friendshipRepository.findAcceptedFriendsByUserId(userId).stream()
+                .map(FriendshipResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+    public List<FriendshipResponse> getPendingRequests(String userId) {
+        logger.debug("Getting pending requests for user: {}", userId);
+        return friendshipRepository.findPendingRequestsByFriendId(userId).stream()
+                .map(FriendshipResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+    public List<FriendshipResponse> getSentRequests(String userId) {
+        logger.debug("Getting sent requests for user: {}", userId);
+        return friendshipRepository.findPendingRequestsByUserId(userId).stream()
+                .map(FriendshipResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+    public List<FriendshipResponse> getFavoriteFriends(String userId) {
+        logger.debug("Getting favorite friends for user: {}", userId);
+        return friendshipRepository.findFavoritesByUserId(userId).stream()
+                .map(FriendshipResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+}

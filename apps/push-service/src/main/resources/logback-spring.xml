@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <!-- common:logging 모듈의 공통 traceId/spanId 패턴을 가져온다 -->
     <include resource="logback-tracing-pattern.xml"/>

@@ -10,13 +10,17 @@ include('infrastructure:api-gateway')
 // ============================================
 include('apps:auth-server')
 include('apps:push-service')
-include('apps:chat:message-server')
-include('apps:chat:system-server')
+include('apps:chat:chat-server')          // ← message-server + system-server 통합
+
 include('apps:chat:websocket-server')
+// ※ 아래 두 서버는 chat-server 로 통합됨 - 이전 완료 후 디렉토리 삭제 예정
+// include('apps:chat:message-server')
+// include('apps:chat:system-server')
 // ============================================
 // Apps - Chat 관련 라이브러리 모듈
 // ============================================
-include('apps:chat:libs:chat-domain')
+// Phase 5: chat-domain 모든 서버에서 의존성 제거 완료, 아래 주석 확인 후 디렉토리 삭제
+// include('apps:chat:libs:chat-domain')
 include('apps:chat:libs:chat-storage')
 // ============================================
 // Common - 유틸리티 & 횡단 관심사

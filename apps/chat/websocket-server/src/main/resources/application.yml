@@ -1,4 +1,4 @@
-﻿# Micrometer Tracing (traceId/spanId MDC 자동 주입)
+# Micrometer Tracing (traceId/spanId MDC 자동 주입)
 management:
   tracing:
     sampling:

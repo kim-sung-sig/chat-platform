@@ -2,7 +2,7 @@ package com.example.chat.storage.entity;
 
 import java.time.Instant;
 
-import com.example.chat.domain.friendship.FriendshipStatus;
+import com.example.chat.common.core.enums.FriendshipStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,7 +19,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 /**
  * 친구 관계 JPA Entity
@@ -33,7 +32,6 @@ import lombok.Setter;
         @UniqueConstraint(name = "uk_friendship", columnNames = { "user_id", "friend_id" })
 })
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
@@ -68,14 +66,46 @@ public class ChatFriendshipEntity {
     @PrePersist
     public void prePersist() {
         Instant now = Instant.now();
-        if (createdAt == null)
-            createdAt = now;
-        if (updatedAt == null)
-            updatedAt = now;
+        if (createdAt == null) createdAt = now;
+        if (updatedAt == null) updatedAt = now;
     }
 
     @PreUpdate
     public void preUpdate() {
         updatedAt = Instant.now();
+    }
+
+    // =============================================
+    // 비즈니스 메서드 - 상태 변경 캡슐화
+    // =============================================
+
+    public void accept() {
+        if (this.status != FriendshipStatus.PENDING) {
+            throw new IllegalStateException("PENDING 상태의 요청만 수락할 수 있습니다. 현재 상태: " + this.status);
+        }
+        this.status = FriendshipStatus.ACCEPTED;
+    }
+
+
+    public void block() {
+        if (this.status == FriendshipStatus.BLOCKED) {
+            throw new IllegalStateException("이미 차단된 관계입니다.");
+        }
+        this.status = FriendshipStatus.BLOCKED;
+    }
+
+    public void unblock() {
+        if (this.status != FriendshipStatus.BLOCKED) {
+            throw new IllegalStateException("차단된 관계만 차단 해제할 수 있습니다. 현재 상태: " + this.status);
+        }
+        this.status = FriendshipStatus.ACCEPTED;
+    }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void toggleFavorite() {
+        this.favorite = !this.favorite;
     }
 }
