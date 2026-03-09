@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    common:logging 모듈 - Rolling File Appender 공통 설정.
+
+    사용법: 각 서비스의 logback-spring.xml 에서 아래와 같이 include 한다.
+    <include resource="logback-rolling-file.xml"/>
+
+    의존 프로퍼티:
+      - LOG_SERVICE_NAME : 서비스명 (spring.application.name 을 각 서비스에서 주입)
+      - LOG_ROOT         : 로그 루트 디렉터리 (기본값: chat-platform 상대경로 ../logs 또는 절대경로 지정)
+
+    Rolling 정책:
+      - 일별 롤링 (SizeAndTimeBasedRollingPolicy)
+      - 단일 파일 최대 크기: 100MB
+      - 보관 기간: 30일
+      - 총 누적 크기: 3GB
+-->
+<included>
+    <!--
+        LOG_ROOT: Gradle bootRun / test task 에서 JVM 인수로 자동 주입된다.
+          -DLOG_ROOT=${rootProject.projectDir}/logs  (루트 build.gradle 에서 설정)
+          미설정 시 기본값: {user.home}/chat-platform/logs
+        LOG_SERVICE_NAME: 각 서비스의 logback-spring.xml 에서 <springProperty> 로 주입.
+    -->
+    <property name="LOG_ROOT" value="${LOG_ROOT:-${user.home}/chat-platform/logs}"/>
+    <property name="LOG_SERVICE_NAME" value="${LOG_SERVICE_NAME:-app}"/>
+
+    <!--
+        현재 활성 파일: {LOG_ROOT}/{service-name}/{service-name}.log
+        롤링 파일    : {LOG_ROOT}/{service-name}/{service-name}.yyyy-MM-dd.i.log.gz
+    -->
+    <appender name="ROLLING_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_ROOT}/${LOG_SERVICE_NAME}/${LOG_SERVICE_NAME}.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- 일별 롤링 + gz 압축 -->
+            <fileNamePattern>${LOG_ROOT}/${LOG_SERVICE_NAME}/${LOG_SERVICE_NAME}.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <!-- 단일 파일 최대 크기 -->
+            <maxFileSize>100MB</maxFileSize>
+            <!-- 보관 기간 (일) -->
+            <maxHistory>30</maxHistory>
+            <!-- 전체 누적 최대 크기 -->
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+
+        <encoder>
+            <!-- 파일에는 색상 코드 제거된 패턴 사용 -->
+            <pattern>${TRACING_FILE_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!--
+        ERROR 레벨 전용 별도 롤링 파일 (빠른 장애 감지를 위해 분리)
+        경로: {LOG_ROOT}/{service-name}/{service-name}-error.yyyy-MM-dd.i.log.gz
+    -->
+    <appender name="ROLLING_FILE_ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_ROOT}/${LOG_SERVICE_NAME}/${LOG_SERVICE_NAME}-error.log</file>
+
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_ROOT}/${LOG_SERVICE_NAME}/${LOG_SERVICE_NAME}-error.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>${TRACING_FILE_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+</included>

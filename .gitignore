@@ -39,3 +39,8 @@ out/
 ./docker/data/
 /.idea/
 /docker/data/
+
+### logs ###
+/logs/**/*.log
+/logs/**/*.log.gz
+!/logs/.gitkeep

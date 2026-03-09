@@ -1,11 +1,12 @@
 package com.example.chat.message.infrastructure.messaging;
 
-import com.example.chat.storage.entity.ChatMessageEntity;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
+
+import com.example.chat.storage.entity.ChatMessageEntity;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * 메시지 이벤트 발행자 (Redis Pub/Sub)
@@ -26,7 +27,7 @@ public class MessageEventPublisher {
         this.objectMapper = objectMapper;
     }
 
-    public void publishMessageSent(ChatMessageEntity entity) {
+    public void publishMessageSent(ChatMessageEntity entity, int memberCount) {
         if (entity.getId() == null) {
             log.warn("Cannot publish message without ID");
             return;
@@ -37,11 +38,13 @@ public class MessageEventPublisher {
                 case IMAGE              -> "[Image] " + entity.getContentFileName();
                 case FILE, VIDEO, AUDIO -> "[File] " + entity.getContentFileName();
             };
+            int unreadCount = Math.max(0, memberCount - 1);
             publish(entity.getChannelId(), new MessageSentEvent(
+                    "MESSAGE",
                     entity.getId(), entity.getChannelId(), entity.getSenderId(),
                     entity.getMessageType().name(), content,
-                    entity.getMessageStatus().name(), entity.getSentAt()));
-            log.info("Message event published: messageId={}", entity.getId());
+                    entity.getMessageStatus().name(), unreadCount, entity.getSentAt()));
+            log.info("Message event published: messageId={}, unreadCount={}", entity.getId(), unreadCount);
         } catch (Exception e) {
             log.error("Failed to publish message event: messageId={}", entity.getId(), e);
             throw new RuntimeException("Failed to publish message event", e);

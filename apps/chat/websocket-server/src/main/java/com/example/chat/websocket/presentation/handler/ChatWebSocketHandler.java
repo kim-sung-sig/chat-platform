@@ -3,6 +3,7 @@ package com.example.chat.websocket.presentation.handler;
 import java.time.Instant;
 import java.util.Map;
 
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
@@ -12,6 +13,8 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import com.example.chat.websocket.domain.session.ChatRoomSessionManager;
 import com.example.chat.websocket.domain.session.ChatSession;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +28,12 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ChatWebSocketHandler extends TextWebSocketHandler {
 
+    private static final String READ_RECEIPT_TYPE = "READ_RECEIPT";
+    private static final String READ_CHANNEL_PREFIX = "chat:read:";
+
     private final ChatRoomSessionManager sessionManager;
+    private final RedisTemplate<String, String> redisTemplate;
+    private final ObjectMapper objectMapper;
 
     /**
      * WebSocket 연결 수립
@@ -56,15 +64,59 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     }
 
     /**
-     * 메시지 수신 (현재는 읽기 전용, 메시지 발송은 REST API 사용)
+     * 클라이언트 메시지 수신
+     *
+     * 지원 메시지 타입:
+     * - READ_RECEIPT: 읽음 처리 이벤트 → Redis chat:read:{channelId} 발행
+     *   페이로드: {"type":"READ_RECEIPT","channelId":"...","lastReadMessageId":"..."}
      */
     @Override
     protected void handleTextMessage(@NonNull WebSocketSession session, @NonNull TextMessage message) throws Exception {
-        log.debug("Received WebSocket message: sessionId={}, payload={}",
-                session.getId(), message.getPayload());
+        String payload = message.getPayload();
+        log.debug("Received WebSocket message: sessionId={}, payload={}", session.getId(), payload);
 
-        // 클라이언트에서 보낸 메시지는 무시 (메시지 발송은 REST API를 통해)
-        // Ping/Pong 또는 읽음 처리 등의 가벼운 작업만 처리 가능
+        try {
+            JsonNode node = objectMapper.readTree(payload);
+            String type = node.path("type").asText(null);
+
+            if (READ_RECEIPT_TYPE.equals(type)) {
+                handleReadReceipt(session, node);
+            } else {
+                log.debug("Ignored unsupported message type: {}", type);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to parse WebSocket message: sessionId={}, payload={}", session.getId(), payload, e);
+        }
+    }
+
+    /**
+     * 읽음 이벤트 처리
+     * 클라이언트 → websocket-server → Redis(chat:read:{channelId}) → chat-server
+     */
+    private void handleReadReceipt(WebSocketSession session, JsonNode node) {
+        String channelId = node.path("channelId").asText(null);
+        String lastReadMessageId = node.path("lastReadMessageId").asText(null);
+        String userId = extractUserIdAsString(session);
+
+        if (channelId == null || lastReadMessageId == null || userId == null) {
+            log.warn("Invalid READ_RECEIPT: missing required fields (channelId={}, messageId={}, userId={})",
+                    channelId, lastReadMessageId, userId);
+            return;
+        }
+
+        try {
+            // chat-server가 구독하는 채널로 읽음 이벤트 발행
+            String redisPayload = objectMapper.writeValueAsString(
+                    Map.of("type", READ_RECEIPT_TYPE,
+                            "userId", userId,
+                            "channelId", channelId,
+                            "lastReadMessageId", lastReadMessageId));
+            redisTemplate.convertAndSend(READ_CHANNEL_PREFIX + channelId, redisPayload);
+            log.debug("Read receipt forwarded to Redis: userId={}, channelId={}, messageId={}",
+                    userId, channelId, lastReadMessageId);
+        } catch (Exception e) {
+            log.error("Failed to forward read receipt: channelId={}, userId={}", channelId, userId, e);
+        }
     }
 
     /**
@@ -112,7 +164,15 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     }
 
     /**
-     * 세션에서 userId 추출
+     * 세션에서 userId를 String으로 추출 (UUID 지원)
+     */
+    private String extractUserIdAsString(WebSocketSession session) {
+        Object userId = session.getAttributes().get("userId");
+        return userId != null ? userId.toString() : null;
+    }
+
+    /**
+     * 세션에서 userId 추출 (Long 파싱 시도, 실패 시 null)
      */
     private Long extractUserId(WebSocketSession session) {
         Map<String, Object> attributes = session.getAttributes();
@@ -126,7 +186,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             try {
                 return Long.parseLong(stringValue);
             } catch (NumberFormatException e) {
-                log.warn("Failed to parse userId: {}", userId);
+                log.debug("userId is not a Long (UUID format): {}", userId);
             }
         }
 

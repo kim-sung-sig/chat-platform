@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- common:logging 모듈의 공통 traceId/spanId 패턴을 가져온다 -->
+    <include resource="logback-tracing-pattern.xml"/>
+
+    <!--
+        spring.application.name → LOG_SERVICE_NAME 으로 바인딩
+        LOG_ROOT: VM 옵션 -DLOG_ROOT=... 으로 주입, 미설정 시 {user.home}/chat-platform/logs 사용
+    -->
+    <springProperty name="LOG_SERVICE_NAME" source="spring.application.name" defaultValue="api-gateway"/>
+
+    <!-- Rolling File Appender 공통 설정 포함 -->
+    <include resource="logback-rolling-file.xml"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${TRACING_CONSOLE_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="com.example.chat" level="DEBUG"/>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ROLLING_FILE"/>
+        <appender-ref ref="ROLLING_FILE_ERROR"/>
+    </root>
+</configuration>

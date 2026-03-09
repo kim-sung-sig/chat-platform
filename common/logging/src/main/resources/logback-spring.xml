@@ -12,6 +12,13 @@
         name="CONSOLE_LOG_PATTERN"
         value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){magenta} %clr([%-5level]) [%thread] %clr(%logger{36}){cyan} [%X{traceId:-NO_TRACE},%X{spanId:-NO_SPAN}] : %msg%n" />
 
+    <property
+        name="TRACING_FILE_PATTERN"
+        value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] %logger{36} [%X{traceId:-NO_TRACE},%X{spanId:-NO_SPAN}] : %msg%n"/>
+
+    <!-- Rolling File Appender 공통 설정 포함 -->
+    <include resource="logback-rolling-file.xml"/>
+
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>${CONSOLE_LOG_PATTERN}</pattern>
@@ -22,6 +29,8 @@
 
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
+        <appender-ref ref="ROLLING_FILE" />
+        <appender-ref ref="ROLLING_FILE_ERROR" />
     </root>
 
 </configuration>

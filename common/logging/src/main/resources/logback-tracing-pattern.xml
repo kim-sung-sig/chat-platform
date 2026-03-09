@@ -12,7 +12,17 @@
 <included>
     <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
 
+    <!--
+        콘솔 출력 패턴 (색상 포함)
+    -->
     <property
         name="TRACING_CONSOLE_PATTERN"
         value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){magenta} %clr([%-5level]) [%thread] %clr(%logger{36}){cyan} [%X{traceId:-NO_TRACE},%X{spanId:-NO_SPAN}] : %msg%n"/>
+
+    <!--
+        파일 출력 패턴 (색상 코드 제거 - 파일 가독성을 위해)
+    -->
+    <property
+        name="TRACING_FILE_PATTERN"
+        value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5level] [%thread] %logger{36} [%X{traceId:-NO_TRACE},%X{spanId:-NO_SPAN}] : %msg%n"/>
 </included>

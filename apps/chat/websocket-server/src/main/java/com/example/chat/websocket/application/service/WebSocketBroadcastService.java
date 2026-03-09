@@ -10,6 +10,7 @@ import org.springframework.web.socket.WebSocketSession;
 import com.example.chat.websocket.domain.session.ChatRoomSessionManager;
 import com.example.chat.websocket.domain.session.ChatSession;
 import com.example.chat.websocket.infrastructure.redis.MessageEvent;
+import com.example.chat.websocket.infrastructure.redis.ReadReceiptEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -115,6 +116,42 @@ public class WebSocketBroadcastService {
 
         log.info("User broadcast completed: userId={}, messageId={}, sent={}",
                 userId, event.getMessageId(), successCount);
+    }
+
+    /**
+     * 읽음 이벤트를 채팅방의 모든 세션에 브로드캐스트
+     * KakaoTalk 스타일: 누가 어디까지 읽었는지 실시간으로 채널 멤버에게 전파
+     */
+    public void broadcastReadReceipt(String roomId, ReadReceiptEvent event) {
+        if (roomId == null || event == null) {
+            log.warn("Cannot broadcast read receipt: roomId or event is null");
+            return;
+        }
+
+        log.debug("Broadcasting read receipt to room: roomId={}, userId={}, messageId={}",
+                roomId, event.getUserId(), event.getLastReadMessageId());
+
+        List<ChatSession> activeSessions = findActiveSessionsByRoom(roomId);
+        if (activeSessions.isEmpty()) {
+            log.debug("No active sessions in room for read receipt: {}", roomId);
+            return;
+        }
+
+        String json;
+        try {
+            json = objectMapper.writeValueAsString(event);
+        } catch (Exception e) {
+            log.error("Failed to serialize read receipt event", e);
+            return;
+        }
+
+        int successCount = 0;
+        for (ChatSession session : activeSessions) {
+            if (sendMessageToSession(session, json)) successCount++;
+        }
+
+        log.info("Read receipt broadcast completed: roomId={}, userId={}, sent={}",
+                roomId, event.getUserId(), successCount);
     }
 
     // ========== Private Helper Methods ==========

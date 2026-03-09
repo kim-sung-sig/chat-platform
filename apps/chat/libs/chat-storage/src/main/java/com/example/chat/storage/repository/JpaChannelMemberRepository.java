@@ -1,11 +1,11 @@
 package com.example.chat.storage.repository;
 
-import com.example.chat.storage.entity.ChatChannelMemberEntity;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Set;
+import com.example.chat.storage.entity.ChatChannelMemberEntity;
 
 /**
  * 채널 멤버 JPA Repository
@@ -42,4 +42,9 @@ public interface JpaChannelMemberRepository extends JpaRepository<ChatChannelMem
      * 채널 멤버 여부 확인
      */
     boolean existsByChannelIdAndUserId(String channelId, String userId);
+
+    /**
+     * 채널 멤버 수 조회 (unreadCount 초기값 계산용)
+     */
+    long countByChannelId(String channelId);
 }

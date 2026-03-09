@@ -1,20 +1,23 @@
 package com.example.chat.channel.application.service;
 
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.example.chat.channel.application.dto.response.ChannelMetadataResponse;
+import com.example.chat.channel.infrastructure.redis.ReadReceiptEventPublisher;
 import com.example.chat.common.core.exception.ChatErrorCode;
 import com.example.chat.exception.ChatException;
+import com.example.chat.exception.ResourceNotFoundException;
 import com.example.chat.storage.entity.ChatChannelMetadataEntity;
 import com.example.chat.storage.repository.JpaChannelMemberRepository;
 import com.example.chat.storage.repository.JpaChannelMetadataRepository;
 import com.example.chat.storage.repository.JpaChannelRepository;
-import com.example.chat.channel.application.dto.response.ChannelMetadataResponse;
-import com.example.chat.exception.ResourceNotFoundException;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 채팅방 메타데이터 Application Service
@@ -32,14 +35,17 @@ public class ChannelMetadataApplicationService {
     private final JpaChannelMetadataRepository metadataRepository;
     private final JpaChannelRepository channelRepository;
     private final JpaChannelMemberRepository channelMemberRepository;
+    private final ReadReceiptEventPublisher readReceiptEventPublisher;
 
     public ChannelMetadataApplicationService(
             JpaChannelMetadataRepository metadataRepository,
             JpaChannelRepository channelRepository,
-            JpaChannelMemberRepository channelMemberRepository) {
+            JpaChannelMemberRepository channelMemberRepository,
+            ReadReceiptEventPublisher readReceiptEventPublisher) {
         this.metadataRepository = metadataRepository;
         this.channelRepository = channelRepository;
         this.channelMemberRepository = channelMemberRepository;
+        this.readReceiptEventPublisher = readReceiptEventPublisher;
     }
 
     /** 조회 또는 신규 생성 - 쓰기 트랜잭션 */
@@ -67,7 +73,12 @@ public class ChannelMetadataApplicationService {
         log.info("Marking as read: userId={}, channelId={}, messageId={}", userId, channelId, messageId);
         ChatChannelMetadataEntity metadata = findMetadata(userId, channelId);
         metadata.markAsRead(messageId);
-        return ChannelMetadataResponse.fromEntity(metadataRepository.save(metadata));
+        ChannelMetadataResponse response = ChannelMetadataResponse.fromEntity(metadataRepository.save(metadata));
+
+        // 읽음 처리 완료 → Redis Pub/Sub으로 채널 멤버 전체에게 브로드캐스트
+        readReceiptEventPublisher.publish(userId, channelId, messageId);
+
+        return response;
     }
 
     /** 미읽음 카운트 증가 - 쓰기 트랜잭션 */

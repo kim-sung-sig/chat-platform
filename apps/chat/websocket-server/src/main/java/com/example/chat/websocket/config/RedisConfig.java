@@ -8,6 +8,7 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.lang.NonNull;
 
+import com.example.chat.websocket.infrastructure.redis.ReadReceiptRedisSubscriber;
 import com.example.chat.websocket.infrastructure.redis.RedisMessageSubscriber;
 
 import lombok.RequiredArgsConstructor;
@@ -20,10 +21,12 @@ import lombok.RequiredArgsConstructor;
 public class RedisConfig {
 
 	private final @NonNull RedisMessageSubscriber redisMessageSubscriber;
+	private final @NonNull ReadReceiptRedisSubscriber readReceiptRedisSubscriber;
 
 	/**
 	 * Redis 메시지 리스너 컨테이너
-	 * chat:room:* 패턴의 채널 구독
+	 * - chat:room:* : 신규 메시지 브로드캐스트
+	 * - chat:read:event:* : 읽음 처리 완료 이벤트 브로드캐스트
 	 */
 	@Bean
 	public RedisMessageListenerContainer redisMessageListenerContainer(
@@ -31,19 +34,26 @@ public class RedisConfig {
 		RedisMessageListenerContainer container = new RedisMessageListenerContainer();
 		container.setConnectionFactory(connectionFactory);
 
-		// chat:room:* 패턴 구독
+		// 신규 메시지 수신 (chat-server 발행)
 		container.addMessageListener(
 				messageListenerAdapter(),
 				new PatternTopic("chat:room:*"));
 
+		// 읽음 이벤트 수신 (chat-server 발행, 읽음 처리 완료 후)
+		container.addMessageListener(
+				readReceiptListenerAdapter(),
+				new PatternTopic("chat:read:event:*"));
+
 		return container;
 	}
 
-	/**
-	 * 메시지 리스너 어댑터
-	 */
 	@Bean
 	public @NonNull MessageListenerAdapter messageListenerAdapter() {
 		return new MessageListenerAdapter(redisMessageSubscriber);
+	}
+
+	@Bean
+	public @NonNull MessageListenerAdapter readReceiptListenerAdapter() {
+		return new MessageListenerAdapter(readReceiptRedisSubscriber);
 	}
 }

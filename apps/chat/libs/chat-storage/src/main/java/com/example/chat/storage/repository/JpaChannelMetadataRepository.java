@@ -1,13 +1,15 @@
 package com.example.chat.storage.repository;
 
-import com.example.chat.storage.entity.ChatChannelMetadataEntity;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
+import com.example.chat.storage.entity.ChatChannelMetadataEntity;
 
 /**
  * 채팅방 메타데이터 JPA Repository
@@ -59,4 +61,23 @@ public interface JpaChannelMetadataRepository extends JpaRepository<ChatChannelM
      * 존재 여부 확인
      */
     boolean existsByChannelIdAndUserId(String channelId, String userId);
+
+    /**
+     * 발신자를 제외한 모든 채널 멤버의 unreadCount 일괄 증가
+     * 단일 UPDATE로 N번 개별 호출을 대체 (쓰기 폭발 방지)
+     */
+    @Modifying
+    @Query("UPDATE ChatChannelMetadataEntity m "
+            + "SET m.unreadCount = m.unreadCount + 1, m.lastActivityAt = CURRENT_TIMESTAMP "
+            + "WHERE m.channelId = :channelId AND m.userId != :senderId")
+    int bulkIncrementUnreadCount(@Param("channelId") String channelId, @Param("senderId") String senderId);
+
+    /**
+     * 발신자 메타데이터의 lastActivityAt 갱신 (발송 시 활동 기록)
+     */
+    @Modifying
+    @Query("UPDATE ChatChannelMetadataEntity m "
+            + "SET m.lastActivityAt = CURRENT_TIMESTAMP "
+            + "WHERE m.channelId = :channelId AND m.userId = :userId")
+    int updateLastActivity(@Param("channelId") String channelId, @Param("userId") String userId);
 }

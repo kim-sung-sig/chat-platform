@@ -45,5 +45,15 @@ subprojects {
 
 	test {
 		useJUnitPlatform()
+		// 테스트 실행 시 LOG_ROOT 를 chat-platform/logs 로 자동 주입
+		jvmArgs "-DLOG_ROOT=${rootProject.projectDir}/logs"
+	}
+
+	// bootRun 시 LOG_ROOT 를 chat-platform/logs 로 자동 주입
+	// 하드코딩 경로 없이 프로젝트 루트 기준으로 동적 결정됨
+	plugins.withId('org.springframework.boot') {
+		tasks.named('bootRun') {
+			jvmArgs "-DLOG_ROOT=${rootProject.projectDir}/logs"
+		}
 	}
 }

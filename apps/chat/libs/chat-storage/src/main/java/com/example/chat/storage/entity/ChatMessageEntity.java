@@ -76,6 +76,15 @@ public class ChatMessageEntity {
     @Column(name = "read_at")
     private Instant readAt;
 
+    /**
+     * 이 메시지를 아직 읽지 않은 멤버 수
+     * 발송 시 memberCount-1 로 초기화, 읽을 때마다 -1 (Kafka 비동기)
+     * KakaoTalk '1' 표시에 사용되는 필드
+     */
+    @Column(name = "unread_count", nullable = false)
+    @Builder.Default
+    private int unreadCount = 0;
+
     @PrePersist
     public void prePersist() {
         if (createdAt == null || createdAt.equals(Instant.EPOCH)) {
@@ -113,5 +122,21 @@ public class ChatMessageEntity {
 
     public void markAsFailed() {
         this.messageStatus = MessageStatus.FAILED;
+    }
+
+    /**
+     * 메시지의 초기 미읽음 멤버 수 설정 (발슡 시 호출)
+     * @param memberCount 채널 전체 멤버 수
+     */
+    public void initUnreadCount(int memberCount) {
+        this.unreadCount = Math.max(0, memberCount - 1);
+    }
+
+    /**
+     * 읽음 멤버 수 감소 (Kafka Consumer 호출)
+     * MAX(0, unreadCount-1) 로 하한 보지 설정
+     */
+    public void decrementUnread() {
+        this.unreadCount = Math.max(0, this.unreadCount - 1);
     }
 }

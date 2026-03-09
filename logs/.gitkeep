@@ -1,0 +1,10 @@
+# 로그 디렉터리 구조 유지를 위한 파일
+# 실제 로그 파일(.log, .log.gz)은 .gitignore 에 의해 버전 관리에서 제외됩니다.
+# 서비스 기동 시 자동으로 하위 디렉터리가 생성됩니다:
+#   logs/auth-server/
+#   logs/chat-server/
+#   logs/chat-websocket-server/
+#   logs/push-service/
+#   logs/api-gateway/
+#   logs/eureka-server/
+#   logs/config-server/
