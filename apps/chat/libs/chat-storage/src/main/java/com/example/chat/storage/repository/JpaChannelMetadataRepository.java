@@ -58,6 +58,11 @@ public interface JpaChannelMetadataRepository extends JpaRepository<ChatChannelM
     void deleteByChannelId(String channelId);
 
     /**
+     * 특정 사용자의 특정 채널 메타데이터 삭제 (멤버 퇴장 시)
+     */
+    void deleteByChannelIdAndUserId(String channelId, String userId);
+
+    /**
      * 존재 여부 확인
      */
     boolean existsByChannelIdAndUserId(String channelId, String userId);

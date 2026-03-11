@@ -12,10 +12,13 @@ import com.example.chat.channel.infrastructure.redis.ReadReceiptEventPublisher;
 import com.example.chat.common.core.exception.ChatErrorCode;
 import com.example.chat.exception.ChatException;
 import com.example.chat.exception.ResourceNotFoundException;
+import com.example.chat.message.infrastructure.kafka.KafkaMessageProducer;
+import com.example.chat.message.infrastructure.kafka.ReadReceiptKafkaEvent;
 import com.example.chat.storage.entity.ChatChannelMetadataEntity;
 import com.example.chat.storage.repository.JpaChannelMemberRepository;
 import com.example.chat.storage.repository.JpaChannelMetadataRepository;
 import com.example.chat.storage.repository.JpaChannelRepository;
+import com.example.chat.storage.repository.JpaMessageRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,16 +39,22 @@ public class ChannelMetadataApplicationService {
     private final JpaChannelRepository channelRepository;
     private final JpaChannelMemberRepository channelMemberRepository;
     private final ReadReceiptEventPublisher readReceiptEventPublisher;
+    private final KafkaMessageProducer kafkaMessageProducer;
+    private final JpaMessageRepository messageRepository;
 
     public ChannelMetadataApplicationService(
             JpaChannelMetadataRepository metadataRepository,
             JpaChannelRepository channelRepository,
             JpaChannelMemberRepository channelMemberRepository,
-            ReadReceiptEventPublisher readReceiptEventPublisher) {
+            ReadReceiptEventPublisher readReceiptEventPublisher,
+            KafkaMessageProducer kafkaMessageProducer,
+            JpaMessageRepository messageRepository) {
         this.metadataRepository = metadataRepository;
         this.channelRepository = channelRepository;
         this.channelMemberRepository = channelMemberRepository;
         this.readReceiptEventPublisher = readReceiptEventPublisher;
+        this.kafkaMessageProducer = kafkaMessageProducer;
+        this.messageRepository = messageRepository;
     }
 
     /** 조회 또는 신규 생성 - 쓰기 트랜잭션 */
@@ -75,10 +84,31 @@ public class ChannelMetadataApplicationService {
         metadata.markAsRead(messageId);
         ChannelMetadataResponse response = ChannelMetadataResponse.fromEntity(metadataRepository.save(metadata));
 
-        // 읽음 처리 완료 → Redis Pub/Sub으로 채널 멤버 전체에게 브로드캐스트
+        // 1) 실시간: Redis Pub/Sub → WebSocket read receipt 브로드캐스트 (즉시)
         readReceiptEventPublisher.publish(userId, channelId, messageId);
 
+        // 2) 비동기: Kafka → message.unread_count 배치 감소 (응답 지연 없음)
+        publishReadReceiptKafkaEvent(userId, channelId, messageId);
+
         return response;
+    }
+
+    /**
+     * 읽음 처리 Kafka 이벤트 발행
+     * 메시지의 createdAt을 조회해 커서로 사용
+     */
+    private void publishReadReceiptKafkaEvent(String userId, String channelId, String messageId) {
+        try {
+            messageRepository.findById(messageId).ifPresent(msg -> {
+                kafkaMessageProducer.publishReadReceipt(
+                        new ReadReceiptKafkaEvent(userId, channelId, messageId, msg.getCreatedAt()));
+                log.debug("ReadReceipt Kafka event published: userId={}, channelId={}, cursor={}",
+                        userId, channelId, msg.getCreatedAt());
+            });
+        } catch (Exception e) {
+            // Kafka 발행 실패는 non-critical (미읽음 카운터 일시적 부정확)
+            log.error("Failed to publish read-receipt Kafka event: userId={}, channelId={}", userId, channelId, e);
+        }
     }
 
     /** 미읽음 카운트 증가 - 쓰기 트랜잭션 */

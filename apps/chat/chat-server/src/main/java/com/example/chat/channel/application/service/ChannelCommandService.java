@@ -1,23 +1,28 @@
 package com.example.chat.channel.application.service;
 
+import java.time.Instant;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.example.chat.auth.core.util.SecurityUtils;
-import com.example.chat.common.core.exception.ChatErrorCode;
+import com.example.chat.channel.application.dto.request.CreateChannelRequest;
+import com.example.chat.channel.application.dto.response.ChannelResponse;
 import com.example.chat.common.core.enums.ChannelType;
+import com.example.chat.common.core.exception.ChatErrorCode;
 import com.example.chat.exception.ChatException;
+import com.example.chat.exception.ResourceNotFoundException;
+import com.example.chat.message.infrastructure.kafka.KafkaMessageProducer;
 import com.example.chat.storage.entity.ChatChannelEntity;
 import com.example.chat.storage.entity.ChatChannelMemberEntity;
 import com.example.chat.storage.entity.UserEntity;
 import com.example.chat.storage.repository.JpaChannelMemberRepository;
+import com.example.chat.storage.repository.JpaChannelMetadataRepository;
 import com.example.chat.storage.repository.JpaChannelRepository;
 import com.example.chat.storage.repository.JpaUserRepository;
-import com.example.chat.channel.application.dto.request.CreateChannelRequest;
-import com.example.chat.channel.application.dto.response.ChannelResponse;
-import com.example.chat.exception.ResourceNotFoundException;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 채널 생성/수정/삭제 Command Service
@@ -38,14 +43,20 @@ public class ChannelCommandService {
     private final JpaChannelRepository channelRepository;
     private final JpaChannelMemberRepository channelMemberRepository;
     private final JpaUserRepository userRepository;
+    private final JpaChannelMetadataRepository channelMetadataRepository;
+    private final KafkaMessageProducer kafkaMessageProducer;
 
     public ChannelCommandService(
             JpaChannelRepository channelRepository,
             JpaChannelMemberRepository channelMemberRepository,
-            JpaUserRepository userRepository) {
+            JpaUserRepository userRepository,
+            JpaChannelMetadataRepository channelMetadataRepository,
+            KafkaMessageProducer kafkaMessageProducer) {
         this.channelRepository = channelRepository;
         this.channelMemberRepository = channelMemberRepository;
         this.userRepository = userRepository;
+        this.channelMetadataRepository = channelMetadataRepository;
+        this.kafkaMessageProducer = kafkaMessageProducer;
     }
 
     /** 채널 생성 */
@@ -118,7 +129,18 @@ public class ChannelCommandService {
         if (channel.getOwnerId().equals(targetUserId)) {
             throw new ChatException(ChatErrorCode.DOMAIN_RULE_VIOLATION);
         }
+
+        // 퇴장 전: 마지막 읽음 미마지 (Kafka Consumer가 unread_count 보정에 사용)
+        Instant lastReadAt = channelMetadataRepository
+                .findByChannelIdAndUserId(channelId, targetUserId)
+                .map(m -> m.getLastReadAt())
+                .orElse(null);
+
         channelMemberRepository.deleteByChannelIdAndUserId(channelId, targetUserId);
+
+        // Kafka 비동기: 퇴장 멤버의 미읽음 message.unread_count 보정
+        // (channelMetadataRepository.deleteByChannelIdAndUserId는 Consumer에서 처리)
+        kafkaMessageProducer.publishMemberLeft(targetUserId, channelId, lastReadAt);
     }
 
     // =============================================

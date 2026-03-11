@@ -82,31 +82,33 @@ KakaoTalk "N명 안 읽음" 표시 (grroup):
 
 ### Phase 5. Per-Message Unread Count 도입
 
-- [ ] Flyway V9: `chat_messages`에 `unread_count INTEGER DEFAULT 0` 컬럼 추가
-- [ ] `ChatMessageEntity`에 `unreadCount` 필드 추가 + `decrementUnread()` 메서드
-- [ ] 메시지 저장 시 `unreadCount = memberCount - 1` 설정 (MessageSendService)
-- [ ] `MessageResponse` DTO에 `unreadCount` 필드 추가
-- [ ] WebSocket 브로드캐스트 페이로드에 `unreadCount` 포함
+- [x] Flyway V9: `chat_messages`에 `unread_count INTEGER DEFAULT 0` 컬럼 추가
+- [x] `ChatMessageEntity`에 `unreadCount` 필드 추가 + `initUnreadCount()`, `decrementUnread()` 메서드
+- [x] 메시지 저장 시 `unreadCount = memberCount - 1` 설정 (MessageSendService)
+- [x] `MessageResponse` DTO에 `unreadCount` 필드 추가
+- [x] WebSocket 브로드캐스트 페이로드에 `unreadCount` 포함 (MessageSentEvent)
 
 ### Phase 6. 읽음 처리의 Kafka 비동기화
 
-- [ ] `read-receipt-events` Kafka 토픽 설계 및 생성
-- [ ] `markAsRead` 시 Kafka 발행 (`ReadReceiptKafkaEvent`: userId, channelId, lastReadMessageId)
-- [ ] Kafka Consumer: 커서 이전 메시지들의 `unreadCount` 일괄 감소 (배치 UPDATE)
-- [ ] Consumer: WebSocket `chat:read:event:{channelId}` Redis 발행 연계
-- [ ] 동시성 처리: `MAX(0, unread_count - 1)` JPQL UPDATE로 원자적 처리
+- [x] `read-receipt-events` Kafka 토픽 설계 및 생성
+- [x] `markAsRead` 시 Kafka 발행 (`ReadReceiptKafkaEvent`: userId, channelId, lastReadMessageId, lastReadCreatedAt)
+- [x] Kafka Consumer(`ReadReceiptKafkaConsumer`): 커서 이전 메시지들의 `unreadCount` 일괄 감소
+- [x] Consumer: `@KafkaListener(ackMode=MANUAL_IMMEDIATE)` 멱등성 처리
+- [x] 동시성 처리: `CASE WHEN unread_count > 0 THEN unread_count - 1 ELSE 0` JPQL UPDATE
 
 ### Phase 7. 그룹 채팅 읽음 브로드캐스트
 
-- [ ] `ReadReceiptBroadcastPayload` 최종 설계 (누가 어디까지 읽었는지)
-- [ ] 채널 내 모든 접속자에게 읽음 상태 변경 실시간 전파 확인
-- [ ] 클라이언트: 메시지별 "N명 읽음" 카운터 실시간 업데이트 연동
+- [x] `ReadReceiptEvent` DTO 설계 (websocket-server: eventType, userId, channelId, lastReadMessageId, readAt)
+- [x] 채널 내 모든 접속자에게 읽음 상태 변경 실시간 전파 (`WebSocketBroadcastService.broadcastReadReceipt()`)
+- [x] Redis `chat:read:event:{channelId}` → `ReadReceiptRedisSubscriber` → WebSocket 브로드캐스트
+- [ ] 클라이언트: 메시지별 "N명 읽음" 카운터 실시간 업데이트 연동 (프론트엔드 작업)
 
 ### Phase 8. 멤버 입/퇴장 시 unreadCount 보정
 
-- [ ] 채널 가입 시: 이전 메시지들의 `unread_count` 보정 로직 설계
-- [ ] 채널 퇴장 시: 해당 사용자 기준 메시지 `unread_count` 감소 처리
-- [ ] 대규모 채널(멤버 1000+): 보정을 Kafka 비동기 배치로 분리
+- [x] 채널 가입 시: 신규 멤버는 이전 메시지 unread_count 보정 없음 (미참여 메시지이므로 올바른 동작)
+- [x] 채널 퇴장 시: `ChannelCommandService.removeMember()`에서 `MemberLeftKafkaEvent` 발행
+- [x] `MemberLeftKafkaConsumer`: lastReadAt 커서 이후 메시지 unread_count 일괄 -1 + metadata 삭제
+- [x] 대규모 채널(멤버 1000+): Kafka 비동기로 분리 완료 (`member-left-events` 토픽, channelId 파티션 키)
 
 ---
 
