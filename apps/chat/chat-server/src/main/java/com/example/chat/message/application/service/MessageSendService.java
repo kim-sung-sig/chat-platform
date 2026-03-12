@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.chat.auth.core.util.SecurityUtils;
+import com.example.chat.cache.UnreadCacheService;
 import com.example.chat.common.core.exception.ChatErrorCode;
 import com.example.chat.exception.ChatException;
 import com.example.chat.message.application.dto.request.SendMessageRequest;
@@ -17,6 +18,7 @@ import com.example.chat.message.domain.MessageContent;
 import com.example.chat.message.infrastructure.kafka.KafkaMessageProducer;
 import com.example.chat.message.infrastructure.messaging.MessageEventPublisher;
 import com.example.chat.storage.entity.ChatChannelEntity;
+import com.example.chat.storage.entity.ChatChannelMemberEntity;
 import com.example.chat.storage.entity.ChatMessageEntity;
 import com.example.chat.storage.entity.UserEntity;
 import com.example.chat.storage.repository.JpaChannelMemberRepository;
@@ -38,6 +40,7 @@ public class MessageSendService {
     private final JpaUserRepository userRepository;
     private final MessageEventPublisher messageEventPublisher;
     private final KafkaMessageProducer kafkaMessageProducer;
+    private final UnreadCacheService unreadCacheService;
 
     public MessageSendService(
             JpaMessageRepository messageRepository,
@@ -46,7 +49,8 @@ public class MessageSendService {
             JpaChannelMetadataRepository channelMetadataRepository,
             JpaUserRepository userRepository,
             MessageEventPublisher messageEventPublisher,
-            KafkaMessageProducer kafkaMessageProducer) {
+            KafkaMessageProducer kafkaMessageProducer,
+            UnreadCacheService unreadCacheService) {
         this.messageRepository = messageRepository;
         this.channelRepository = channelRepository;
         this.channelMemberRepository = channelMemberRepository;
@@ -54,6 +58,7 @@ public class MessageSendService {
         this.userRepository = userRepository;
         this.messageEventPublisher = messageEventPublisher;
         this.kafkaMessageProducer = kafkaMessageProducer;
+        this.unreadCacheService = unreadCacheService;
     }
 
     @Transactional
@@ -71,26 +76,31 @@ public class MessageSendService {
 
         validateSendPermission(channel, sender, request.channelId());
 
-        // 채널 멤버 수 조회 (unreadCount 초기값 설정용)
-        long memberCount = channelMemberRepository.countByChannelId(request.channelId());
+        // 채널 멤버 목록 단일 조회 (memberCount, Redis 캐시, 푸시 알림에 공유 사용)
+        List<ChatChannelMemberEntity> members = channelMemberRepository.findByChannelId(request.channelId());
+        List<String> memberIds = members.stream().map(ChatChannelMemberEntity::getUserId).toList();
+        int memberCount = memberIds.size();
 
         ChatMessageEntity message = buildMessageEntity(request, senderId);
         ChatMessageEntity saved = messageRepository.save(message);
         saved.markAsSent();
-        saved.initUnreadCount((int) memberCount);
+        saved.initUnreadCount(memberCount);
         messageRepository.save(saved);
 
-        // 발신자 제외 모든 멤버의 unreadCount 일괄 증가 (단일 UPDATE)
+        // [DB Write] 발신자 제외 모든 멤버의 metadata.unreadCount 일괄 증가 (단일 UPDATE)
         int updatedRows = channelMetadataRepository.bulkIncrementUnreadCount(request.channelId(), senderId);
         // 발신자 lastActivityAt 갱신
         channelMetadataRepository.updateLastActivity(request.channelId(), senderId);
         log.debug("Incremented unreadCount for {} members in channel={}", updatedRows, request.channelId());
 
+        // [Redis Write] unread 캐시 일괄 증가 (Phase 9: Read Model 조회 가속)
+        unreadCacheService.incrementAllMembers(request.channelId(), senderId, memberIds);
+
         // Redis Pub/Sub으로 실시간 브로드캐스트 (unreadCount 포함)
-        publishEvent(saved, (int) memberCount);
+        publishEvent(saved, memberCount);
 
         // Kafka 푸시 알림 (오프라인 사용자 포함, 발신자 제외)
-        sendPushNotifications(request.channelId(), senderId, saved);
+        sendPushNotifications(senderId, memberIds, saved);
 
         log.info("Message sent: messageId={}, channelId={}, senderId={}, memberCount={}",
                 saved.getId(), channel.getId(), senderId, memberCount);
@@ -138,26 +148,25 @@ public class MessageSendService {
 
     /**
      * 발신자를 제외한 모든 채널 멤버에게 Kafka 푸시 알림 발행
+     * memberIds는 sendMessage()에서 이미 조회한 목록을 재사용 (DB 중복 조회 제거)
      */
-    private void sendPushNotifications(String channelId, String senderId, ChatMessageEntity saved) {
+    private void sendPushNotifications(String senderId, List<String> memberIds, ChatMessageEntity saved) {
         try {
             String pushContent = switch (saved.getMessageType()) {
-                case TEXT, SYSTEM -> saved.getContentText() != null ? saved.getContentText() : "";
-                case IMAGE        -> "[이미지]";
+                case TEXT, SYSTEM       -> saved.getContentText() != null ? saved.getContentText() : "";
+                case IMAGE              -> "[이미지]";
                 case FILE, VIDEO, AUDIO -> "[파일] " + saved.getContentFileName();
             };
-            List<String> receiverIds = channelMemberRepository.findByChannelId(channelId)
-                    .stream()
-                    .map(m -> m.getUserId())
+            List<String> receiverIds = memberIds.stream()
                     .filter(uid -> !uid.equals(senderId))
                     .toList();
 
             for (String receiverId : receiverIds) {
                 kafkaMessageProducer.publishNotification(receiverId, "새 메시지", pushContent, "CHAT_MESSAGE");
             }
-            log.debug("Push notifications sent: channelId={}, receivers={}", channelId, receiverIds.size());
+            log.debug("Push notifications sent: channelId={}, receivers={}", saved.getChannelId(), receiverIds.size());
         } catch (Exception e) {
-            log.error("Failed to send push notifications: channelId={}", channelId, e);
+            log.error("Failed to send push notifications: channelId={}", saved.getChannelId(), e);
         }
     }
 }

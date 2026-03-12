@@ -116,12 +116,12 @@ KakaoTalk "N명 안 읽음" 표시 (grroup):
 
 ### Phase 9. Redis unread 캐시 계층 도입
 
-- [ ] `HSET chat:channel:{channelId}:unread {userId} {count}` Redis Hash 구조 설계
-- [ ] 메시지 발송 시 Redis `HINCRBY` (오프라인 멤버 대상)
-- [ ] `markAsRead` 시 Redis `HSET {userId} 0`
-- [ ] 채널 목록 조회 시 Redis 우선 → miss 시 PostgreSQL fallback
-- [ ] Lua 스크립트로 increment/decrement 원자적 처리
-- [ ] TTL 전략: 24h (세션 만료 동기화)
+- [x] `HSET chat:channel:{channelId}:unread {userId} {count}` Redis Hash 구조 설계
+- [x] 메시지 발송 시 Redis `HINCRBY` (Pipeline, 단일 왕복)
+- [x] `markAsRead` 시 Redis `HSET {userId} 0`
+- [x] 채널 목록 조회 시 Redis 우선 → miss 시 PostgreSQL fallback
+- [ ] Lua 스크립트로 increment/decrement 원자적 처리 (현재 Pipeline 사용)
+- [x] TTL 전략: 24h (세션 만료 동기화)
 
 ### Phase 10. Redis Cluster 및 Stream 전환
 
@@ -131,9 +131,9 @@ KakaoTalk "N명 안 읽음" 표시 (grroup):
 
 ### Phase 11. CQRS Read Model 도입
 
-- [ ] 채널 목록+미읽음 수 조회 전용 Read Model 설계
-- [ ] Write Model(PostgreSQL Master) / Read Model(Redis + Replica) 분리
-- [ ] `ChannelListQueryService` 리팩토링
+- [x] 채널 목록+미읽음 수 조회 전용 Read Model 설계
+- [x] Write Model(PostgreSQL Master) / Read Model(Redis + Replica) 분리
+- [x] `ChannelListQueryService` 리팩토링
 
 ### Phase 12. 성능 테스트 및 튜닝
 

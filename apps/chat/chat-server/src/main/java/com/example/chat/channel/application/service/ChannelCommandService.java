@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.chat.auth.core.util.SecurityUtils;
+import com.example.chat.cache.UnreadCacheService;
 import com.example.chat.channel.application.dto.request.CreateChannelRequest;
 import com.example.chat.channel.application.dto.response.ChannelResponse;
 import com.example.chat.common.core.enums.ChannelType;
@@ -45,18 +46,21 @@ public class ChannelCommandService {
     private final JpaUserRepository userRepository;
     private final JpaChannelMetadataRepository channelMetadataRepository;
     private final KafkaMessageProducer kafkaMessageProducer;
+    private final UnreadCacheService unreadCacheService;
 
     public ChannelCommandService(
             JpaChannelRepository channelRepository,
             JpaChannelMemberRepository channelMemberRepository,
             JpaUserRepository userRepository,
             JpaChannelMetadataRepository channelMetadataRepository,
-            KafkaMessageProducer kafkaMessageProducer) {
+            KafkaMessageProducer kafkaMessageProducer,
+            UnreadCacheService unreadCacheService) {
         this.channelRepository = channelRepository;
         this.channelMemberRepository = channelMemberRepository;
         this.userRepository = userRepository;
         this.channelMetadataRepository = channelMetadataRepository;
         this.kafkaMessageProducer = kafkaMessageProducer;
+        this.unreadCacheService = unreadCacheService;
     }
 
     /** 채널 생성 */
@@ -137,6 +141,9 @@ public class ChannelCommandService {
                 .orElse(null);
 
         channelMemberRepository.deleteByChannelIdAndUserId(channelId, targetUserId);
+
+        // Redis Cache: 퇴장 사용자 unread 필드 즉시 제거 (Phase 9)
+        unreadCacheService.evictUser(channelId, targetUserId);
 
         // Kafka 비동기: 퇴장 멤버의 미읽음 message.unread_count 보정
         // (channelMetadataRepository.deleteByChannelIdAndUserId는 Consumer에서 처리)

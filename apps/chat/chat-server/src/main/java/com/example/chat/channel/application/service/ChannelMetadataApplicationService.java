@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.chat.cache.UnreadCacheService;
 import com.example.chat.channel.application.dto.response.ChannelMetadataResponse;
 import com.example.chat.channel.infrastructure.redis.ReadReceiptEventPublisher;
 import com.example.chat.common.core.exception.ChatErrorCode;
@@ -41,6 +42,7 @@ public class ChannelMetadataApplicationService {
     private final ReadReceiptEventPublisher readReceiptEventPublisher;
     private final KafkaMessageProducer kafkaMessageProducer;
     private final JpaMessageRepository messageRepository;
+    private final UnreadCacheService unreadCacheService;
 
     public ChannelMetadataApplicationService(
             JpaChannelMetadataRepository metadataRepository,
@@ -48,13 +50,15 @@ public class ChannelMetadataApplicationService {
             JpaChannelMemberRepository channelMemberRepository,
             ReadReceiptEventPublisher readReceiptEventPublisher,
             KafkaMessageProducer kafkaMessageProducer,
-            JpaMessageRepository messageRepository) {
+            JpaMessageRepository messageRepository,
+            UnreadCacheService unreadCacheService) {
         this.metadataRepository = metadataRepository;
         this.channelRepository = channelRepository;
         this.channelMemberRepository = channelMemberRepository;
         this.readReceiptEventPublisher = readReceiptEventPublisher;
         this.kafkaMessageProducer = kafkaMessageProducer;
         this.messageRepository = messageRepository;
+        this.unreadCacheService = unreadCacheService;
     }
 
     /** 조회 또는 신규 생성 - 쓰기 트랜잭션 */
@@ -87,7 +91,10 @@ public class ChannelMetadataApplicationService {
         // 1) 실시간: Redis Pub/Sub → WebSocket read receipt 브로드캐스트 (즉시)
         readReceiptEventPublisher.publish(userId, channelId, messageId);
 
-        // 2) 비동기: Kafka → message.unread_count 배치 감소 (응답 지연 없음)
+        // 2) Redis Cache: unreadCount 즉시 0 리셋 (Phase 9: 채널 목록 조회 최신화)
+        unreadCacheService.resetUser(channelId, userId);
+
+        // 3) 비동기: Kafka → message.unread_count 배치 감소 (응답 지연 없음)
         publishReadReceiptKafkaEvent(userId, channelId, messageId);
 
         return response;
