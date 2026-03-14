@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
-import com.example.chat.storage.entity.ChatMessageEntity;
+import com.example.chat.storage.domain.entity.ChatMessageEntity;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**

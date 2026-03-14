@@ -1,6 +1,6 @@
 package com.example.chat.friendship.application.service;
-import com.example.chat.storage.repository.JpaFriendshipRepository;
-import com.example.chat.friendship.application.dto.response.FriendshipResponse;
+import com.example.chat.storage.domain.repository.JpaFriendshipRepository;
+import com.example.chat.friendship.rest.dto.response.FriendshipResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

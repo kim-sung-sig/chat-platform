@@ -20,8 +20,8 @@ import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.support.Acknowledgment;
 
-import com.example.chat.storage.repository.JpaChannelMetadataRepository;
-import com.example.chat.storage.repository.JpaMessageRepository;
+import com.example.chat.storage.domain.repository.JpaChannelMetadataRepository;
+import com.example.chat.storage.domain.repository.JpaMessageRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**

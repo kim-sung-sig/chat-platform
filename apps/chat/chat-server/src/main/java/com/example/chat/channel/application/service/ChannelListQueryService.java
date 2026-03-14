@@ -15,20 +15,20 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.chat.cache.UnreadCacheService;
-import com.example.chat.channel.application.dto.response.ChannelListItem;
+import com.example.chat.shared.cache.UnreadCacheService;
+import com.example.chat.channel.rest.dto.response.ChannelListItem;
 import com.example.chat.channel.application.query.ChannelListQuery;
 import com.example.chat.common.core.enums.ChannelType;
-import com.example.chat.storage.entity.ChatChannelEntity;
-import com.example.chat.storage.entity.ChatChannelMemberEntity;
-import com.example.chat.storage.entity.ChatChannelMetadataEntity;
-import com.example.chat.storage.entity.ChatMessageEntity;
-import com.example.chat.storage.entity.UserEntity;
-import com.example.chat.storage.repository.JpaChannelMemberRepository;
-import com.example.chat.storage.repository.JpaChannelMetadataRepository;
-import com.example.chat.storage.repository.JpaChannelRepository;
-import com.example.chat.storage.repository.JpaMessageRepository;
-import com.example.chat.storage.repository.JpaUserRepository;
+import com.example.chat.storage.domain.entity.ChatChannelEntity;
+import com.example.chat.storage.domain.entity.ChatChannelMemberEntity;
+import com.example.chat.storage.domain.entity.ChatChannelMetadataEntity;
+import com.example.chat.storage.domain.entity.ChatMessageEntity;
+import com.example.chat.storage.domain.entity.UserEntity;
+import com.example.chat.storage.domain.repository.JpaChannelMemberRepository;
+import com.example.chat.storage.domain.repository.JpaChannelMetadataRepository;
+import com.example.chat.storage.domain.repository.JpaChannelRepository;
+import com.example.chat.storage.domain.repository.JpaMessageRepository;
+import com.example.chat.storage.domain.repository.JpaUserRepository;
 
 import lombok.extern.slf4j.Slf4j;
 

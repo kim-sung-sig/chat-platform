@@ -23,15 +23,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.example.chat.auth.core.util.SecurityUtils;
 import com.example.chat.common.core.enums.ChannelType;
-import com.example.chat.exception.ChatException;
-import com.example.chat.exception.ResourceNotFoundException;
+import com.example.chat.shared.exception.ChatException;
+import com.example.chat.shared.exception.ResourceNotFoundException;
 import com.example.chat.message.infrastructure.kafka.KafkaMessageProducer;
-import com.example.chat.storage.entity.ChatChannelEntity;
-import com.example.chat.storage.entity.ChatChannelMetadataEntity;
-import com.example.chat.storage.repository.JpaChannelMemberRepository;
-import com.example.chat.storage.repository.JpaChannelMetadataRepository;
-import com.example.chat.storage.repository.JpaChannelRepository;
-import com.example.chat.storage.repository.JpaUserRepository;
+import com.example.chat.storage.domain.entity.ChatChannelEntity;
+import com.example.chat.storage.domain.entity.ChatChannelMetadataEntity;
+import com.example.chat.storage.domain.repository.JpaChannelMemberRepository;
+import com.example.chat.storage.domain.repository.JpaChannelMetadataRepository;
+import com.example.chat.storage.domain.repository.JpaChannelRepository;
+import com.example.chat.storage.domain.repository.JpaUserRepository;
 
 /**
  * [단위 테스트] ChannelCommandService.removeMember()

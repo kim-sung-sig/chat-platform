@@ -14,7 +14,11 @@ import lombok.Setter;
 @Getter
 @Setter
 public class JwtProperties {
-    private String issuer = "http://localhost:18080";
-    private long accessTokenExpiration = 3600L;
-    private long refreshTokenExpiration = 86400L;
+	private String issuer = "http://localhost:18080";
+	private long accessTokenExpiration = 3600L;
+	private long refreshTokenExpiration = 86400L;
+	/**
+	 * Path to persisted JWK (JSON). Required to keep tokens valid across restarts.
+	 */
+	private String jwkFile;
 }

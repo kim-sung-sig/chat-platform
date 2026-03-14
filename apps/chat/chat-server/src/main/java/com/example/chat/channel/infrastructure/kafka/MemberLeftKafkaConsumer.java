@@ -6,8 +6,8 @@ import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.chat.storage.repository.JpaChannelMetadataRepository;
-import com.example.chat.storage.repository.JpaMessageRepository;
+import com.example.chat.storage.domain.repository.JpaChannelMetadataRepository;
+import com.example.chat.storage.domain.repository.JpaMessageRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;

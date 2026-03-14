@@ -1,8 +1,8 @@
 package com.example.chat.channel.application.service;
 import com.example.chat.common.core.enums.ChannelType;
-import com.example.chat.storage.entity.*;
-import com.example.chat.storage.repository.*;
-import com.example.chat.channel.application.dto.response.ChannelListItem;
+import com.example.chat.storage.domain.entity.*;
+import com.example.chat.storage.domain.repository.*;
+import com.example.chat.channel.rest.dto.response.ChannelListItem;
 import com.example.chat.channel.application.query.ChannelListQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

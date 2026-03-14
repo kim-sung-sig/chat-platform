@@ -19,18 +19,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-import com.example.chat.channel.application.dto.response.ChannelMetadataResponse;
+import com.example.chat.channel.rest.dto.response.ChannelMetadataResponse;
 import com.example.chat.channel.infrastructure.redis.ReadReceiptEventPublisher;
 import com.example.chat.common.core.enums.MessageType;
-import com.example.chat.exception.ResourceNotFoundException;
+import com.example.chat.shared.exception.ResourceNotFoundException;
 import com.example.chat.message.infrastructure.kafka.KafkaMessageProducer;
 import com.example.chat.message.infrastructure.kafka.ReadReceiptKafkaEvent;
-import com.example.chat.storage.entity.ChatChannelMetadataEntity;
-import com.example.chat.storage.entity.ChatMessageEntity;
-import com.example.chat.storage.repository.JpaChannelMemberRepository;
-import com.example.chat.storage.repository.JpaChannelMetadataRepository;
-import com.example.chat.storage.repository.JpaChannelRepository;
-import com.example.chat.storage.repository.JpaMessageRepository;
+import com.example.chat.storage.domain.entity.ChatChannelMetadataEntity;
+import com.example.chat.storage.domain.entity.ChatMessageEntity;
+import com.example.chat.storage.domain.repository.JpaChannelMemberRepository;
+import com.example.chat.storage.domain.repository.JpaChannelMetadataRepository;
+import com.example.chat.storage.domain.repository.JpaChannelRepository;
+import com.example.chat.storage.domain.repository.JpaMessageRepository;
 
 /**
  * [단위 테스트] ChannelMetadataApplicationService.markAsRead()

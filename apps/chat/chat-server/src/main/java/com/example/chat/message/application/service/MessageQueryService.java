@@ -2,12 +2,12 @@ package com.example.chat.message.application.service;
 
 import com.example.chat.auth.core.util.SecurityUtils;
 import com.example.chat.common.core.exception.ChatErrorCode;
-import com.example.chat.exception.ChatException;
-import com.example.chat.message.application.dto.response.CursorPageResponse;
-import com.example.chat.message.application.dto.response.MessageResponse;
-import com.example.chat.storage.repository.JpaChannelMemberRepository;
-import com.example.chat.storage.repository.JpaChannelRepository;
-import com.example.chat.storage.repository.JpaMessageRepository;
+import com.example.chat.shared.exception.ChatException;
+import com.example.chat.message.rest.dto.response.CursorPageResponse;
+import com.example.chat.message.rest.dto.response.MessageResponse;
+import com.example.chat.storage.domain.repository.JpaChannelMemberRepository;
+import com.example.chat.storage.domain.repository.JpaChannelRepository;
+import com.example.chat.storage.domain.repository.JpaMessageRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;

@@ -4,36 +4,36 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.chat.cache.UnreadCacheService;
-import com.example.chat.channel.application.dto.response.ChannelMetadataResponse;
+import com.example.chat.shared.cache.UnreadCacheService;
+import com.example.chat.channel.rest.dto.response.ChannelMetadataResponse;
 import com.example.chat.channel.infrastructure.redis.ReadReceiptEventPublisher;
 import com.example.chat.common.core.exception.ChatErrorCode;
-import com.example.chat.exception.ChatException;
-import com.example.chat.exception.ResourceNotFoundException;
+import com.example.chat.shared.exception.ChatException;
+import com.example.chat.shared.exception.ResourceNotFoundException;
 import com.example.chat.message.infrastructure.kafka.KafkaMessageProducer;
 import com.example.chat.message.infrastructure.kafka.ReadReceiptKafkaEvent;
-import com.example.chat.storage.entity.ChatChannelMetadataEntity;
-import com.example.chat.storage.repository.JpaChannelMemberRepository;
-import com.example.chat.storage.repository.JpaChannelMetadataRepository;
-import com.example.chat.storage.repository.JpaChannelRepository;
-import com.example.chat.storage.repository.JpaMessageRepository;
-
-import lombok.extern.slf4j.Slf4j;
+import com.example.chat.storage.domain.entity.ChatChannelMetadataEntity;
+import com.example.chat.storage.domain.repository.JpaChannelMemberRepository;
+import com.example.chat.storage.domain.repository.JpaChannelMetadataRepository;
+import com.example.chat.storage.domain.repository.JpaChannelRepository;
+import com.example.chat.storage.domain.repository.JpaMessageRepository;
 
 /**
  * 채팅방 메타데이터 Application Service
- *
  * 트랜잭션 정책:
  * - 클래스 기본: readOnly=true (조회 최적화)
  * - 상태 변경 메서드: @Transactional 개별 오버라이드
  * - getOrCreateMetadata: 조회+생성 혼재 → 쓰기 트랜잭션
  */
+@Slf4j
 @Service
 @Transactional(readOnly = true)
-@Slf4j
+@RequiredArgsConstructor
 public class ChannelMetadataApplicationService {
 
     private final JpaChannelMetadataRepository metadataRepository;
@@ -43,23 +43,6 @@ public class ChannelMetadataApplicationService {
     private final KafkaMessageProducer kafkaMessageProducer;
     private final JpaMessageRepository messageRepository;
     private final UnreadCacheService unreadCacheService;
-
-    public ChannelMetadataApplicationService(
-            JpaChannelMetadataRepository metadataRepository,
-            JpaChannelRepository channelRepository,
-            JpaChannelMemberRepository channelMemberRepository,
-            ReadReceiptEventPublisher readReceiptEventPublisher,
-            KafkaMessageProducer kafkaMessageProducer,
-            JpaMessageRepository messageRepository,
-            UnreadCacheService unreadCacheService) {
-        this.metadataRepository = metadataRepository;
-        this.channelRepository = channelRepository;
-        this.channelMemberRepository = channelMemberRepository;
-        this.readReceiptEventPublisher = readReceiptEventPublisher;
-        this.kafkaMessageProducer = kafkaMessageProducer;
-        this.messageRepository = messageRepository;
-        this.unreadCacheService = unreadCacheService;
-    }
 
     /** 조회 또는 신규 생성 - 쓰기 트랜잭션 */
     @Transactional

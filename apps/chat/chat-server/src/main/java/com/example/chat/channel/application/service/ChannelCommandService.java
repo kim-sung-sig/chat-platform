@@ -7,21 +7,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.chat.auth.core.util.SecurityUtils;
-import com.example.chat.cache.UnreadCacheService;
-import com.example.chat.channel.application.dto.request.CreateChannelRequest;
-import com.example.chat.channel.application.dto.response.ChannelResponse;
+import com.example.chat.shared.cache.UnreadCacheService;
+import com.example.chat.channel.rest.dto.request.CreateChannelRequest;
+import com.example.chat.channel.rest.dto.response.ChannelResponse;
 import com.example.chat.common.core.enums.ChannelType;
 import com.example.chat.common.core.exception.ChatErrorCode;
-import com.example.chat.exception.ChatException;
-import com.example.chat.exception.ResourceNotFoundException;
+import com.example.chat.shared.exception.ChatException;
+import com.example.chat.shared.exception.ResourceNotFoundException;
 import com.example.chat.message.infrastructure.kafka.KafkaMessageProducer;
-import com.example.chat.storage.entity.ChatChannelEntity;
-import com.example.chat.storage.entity.ChatChannelMemberEntity;
-import com.example.chat.storage.entity.UserEntity;
-import com.example.chat.storage.repository.JpaChannelMemberRepository;
-import com.example.chat.storage.repository.JpaChannelMetadataRepository;
-import com.example.chat.storage.repository.JpaChannelRepository;
-import com.example.chat.storage.repository.JpaUserRepository;
+import com.example.chat.storage.domain.entity.ChatChannelEntity;
+import com.example.chat.storage.domain.entity.ChatChannelMemberEntity;
+import com.example.chat.storage.domain.entity.UserEntity;
+import com.example.chat.storage.domain.repository.JpaChannelMemberRepository;
+import com.example.chat.storage.domain.repository.JpaChannelMetadataRepository;
+import com.example.chat.storage.domain.repository.JpaChannelRepository;
+import com.example.chat.storage.domain.repository.JpaUserRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
