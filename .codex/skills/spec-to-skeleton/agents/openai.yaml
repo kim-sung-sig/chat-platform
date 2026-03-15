@@ -1,0 +1,6 @@
+interface:
+  display_name: "Spec To Skeleton"
+  short_description: "Design DDD/Spring Boot code skeleton from SDD"
+  default_prompt: "Use $spec-to-skeleton to design a code skeleton from this SDD."
+policy:
+  allow_implicit_invocation: true

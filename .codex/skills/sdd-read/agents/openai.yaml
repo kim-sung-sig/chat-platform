@@ -1,0 +1,6 @@
+interface:
+  display_name: "SDD Read"
+  short_description: "Create a developer brief from an SDD"
+  default_prompt: "Use $sdd-read to create a developer brief from this SDD."
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,6 @@
+interface:
+  display_name: "SDD Requirements"
+  short_description: "Convert raw requirements into SDD spec format"
+  default_prompt: "Use $sdd-requirements to convert the following requirements into the repo SDD template."
+policy:
+  allow_implicit_invocation: true
