@@ -29,14 +29,14 @@ Create TDD test code from the SDD and the generated skeleton.
 - Confirm the test framework from build files before choosing libraries or annotations.
 
 ## Test Structure Rules
-- Use JUnit5 `@Nested` to group tests by context:
-  - `HappyPath`
-  - `Boundary`
-  - `Failure`
+- Use JUnit5 `@Nested` by method:
+  - One nested class per public method under test
+  - Inside each nested class, create `HappyPath`, `Boundary`, and `Failure` nested groups as needed
 - Use Mockito for all collaborators:
   - Prefer `@Mock` and `@InjectMocks`
   - Verify interactions and captured arguments
-- Use Given/When/Then naming in test methods and comments.
+- Use `@DisplayName` in Korean for each test and nested group
+- Use Given/When/Then naming in test methods and comments
 
 ## Output Format
 - Test classes and methods under `src/test/java/...`.
