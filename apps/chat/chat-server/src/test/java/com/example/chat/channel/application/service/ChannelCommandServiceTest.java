@@ -23,15 +23,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.example.chat.auth.core.util.SecurityUtils;
 import com.example.chat.common.core.enums.ChannelType;
+import com.example.chat.shared.cache.UnreadCacheService;
 import com.example.chat.shared.exception.ChatException;
 import com.example.chat.shared.exception.ResourceNotFoundException;
 import com.example.chat.message.infrastructure.kafka.KafkaMessageProducer;
 import com.example.chat.storage.domain.entity.ChatChannelEntity;
 import com.example.chat.storage.domain.entity.ChatChannelMetadataEntity;
+import com.example.chat.storage.domain.entity.LastReadPointer;
 import com.example.chat.storage.domain.repository.JpaChannelMemberRepository;
 import com.example.chat.storage.domain.repository.JpaChannelMetadataRepository;
 import com.example.chat.storage.domain.repository.JpaChannelRepository;
 import com.example.chat.storage.domain.repository.JpaUserRepository;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * [단위 테스트] ChannelCommandService.removeMember()
@@ -53,6 +56,7 @@ class ChannelCommandServiceTest {
     @Mock JpaUserRepository userRepository;
     @Mock JpaChannelMetadataRepository channelMetadataRepository;
     @Mock KafkaMessageProducer kafkaMessageProducer;
+    @Mock UnreadCacheService unreadCacheService;
 
     @InjectMocks ChannelCommandService service;
 
@@ -74,22 +78,15 @@ class ChannelCommandServiceTest {
     }
 
     private ChatChannelEntity activeChannel(String ownerId) {
-        return ChatChannelEntity.builder()
-                .id(CHANNEL_ID)
-                .name("test-ch")
-                .channelType(ChannelType.GROUP)
-                .ownerId(ownerId)
-                .active(true)
-                .build();
+        return ChatChannelEntity.create(CHANNEL_ID, "test-ch", null, ChannelType.GROUP, ownerId);
     }
 
     private ChatChannelMetadataEntity metadataWith(Instant lastReadAt) {
-        return ChatChannelMetadataEntity.builder()
-                .id("meta-001")
-                .channelId(CHANNEL_ID)
-                .userId(MEMBER_ID)
-                .lastReadAt(lastReadAt)
-                .build();
+        ChatChannelMetadataEntity meta = ChatChannelMetadataEntity.create("meta-001", CHANNEL_ID, MEMBER_ID);
+        if (lastReadAt != null) {
+            ReflectionTestUtils.setField(meta, "lastRead", LastReadPointer.of("some-msg-id", lastReadAt));
+        }
+        return meta;
     }
 
     // ──────────────────────────────────────────────────

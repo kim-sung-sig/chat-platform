@@ -115,27 +115,21 @@ public class MessageSendService {
     }
 
     private ChatMessageEntity buildMessageEntity(SendMessageRequest request, String senderId) {
-        var content = request.toMessageContent();
-        var builder = ChatMessageEntity.builder()
-                .id(UUID.randomUUID().toString())
-                .channelId(request.channelId())
-                .senderId(senderId)
-                .messageType(request.messageType());
-
-        switch (content) {
+        var domainContent = request.toMessageContent();
+        com.example.chat.storage.domain.entity.MessageContent storageContent = switch (domainContent) {
             case MessageContent.Text t ->
-                    builder.contentText(t.text());
+                    com.example.chat.storage.domain.entity.MessageContent.of(t.text(), null, null, null, null);
             case MessageContent.Image i ->
-                    builder.contentMediaUrl(i.mediaUrl())
-                           .contentFileName(i.fileName())
-                           .contentFileSize(i.fileSize());
+                    com.example.chat.storage.domain.entity.MessageContent.of(null, i.mediaUrl(), i.fileName(), i.fileSize(), null);
             case MessageContent.File f ->
-                    builder.contentMediaUrl(f.mediaUrl())
-                           .contentFileName(f.fileName())
-                           .contentFileSize(f.fileSize())
-                           .contentMimeType(f.mimeType());
-        }
-        return builder.build();
+                    com.example.chat.storage.domain.entity.MessageContent.of(null, f.mediaUrl(), f.fileName(), f.fileSize(), f.mimeType());
+        };
+        return ChatMessageEntity.create(
+                UUID.randomUUID().toString(),
+                request.channelId(),
+                senderId,
+                request.messageType(),
+                storageContent);
     }
 
     private void publishEvent(ChatMessageEntity saved, int memberCount) {

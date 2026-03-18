@@ -1,6 +1,7 @@
 package com.example.chat.channel.rest.controller;
 
-import org.springframework.data.domain.Page;
+import java.time.Instant;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -11,8 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.chat.auth.core.util.SecurityUtils;
 import com.example.chat.channel.rest.dto.response.ChannelListItem;
 import com.example.chat.channel.application.query.ChannelListQuery;
-import com.example.chat.channel.application.query.ChannelSortBy;
 import com.example.chat.channel.application.service.ChannelListQueryService;
+import com.example.chat.channel.application.model.CursorPage;
 import com.example.chat.common.core.enums.ChannelType;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,6 +29,10 @@ import lombok.extern.slf4j.Slf4j;
  * - HTTP 요청 수신 및 응답
  * - Validation 처리 (@Valid)
  * - Application Service 위임
+ *
+ * 커서 페이징:
+ * - cursor 파라미터: 이전 응답의 nextCursor 값 (Instant ISO-8601)
+ * - null 이면 첫 페이지
  */
 @RestController
 @RequestMapping("/api/v1/channels")
@@ -45,9 +50,9 @@ public class ChannelQueryController {
     @GetMapping("/my")
     @Operation(
             summary = "내 채팅방 목록 조회",
-            description = "JWT 토큰으로 인증된 사용자의 채팅방 목록 조회"
+            description = "JWT 토큰으로 인증된 사용자의 채팅방 목록 조회 (커서 페이징)"
     )
-    public ResponseEntity<Page<ChannelListItem>> getMyChannelList(
+    public ResponseEntity<CursorPage<ChannelListItem>> getMyChannelList(
             @Parameter(description = "채널 타입 필터 (DIRECT, GROUP, PUBLIC, PRIVATE)")
             @RequestParam(required = false) ChannelType type,
 
@@ -63,14 +68,8 @@ public class ChannelQueryController {
             @Parameter(description = "검색 키워드 (채널명, 상대방 이름)")
             @RequestParam(required = false) String search,
 
-            @Parameter(description = "정렬 기준 (LAST_ACTIVITY, NAME, UNREAD_COUNT, CREATED_AT)")
-            @RequestParam(required = false, defaultValue = "LAST_ACTIVITY") ChannelSortBy sortBy,
-
-            @Parameter(description = "정렬 방향 (ASC, DESC)")
-            @RequestParam(required = false, defaultValue = "DESC") ChannelListQuery.SortDirection direction,
-
-            @Parameter(description = "페이지 번호 (0부터 시작)")
-            @RequestParam(required = false, defaultValue = "0") int page,
+            @Parameter(description = "커서 (이전 페이지 마지막 채널의 createdAt ISO-8601, null 이면 첫 페이지)")
+            @RequestParam(required = false) Instant cursor,
 
             @Parameter(description = "페이지 크기")
             @RequestParam(required = false, defaultValue = "20") int size) {
@@ -78,14 +77,14 @@ public class ChannelQueryController {
         String userId = SecurityUtils.getCurrentUserId()
                 .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
 
-        log.info("GET /api/v1/channels/my - userId: {}, type: {}, page: {}/{}", userId, type, page, size);
+        log.info("GET /api/v1/channels/my - userId: {}, type: {}, cursor: {}, size: {}", userId, type, cursor, size);
 
         ChannelListQuery query = new ChannelListQuery(
-                userId, type, onlyFavorites, onlyUnread, onlyPinned, search, sortBy, direction, page, size);
+                userId, type, onlyFavorites, onlyUnread, onlyPinned, search, cursor, size);
 
-        Page<ChannelListItem> result = channelQueryService.getChannelList(query);
+        CursorPage<ChannelListItem> result = channelQueryService.getChannelList(query);
 
-        log.info("Found {} channels for user {} (total: {})", result.getNumberOfElements(), userId, result.getTotalElements());
+        log.info("Found {} channels for user {}", result.content().size(), userId);
 
         return ResponseEntity.ok(result);
     }
@@ -97,9 +96,9 @@ public class ChannelQueryController {
     @GetMapping
     @Operation(
             summary = "채팅방 목록 조회 (헤더 기반)",
-            description = "X-User-Id 헤더로 사용자를 지정하여 채팅방 목록 조회"
+            description = "X-User-Id 헤더로 사용자를 지정하여 채팅방 목록 조회 (커서 페이징)"
     )
-    public ResponseEntity<Page<ChannelListItem>> getChannelList(
+    public ResponseEntity<CursorPage<ChannelListItem>> getChannelList(
             @RequestHeader("X-User-Id") String userId,
 
             @Parameter(description = "채널 타입 필터 (DIRECT, GROUP, PUBLIC, PRIVATE)")
@@ -117,26 +116,20 @@ public class ChannelQueryController {
             @Parameter(description = "검색 키워드 (채널명, 상대방 이름)")
             @RequestParam(required = false) String search,
 
-            @Parameter(description = "정렬 기준 (LAST_ACTIVITY, NAME, UNREAD_COUNT, CREATED_AT)")
-            @RequestParam(required = false, defaultValue = "LAST_ACTIVITY") ChannelSortBy sortBy,
-
-            @Parameter(description = "정렬 방향 (ASC, DESC)")
-            @RequestParam(required = false, defaultValue = "DESC") ChannelListQuery.SortDirection direction,
-
-            @Parameter(description = "페이지 번호 (0부터 시작)")
-            @RequestParam(required = false, defaultValue = "0") int page,
+            @Parameter(description = "커서 (이전 페이지 마지막 채널의 createdAt ISO-8601, null 이면 첫 페이지)")
+            @RequestParam(required = false) Instant cursor,
 
             @Parameter(description = "페이지 크기")
             @RequestParam(required = false, defaultValue = "20") int size) {
 
-        log.info("GET /api/v1/channels - userId: {}, type: {}, page: {}/{}", userId, type, page, size);
+        log.info("GET /api/v1/channels - userId: {}, type: {}, cursor: {}, size: {}", userId, type, cursor, size);
 
         ChannelListQuery query = new ChannelListQuery(
-                userId, type, onlyFavorites, onlyUnread, onlyPinned, search, sortBy, direction, page, size);
+                userId, type, onlyFavorites, onlyUnread, onlyPinned, search, cursor, size);
 
-        Page<ChannelListItem> result = channelQueryService.getChannelList(query);
+        CursorPage<ChannelListItem> result = channelQueryService.getChannelList(query);
 
-        log.info("Found {} channels (total: {})", result.getNumberOfElements(), result.getTotalElements());
+        log.info("Found {} channels", result.content().size());
 
         return ResponseEntity.ok(result);
     }

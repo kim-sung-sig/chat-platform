@@ -1,13 +1,16 @@
 package com.example.chat.channel.application.query;
 
+import java.time.Instant;
+
 import com.example.chat.common.core.enums.ChannelType;
 
 /**
- * 채팅방 목록 조회 Query 모델
+ * 채팅방 목록 조회 Query 모델 (Cursor-based pagination)
  *
  * CQRS Query Side:
- * - 복잡한 필터링/정렬 지원
- * - 페이징 지원
+ * - 커서 기반 페이징 — offset 사용 금지
+ *   cursor: 마지막으로 수신한 채널의 createdAt (null 이면 첫 페이지)
+ * - 정렬은 createdAt DESC 고정
  */
 public record ChannelListQuery(
         String userId,
@@ -16,31 +19,15 @@ public record ChannelListQuery(
         Boolean onlyUnread,
         Boolean onlyPinned,
         String searchKeyword,
-        ChannelSortBy sortBy,
-        SortDirection direction,
-        int page,
+        Instant cursor,
         int size) {
     public ChannelListQuery {
-        if (sortBy == null)
-            sortBy = ChannelSortBy.LAST_ACTIVITY;
-        if (direction == null)
-            direction = SortDirection.DESC;
-        if (page < 0)
-            page = 0;
         if (size <= 0)
             size = 20;
     }
 
-    /**
-     * 정렬 방향
-     */
-    public enum SortDirection {
-        ASC, // 오름차순
-        DESC // 내림차순
-    }
-
     // Convenience constructor for minimal params
     public ChannelListQuery(String userId) {
-        this(userId, null, null, null, null, null, ChannelSortBy.LAST_ACTIVITY, SortDirection.DESC, 0, 20);
+        this(userId, null, null, null, null, null, null, 20);
     }
 }

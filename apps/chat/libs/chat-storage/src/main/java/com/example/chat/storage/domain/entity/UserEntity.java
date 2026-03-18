@@ -10,29 +10,25 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * 사용자 JPA Entity
+ * 사용자 JPA Entity.
+ * createdAt / updatedAt 생명주기는 {@link BaseEntity} 에서 관리한다.
  */
 @Entity
 @Table(name = "users", indexes = {
-        @Index(name = "idx_username", columnList = "username"),
-        @Index(name = "idx_email", columnList = "email"),
-        @Index(name = "idx_status", columnList = "status")
+        @Index(name = "idx_user_username", columnList = "username"),
+        @Index(name = "idx_user_email", columnList = "email"),
+        @Index(name = "idx_user_status", columnList = "status")
 })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Builder
-public class UserEntity {
+public class UserEntity extends BaseEntity {
+
     @Id
     @Column(name = "id", length = 36, nullable = false)
     private String id;
@@ -45,29 +41,23 @@ public class UserEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20, nullable = false)
-    @Builder.Default
     private UserStatus status = UserStatus.ACTIVE;
-
-    @Column(name = "created_at", nullable = false)
-    @Builder.Default
-    private Instant createdAt = Instant.now();
-
-    @Column(name = "updated_at")
-    private Instant updatedAt;
 
     @Column(name = "last_active_at")
     private Instant lastActiveAt;
 
-    @PrePersist
-    public void prePersist() {
-        if (createdAt == null || createdAt.equals(Instant.EPOCH)) {
-            createdAt = Instant.now();
-        }
+    private UserEntity(String id, String username, String email) {
+        this.id = id;
+        this.username = username;
+        this.email = email;
+        this.status = UserStatus.ACTIVE;
     }
 
-    @PreUpdate
-    public void preUpdate() {
-        updatedAt = Instant.now();
+    /**
+     * 새 사용자 엔티티를 생성하는 팩토리 메서드.
+     */
+    public static UserEntity create(String id, String username, String email) {
+        return new UserEntity(id, username, email);
     }
 
     // =============================================

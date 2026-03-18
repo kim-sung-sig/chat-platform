@@ -1,6 +1,7 @@
 package com.example.chat.friendship.application.service;
-import com.example.chat.storage.domain.repository.JpaFriendshipRepository;
+import com.example.chat.common.core.enums.FriendshipStatus;
 import com.example.chat.friendship.rest.dto.response.FriendshipResponse;
+import com.example.chat.storage.domain.repository.JpaFriendshipRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -20,25 +21,25 @@ public class FriendshipQueryService {
     }
     public List<FriendshipResponse> getFriendList(String userId) {
         logger.debug("Getting friend list for user: {}", userId);
-        return friendshipRepository.findAcceptedFriendsByUserId(userId).stream()
+        return friendshipRepository.findByUserIdAndStatusOrderByFavoriteDescUpdatedAtDesc(userId, FriendshipStatus.ACCEPTED).stream()
                 .map(FriendshipResponse::fromEntity)
                 .collect(Collectors.toList());
     }
     public List<FriendshipResponse> getPendingRequests(String userId) {
         logger.debug("Getting pending requests for user: {}", userId);
-        return friendshipRepository.findPendingRequestsByFriendId(userId).stream()
+        return friendshipRepository.findByFriendIdAndStatusOrderByCreatedAtDesc(userId, FriendshipStatus.PENDING).stream()
                 .map(FriendshipResponse::fromEntity)
                 .collect(Collectors.toList());
     }
     public List<FriendshipResponse> getSentRequests(String userId) {
         logger.debug("Getting sent requests for user: {}", userId);
-        return friendshipRepository.findPendingRequestsByUserId(userId).stream()
+        return friendshipRepository.findByUserIdAndStatusOrderByCreatedAtDesc(userId, FriendshipStatus.PENDING).stream()
                 .map(FriendshipResponse::fromEntity)
                 .collect(Collectors.toList());
     }
     public List<FriendshipResponse> getFavoriteFriends(String userId) {
         logger.debug("Getting favorite friends for user: {}", userId);
-        return friendshipRepository.findFavoritesByUserId(userId).stream()
+        return friendshipRepository.findByUserIdAndStatusAndFavoriteTrueOrderByUpdatedAtDesc(userId, FriendshipStatus.ACCEPTED).stream()
                 .map(FriendshipResponse::fromEntity)
                 .collect(Collectors.toList());
     }

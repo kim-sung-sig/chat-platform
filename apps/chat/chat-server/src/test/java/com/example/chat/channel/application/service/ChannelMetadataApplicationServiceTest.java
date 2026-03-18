@@ -22,15 +22,18 @@ import org.mockito.quality.Strictness;
 import com.example.chat.channel.rest.dto.response.ChannelMetadataResponse;
 import com.example.chat.channel.infrastructure.redis.ReadReceiptEventPublisher;
 import com.example.chat.common.core.enums.MessageType;
+import com.example.chat.shared.cache.UnreadCacheService;
 import com.example.chat.shared.exception.ResourceNotFoundException;
 import com.example.chat.message.infrastructure.kafka.KafkaMessageProducer;
 import com.example.chat.message.infrastructure.kafka.ReadReceiptKafkaEvent;
 import com.example.chat.storage.domain.entity.ChatChannelMetadataEntity;
 import com.example.chat.storage.domain.entity.ChatMessageEntity;
+import com.example.chat.storage.domain.entity.MessageContent;
 import com.example.chat.storage.domain.repository.JpaChannelMemberRepository;
 import com.example.chat.storage.domain.repository.JpaChannelMetadataRepository;
 import com.example.chat.storage.domain.repository.JpaChannelRepository;
 import com.example.chat.storage.domain.repository.JpaMessageRepository;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * [단위 테스트] ChannelMetadataApplicationService.markAsRead()
@@ -53,6 +56,7 @@ class ChannelMetadataApplicationServiceTest {
     @Mock ReadReceiptEventPublisher readReceiptEventPublisher;
     @Mock KafkaMessageProducer kafkaMessageProducer;
     @Mock JpaMessageRepository messageRepository;
+    @Mock UnreadCacheService unreadCacheService;
 
     @InjectMocks ChannelMetadataApplicationService service;
 
@@ -62,22 +66,14 @@ class ChannelMetadataApplicationServiceTest {
     private static final Instant CREATED_AT = Instant.parse("2026-03-12T10:00:00Z");
 
     private ChatChannelMetadataEntity stubMetadata() {
-        return ChatChannelMetadataEntity.builder()
-                .id("meta-001")
-                .channelId(CHANNEL_ID)
-                .userId(USER_ID)
-                .unreadCount(3)
-                .build();
+        return ChatChannelMetadataEntity.create("meta-001", CHANNEL_ID, USER_ID);
     }
 
     private ChatMessageEntity stubMessage() {
-        return ChatMessageEntity.builder()
-                .id(MESSAGE_ID)
-                .channelId(CHANNEL_ID)
-                .senderId("other-user")
-                .messageType(MessageType.TEXT)
-                .createdAt(CREATED_AT)
-                .build();
+        MessageContent content = MessageContent.of("test", null, null, null, null);
+        ChatMessageEntity msg = ChatMessageEntity.create(MESSAGE_ID, CHANNEL_ID, "other-user", MessageType.TEXT, content);
+        ReflectionTestUtils.setField(msg, "createdAt", CREATED_AT);
+        return msg;
     }
 
     @BeforeEach

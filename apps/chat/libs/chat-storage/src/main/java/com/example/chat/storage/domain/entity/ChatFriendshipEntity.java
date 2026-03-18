@@ -1,7 +1,5 @@
 package com.example.chat.storage.domain.entity;
 
-import java.time.Instant;
-
 import com.example.chat.common.core.enums.FriendshipStatus;
 
 import jakarta.persistence.Column;
@@ -10,32 +8,28 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * 친구 관계 JPA Entity
+ * 친구 관계 JPA Entity.
+ * createdAt / updatedAt 생명주기는 {@link BaseEntity} 에서 관리한다.
  */
 @Entity
 @Table(name = "chat_friendships", indexes = {
-        @Index(name = "idx_user_id", columnList = "user_id"),
-        @Index(name = "idx_friend_id", columnList = "friend_id"),
+        @Index(name = "idx_friendship_user_id", columnList = "user_id"),
+        @Index(name = "idx_friendship_friend_id", columnList = "friend_id"),
         @Index(name = "idx_user_status", columnList = "user_id, status")
 }, uniqueConstraints = {
         @UniqueConstraint(name = "uk_friendship", columnNames = { "user_id", "friend_id" })
 })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Builder
-public class ChatFriendshipEntity {
+public class ChatFriendshipEntity extends BaseEntity {
+
     @Id
     @Column(name = "id", length = 36, nullable = false)
     private String id;
@@ -54,25 +48,22 @@ public class ChatFriendshipEntity {
     private String nickname;
 
     @Column(name = "favorite", nullable = false)
-    @Builder.Default
     private boolean favorite = false;
 
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
-
-    @PrePersist
-    public void prePersist() {
-        Instant now = Instant.now();
-        if (createdAt == null) createdAt = now;
-        if (updatedAt == null) updatedAt = now;
+    private ChatFriendshipEntity(String id, String userId, String friendId, FriendshipStatus status) {
+        this.id = id;
+        this.userId = userId;
+        this.friendId = friendId;
+        this.status = status;
+        this.favorite = false;
     }
 
-    @PreUpdate
-    public void preUpdate() {
-        updatedAt = Instant.now();
+    /**
+     * 새 친구 관계 엔티티를 생성하는 팩토리 메서드.
+     */
+    public static ChatFriendshipEntity create(String id, String userId, String friendId,
+                                               FriendshipStatus status) {
+        return new ChatFriendshipEntity(id, userId, friendId, status);
     }
 
     // =============================================
@@ -85,7 +76,6 @@ public class ChatFriendshipEntity {
         }
         this.status = FriendshipStatus.ACCEPTED;
     }
-
 
     public void block() {
         if (this.status == FriendshipStatus.BLOCKED) {

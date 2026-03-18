@@ -36,9 +36,9 @@ import lombok.extern.slf4j.Slf4j;
  * SRP: 채널 상태 변경 전담
  * DIP: JPA Repository 직접 주입 (Adapter 제거됨)
  */
+@Slf4j
 @Service
 @Transactional(readOnly = true)
-@Slf4j
 public class ChannelCommandService {
 
     private final JpaChannelRepository channelRepository;
@@ -156,13 +156,12 @@ public class ChannelCommandService {
 
     private ChatChannelEntity buildChannel(CreateChannelRequest request, UserEntity owner) {
         String channelName = resolveChannelName(request);
-        return ChatChannelEntity.builder()
-                .id(UUID.randomUUID().toString())
-                .name(channelName)
-                .description(request.description())
-                .channelType(request.type())
-                .ownerId(owner.getId())
-                .build();
+        return ChatChannelEntity.create(
+                UUID.randomUUID().toString(),
+                channelName,
+                request.description(),
+                request.type(),
+                owner.getId());
     }
 
     private String resolveChannelName(CreateChannelRequest request) {
@@ -176,10 +175,7 @@ public class ChannelCommandService {
     }
 
     private ChatChannelMemberEntity buildMember(String channelId, String userId) {
-        return ChatChannelMemberEntity.builder()
-                .channelId(channelId)
-                .userId(userId)
-                .build();
+        return ChatChannelMemberEntity.create(channelId, userId);
     }
 
     private ChatChannelEntity findChannel(String channelId) {

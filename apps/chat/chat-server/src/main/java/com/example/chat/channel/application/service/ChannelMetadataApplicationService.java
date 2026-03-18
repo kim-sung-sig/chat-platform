@@ -140,17 +140,17 @@ public class ChannelMetadataApplicationService {
     }
 
     public List<ChannelMetadataResponse> getFavorites(String userId) {
-        return metadataRepository.findFavoritesByUserId(userId).stream()
+        return metadataRepository.findByUserIdAndFavoriteTrueOrderByLastActivityAtDesc(userId).stream()
                 .map(ChannelMetadataResponse::fromEntity).collect(Collectors.toList());
     }
 
     public List<ChannelMetadataResponse> getPinned(String userId) {
-        return metadataRepository.findPinnedByUserId(userId).stream()
+        return metadataRepository.findByUserIdAndPinnedTrueOrderByLastActivityAtDesc(userId).stream()
                 .map(ChannelMetadataResponse::fromEntity).collect(Collectors.toList());
     }
 
     public List<ChannelMetadataResponse> getWithUnread(String userId) {
-        return metadataRepository.findWithUnreadByUserId(userId).stream()
+        return metadataRepository.findByUserIdAndUnreadCountGreaterThanOrderByLastActivityAtDesc(userId, 0).stream()
                 .map(ChannelMetadataResponse::fromEntity).collect(Collectors.toList());
     }
 
@@ -164,10 +164,6 @@ public class ChannelMetadataApplicationService {
     }
 
     private ChatChannelMetadataEntity buildMetadata(String channelId, String userId) {
-        return ChatChannelMetadataEntity.builder()
-                .id(UUID.randomUUID().toString())
-                .channelId(channelId)
-                .userId(userId)
-                .build();
+        return ChatChannelMetadataEntity.create(UUID.randomUUID().toString(), channelId, userId);
     }
 }

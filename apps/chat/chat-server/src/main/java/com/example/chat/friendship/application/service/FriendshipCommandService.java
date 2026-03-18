@@ -184,11 +184,10 @@ public class FriendshipCommandService {
     }
 
     private ChatFriendshipEntity buildFriendship(String userId, String friendId) {
-        return ChatFriendshipEntity.builder()
-                .id(UUID.randomUUID().toString())
-                .userId(userId)
-                .friendId(friendId)
-                .status(FriendshipStatus.PENDING)
-                .build();
+        return ChatFriendshipEntity.create(
+                UUID.randomUUID().toString(),
+                userId,
+                friendId,
+                FriendshipStatus.PENDING);
     }
 }

@@ -107,13 +107,6 @@ class VoiceRoomCommandServiceTest {
     }
 
     private ChatChannelEntity activeChannel(String id) {
-        return ChatChannelEntity.builder()
-                .id(id)
-                .name("channel")
-                .description("desc")
-                .channelType(ChannelType.PUBLIC)
-                .ownerId("owner-1")
-                .active(true)
-                .build();
+        return ChatChannelEntity.create(id, "channel", "desc", ChannelType.PUBLIC, "owner-1");
     }
 }

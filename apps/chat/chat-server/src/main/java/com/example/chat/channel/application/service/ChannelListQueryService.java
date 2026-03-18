@@ -8,15 +8,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.chat.shared.cache.UnreadCacheService;
 import com.example.chat.channel.rest.dto.response.ChannelListItem;
+import com.example.chat.channel.application.model.CursorPage;
 import com.example.chat.channel.application.query.ChannelListQuery;
 import com.example.chat.common.core.enums.ChannelType;
 import com.example.chat.storage.domain.entity.ChatChannelEntity;
@@ -41,6 +39,10 @@ import lombok.extern.slf4j.Slf4j;
  *   Read Model (이 클래스): ChannelListQueryService
  *                → PostgreSQL Replica (readOnly=true 트랜잭션 → ReplicaDataSource 라우팅)
  *                → Redis Hash 캐시 우선 조회 (UnreadCacheService)
+ *
+ * 커서 페이징:
+ *   cursor = 마지막으로 받은 채널의 createdAt (null 이면 첫 페이지)
+ *   size+1 개를 조회해 hasNext 를 판단한다.
  *
  * unreadCount 조회 전략 (Two-Level Read):
  *   L1: Redis HGET chat:channel:{channelId}:unread {userId}
@@ -78,15 +80,16 @@ public class ChannelListQueryService {
     }
 
     /**
-     * 채팅방 목록 조회 (Read Model)
+     * 채팅방 목록 조회 (Read Model, Cursor-based)
      *
      * 단계:
-     * 1. PostgreSQL Replica에서 필터/페이징 적용한 채널 목록 조회
+     * 1. PostgreSQL Replica에서 커서/필터 적용한 채널 목록 조회 (size+1 개)
      * 2. 멤버/메타데이터/마지막메시지 배치 fetch (N+1 방지)
      * 3. unreadCount: Redis L1 → miss 시 PostgreSQL L2 fallback
+     * 4. CursorPage 래핑 (hasNext 판단)
      */
-    public Page<ChannelListItem> getChannelList(ChannelListQuery query) {
-        log.debug("ChannelListQueryService: userId={}, page={}/{}", query.userId(), query.page(), query.size());
+    public CursorPage<ChannelListItem> getChannelList(ChannelListQuery query) {
+        log.debug("ChannelListQueryService: userId={}, cursor={}, size={}", query.userId(), query.cursor(), query.size());
 
         String channelTypeStr = query.type() != null ? query.type().name() : null;
         boolean onlyFavorites  = Boolean.TRUE.equals(query.onlyFavorites());
@@ -95,17 +98,19 @@ public class ChannelListQueryService {
         String keyword = (query.searchKeyword() != null && !query.searchKeyword().isBlank())
                 ? query.searchKeyword() : null;
 
-        var pageable = PageRequest.of(query.page(), query.size(),
-                Sort.by(Sort.Direction.DESC, "updatedAt"));
+        // size+1 조회로 hasNext 판단 (offset 없음)
+        var pageable = PageRequest.ofSize(query.size() + 1);
 
-        Page<ChatChannelEntity> channelPage = channelRepository.findByMemberIdWithAllFilters(
+        List<ChatChannelEntity> fetched = channelRepository.findByMemberIdWithAllFilters(
                 query.userId(), channelTypeStr,
                 onlyFavorites, onlyPinned, onlyUnread, keyword,
-                pageable);
+                query.cursor(), pageable);
 
-        if (channelPage.isEmpty()) return Page.empty(pageable);
+        if (fetched.isEmpty()) return CursorPage.empty();
 
-        List<ChatChannelEntity> channels = channelPage.getContent();
+        boolean hasNext = fetched.size() > query.size();
+        List<ChatChannelEntity> channels = hasNext ? fetched.subList(0, query.size()) : fetched;
+
         List<String> channelIds = channels.stream()
                 .map(ChatChannelEntity::getId)
                 .collect(Collectors.toList());
@@ -124,7 +129,8 @@ public class ChannelListQueryService {
                         query.userId(), userCache))
                 .collect(Collectors.toList());
 
-        return new PageImpl<>(items, pageable, channelPage.getTotalElements());
+        Instant nextCursor = hasNext ? channels.get(channels.size() - 1).getCreatedAt() : null;
+        return new CursorPage<>(items, nextCursor, hasNext);
     }
 
     // ─────────────────────────────────────────────
@@ -139,7 +145,7 @@ public class ChannelListQueryService {
     }
 
     private Map<String, ChatChannelMetadataEntity> fetchMetadataMap(List<String> channelIds, String userId) {
-        return metadataRepository.findByChannelIdsAndUserId(channelIds, userId).stream()
+        return metadataRepository.findByChannelIdInAndUserId(channelIds, userId).stream()
                 .collect(Collectors.toMap(ChatChannelMetadataEntity::getChannelId, m -> m));
     }
 

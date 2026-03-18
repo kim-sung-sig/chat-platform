@@ -71,8 +71,8 @@ public class MessageQueryService {
         var pageable = PageRequest.of(0, safeLimit + 1);
 
         var entities = (cursor == null || cursor.isBlank())
-                ? messageRepository.findByChannelIdLatest(channelId, pageable)
-                : messageRepository.findByChannelIdBeforeCursor(channelId, Instant.parse(cursor), pageable);
+                ? messageRepository.findByChannelIdOrderByCreatedAtDesc(channelId, pageable)
+                : messageRepository.findByChannelIdAndCreatedAtBeforeOrderByCreatedAtDesc(channelId, Instant.parse(cursor), pageable);
 
         boolean hasNext = entities.size() > safeLimit;
         var page = hasNext ? entities.subList(0, safeLimit) : entities;

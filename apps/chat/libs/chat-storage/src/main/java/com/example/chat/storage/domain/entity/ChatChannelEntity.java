@@ -1,7 +1,5 @@
 package com.example.chat.storage.domain.entity;
 
-import java.time.Instant;
-
 import com.example.chat.common.core.enums.ChannelType;
 
 import jakarta.persistence.Column;
@@ -10,17 +8,14 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * 채널 JPA Entity
+ * 채널 JPA Entity.
+ * createdAt / updatedAt 생명주기는 {@link BaseEntity} 에서 관리한다.
  */
 @Entity
 @Table(name = "chat_channels", indexes = {
@@ -29,9 +24,8 @@ import lombok.NoArgsConstructor;
 })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Builder
-public class ChatChannelEntity {
+public class ChatChannelEntity extends BaseEntity {
+
     @Id
     @Column(name = "id", length = 36, nullable = false)
     private String id;
@@ -50,30 +44,24 @@ public class ChatChannelEntity {
     private String ownerId;
 
     @Column(name = "active", nullable = false)
-    @Builder.Default
     private boolean active = true;
 
-    @Column(name = "created_at", nullable = false)
-    @Builder.Default
-    private Instant createdAt = Instant.now();
-
-    @Column(name = "updated_at", nullable = false)
-    @Builder.Default
-    private Instant updatedAt = Instant.now();
-
-    @PrePersist
-    public void prePersist() {
-        if (createdAt == null || createdAt.equals(Instant.EPOCH)) {
-            createdAt = Instant.now();
-        }
-        if (updatedAt == null || updatedAt.equals(Instant.EPOCH)) {
-            updatedAt = Instant.now();
-        }
+    private ChatChannelEntity(String id, String name, String description,
+                               ChannelType channelType, String ownerId) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.channelType = channelType;
+        this.ownerId = ownerId;
+        this.active = true;
     }
 
-    @PreUpdate
-    public void preUpdate() {
-        updatedAt = Instant.now();
+    /**
+     * 새 채널 엔티티를 생성하는 팩토리 메서드.
+     */
+    public static ChatChannelEntity create(String id, String name, String description,
+                                           ChannelType channelType, String ownerId) {
+        return new ChatChannelEntity(id, name, description, channelType, ownerId);
     }
 
     // =============================================
