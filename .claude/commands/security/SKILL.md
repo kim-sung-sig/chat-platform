@@ -1,3 +1,10 @@
+---
+name: security
+description: "보안 취약점을 검토하고 개선안을 제시합니다.
+  '보안 검토', '취약점', '인증 확인', '권한 체크', 'IDOR', 'XSS', '보안 이슈', '@PreAuthorize',
+  'security review', 'vulnerability', 'auth check', 'permission', 'IDOR', 'injection' 등의 요청에 반응합니다."
+---
+
 Review the specified scope for security risks.
 
 Scope: $ARGUMENTS
@@ -18,3 +25,12 @@ Scope: $ARGUMENTS
    - Location (file, line)
    - Description and exploit scenario
    - Recommended fix
+
+## Checklist
+
+- [ ] All REST endpoints have appropriate `@PreAuthorize`
+- [ ] All user inputs validated with `@Valid` or manual checks
+- [ ] No string concatenation in JPQL/native queries
+- [ ] No tokens/passwords in logs or API responses
+- [ ] Resource ownership verified before access (IDOR check)
+- [ ] Redis cached sensitive data has TTL set

@@ -1,3 +1,10 @@
+---
+name: jpa
+description: "JPA Entity와 Repository를 프로젝트 컨벤션에 맞게 작성합니다.
+  '엔티티 만들어줘', 'JPA 컨벤션', 'Entity 작성', 'Repository 구현', 'BaseEntity 상속', '도메인 모델',
+  'entity', 'repository', 'jpa convention', 'domain model', 'aggregate' 등의 요청에 반응합니다."
+---
+
 Apply the project's JPA conventions to: $ARGUMENTS
 
 ## Entity

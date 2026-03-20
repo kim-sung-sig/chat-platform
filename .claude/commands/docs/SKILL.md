@@ -1,3 +1,10 @@
+---
+name: docs
+description: "문서를 작성하거나 최신 상태로 업데이트합니다.
+  '문서 작성', '문서화', 'README 업데이트', 'API 문서', 'SDD 업데이트', '주석 추가',
+  'docs', 'document', 'README', 'API docs', 'update spec', 'write documentation' 등의 요청에 반응합니다."
+---
+
 Update or draft documentation for the specified scope.
 
 Scope: $ARGUMENTS

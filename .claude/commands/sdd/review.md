@@ -1,3 +1,10 @@
+---
+name: "sdd:review"
+description: "SDD, 스켈레톤, 테스트의 컨벤션 준수 및 스펙 정합성을 검토합니다.
+  'SDD 검토', '설계 대조', '구현 검증', '스펙 리뷰', '컨벤션 확인',
+  'spec review', 'verify implementation', 'check against design', 'compliance review' 등의 요청에 반응합니다."
+---
+
 Review the SDD, skeleton, and tests for convention compliance and spec alignment.
 
 Input: $ARGUMENTS

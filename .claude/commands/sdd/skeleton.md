@@ -1,3 +1,10 @@
+---
+name: "sdd:skeleton"
+description: "SDD에서 컴파일 가능한 DDD 코드 스켈레톤을 생성합니다.
+  '스켈레톤 생성', '뼈대 코드', '코드 틀 만들기', '구조 생성', '패키지 구조',
+  'skeleton', 'scaffold', 'generate structure', 'boilerplate', 'code stub' 등의 요청에 반응합니다."
+---
+
 Generate a compilable code skeleton from an SDD, aligned to DDD and project conventions.
 
 Input: $ARGUMENTS
@@ -21,4 +28,4 @@ Input: $ARGUMENTS
 
 ## Skill Connection
 
-Output skeleton → input for `/skeleton-to-tests` and `/sdd-review`.
+Output skeleton → input for `/sdd:tests` and `/sdd:review`.

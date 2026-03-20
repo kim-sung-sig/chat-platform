@@ -1,3 +1,10 @@
+---
+name: explain
+description: "코드나 설계를 이해하기 쉽게 설명합니다.
+  '설명해줘', '이게 뭐야', '어떻게 동작해', '왜 이렇게 설계', '코드 분석', '이해가 안 돼',
+  'explain', 'what does this do', 'how does this work', 'why is this designed' 등의 요청에 반응합니다."
+---
+
 Explain the code or design in the given scope.
 
 Scope: $ARGUMENTS

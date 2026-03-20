@@ -1,3 +1,10 @@
+---
+name: perf
+description: "성능 병목을 분석하고 구체적인 개선안을 제시합니다.
+  '성능 문제', 'N+1 쿼리', '느려', '최적화', '캐시 미스', '인덱스 누락', '쿼리 성능',
+  'performance', 'N+1', 'slow query', 'optimize', 'cache miss', 'missing index' 등의 요청에 반응합니다."
+---
+
 Analyze performance hotspots and suggest concrete fixes.
 
 Scope: $ARGUMENTS

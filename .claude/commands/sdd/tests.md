@@ -1,3 +1,10 @@
+---
+name: "sdd:tests"
+description: "SDD와 스켈레톤에서 TDD 테스트 코드를 생성합니다.
+  '테스트 작성', 'TDD', '단위 테스트', '테스트 코드 생성', 'JUnit 테스트',
+  'write tests', 'TDD', 'unit tests', 'test cases', 'generate tests' 등의 요청에 반응합니다."
+---
+
 Generate TDD test code from an SDD and a code skeleton.
 
 Input: $ARGUMENTS
@@ -23,4 +30,4 @@ Input: $ARGUMENTS
 
 ## Skill Connection
 
-Output tests → reviewed by `/sdd-review`.
+Output tests → reviewed by `/sdd:review`.
