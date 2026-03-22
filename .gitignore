@@ -44,3 +44,6 @@ out/
 /logs/**/*.log
 /logs/**/*.log.gz
 !/logs/.gitkeep
+
+.bkit/
+grep.exe.stackdump

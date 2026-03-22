@@ -1,0 +1,38 @@
+﻿{
+  "version": 1,
+  "checks": {
+    "skill_sync_drift": {
+      "enabled": true,
+      "severity": "block"
+    },
+    "protected_paths": {
+      "enabled": true,
+      "severity": "block"
+    },
+    "test_evidence": {
+      "enabled": true,
+      "severity": "warn",
+      "rule": "If src/main changes, expect at least one matching src/test change."
+    },
+    "review_score": {
+      "enabled": true,
+      "severity": "warn",
+      "minimum": 81,
+      "env_var": "HARNESS_REVIEW_SCORE"
+    }
+  },
+  "protected_paths": [
+    ".harness/registries/skills.json",
+    ".harness/registries/agents.json",
+    ".harness/registries/done-gate.json",
+    ".harness/state/generated-files.json",
+    ".claude/settings.json"
+  ],
+  "generated_targets": [
+    ".claude/commands",
+    ".codex/skills"
+  ],
+  "override_env": {
+    "allow_protected_path_edits": "HARNESS_ALLOW_PROTECTED"
+  }
+}

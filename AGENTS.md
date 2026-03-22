@@ -1,61 +1,106 @@
 # AGENTS.md
 
-Multi-agent SDLC workflow for the Chat Platform.
+Harness-centric multi-agent governance for the Chat Platform.
 
-> Development principles and coding conventions live in [`docs/conventions/CONVENTIONS.md`](docs/conventions/CONVENTIONS.md).
-> Slash commands for each phase live in [`.claude/commands/`](.claude/commands/).
-
----
-
-## Agentic Feedback Loop
-
-`/sdlc "<task>"` 커맨드로 전체 루프를 자동 실행합니다.
-
-```
-/sdlc "task"
-    │
-    ▼
-[planner] → docs/planning/<slug>_plan.md 작성
-    │
-    ▼
-[developer] → 구현 (iteration 1~3)
-    │
-    ▼
-[reviewer] → REVIEW_SCORE: 0-100 출력
-    │
-    ├── score ≤ 80 → findings와 함께 [developer] 재투입 (최대 3회)
-    │
-    └── score > 80 → [qa]
-                        │
-                        ├── FAIL (CRITICAL/MAJOR) → [developer] 재투입
-                        └── PASS → 완료 리포트
-```
-
-최대 반복 횟수(3회) 초과 시 루프를 중단하고 사용자에게 판단을 요청합니다.
+Core coding and architecture conventions remain in [`docs/conventions/CONVENTIONS.md`](docs/conventions/CONVENTIONS.md).
 
 ---
 
-## Sub-Agent Roles
+## 1) Governance Model
 
-| Role | Responsibility | Invoke |
-|------|---------------|--------|
-| **Planner** (기획자) | Turn ambiguous input into explicit goals, non-goals, constraints, risks, open questions. Output to `docs/planning/` using `PLANNING_TEMPLATE.md`. | `/plan` |
-| **Developer** (개발자) | Implement with DDD/TDD discipline. Critically analyze planner output before coding. | `/develop` |
-| **Reviewer** (리뷰어) | Architect-level design quality review, scored 0–100. | `/review` |
-| **QA** (테스터) | Functional test simulation; bugs become task tickets. | `/qa` |
+- Single source of truth for agent governance is `/.harness`.
+- Tool-specific directories (`.claude`, `.codex`) are adapter outputs generated from `/.harness`.
+- Canonical command/skill IDs use kebab-case (for example `sdd-requirements`).
+- Tool aliases are allowed only at adapter level, not in harness registries.
 
 ---
 
-## Skill Chain (SDD → Code)
+## 2) Fixed vs Mutable Boundaries
 
-```
-/sdd-requirements  →  /spec-to-skeleton  →  /skeleton-to-tests  →  /sdd-review
-```
+### Fixed (Harness-controlled)
+- Policy files under `/.harness/registries/`
+- Done gate rules under `/.harness/registries/done-gate.json`
+- Generated adapter outputs:
+  - `.claude/commands/<managed-command>/SKILL.md`
+  - `.codex/skills/<managed-skill>/SKILL.md`
 
-Use the same `<slug>` across all documents to keep them linked.
+### Mutable (Team-owned extensions)
+- Any skill not registered in `/.harness/registries/skills.json` is unmanaged.
+- Unmanaged skills may be added/updated/removed freely.
+- Optional managed skills may be edited at their harness source path when `mutable=true`.
 
 ---
 
-## Context Management
+## 3) Registries (Public Interfaces)
 
-Maintain `summary.md` or `README.md` per bounded context as the primary knowledge base for that context.
+### Skill Registry
+Path: `/.harness/registries/skills.json`
+
+Skill entry fields:
+- `id`: canonical skill ID (kebab-case)
+- `source`: harness source markdown path
+- `tier`: `core | optional`
+- `mutable`: whether source is editable by team
+- `tool_aliases`: aliases per tool runtime
+- `adapters`: target output directory names for each tool
+
+### Agent Registry
+Path: `/.harness/registries/agents.json`
+
+Defines:
+- Core roles: `planner`, `developer`, `reviewer`, `qa`
+- Specialist roles: add/remove rules
+- Handoff contract: required artifacts and ownership transfer
+
+### Done-Gate Registry
+Path: `/.harness/registries/done-gate.json`
+
+Defines:
+- Mandatory checks and severity (`block | warn`)
+- Failure thresholds (for example review score minimum)
+- Protected path policy
+
+---
+
+## 4) Multi-Agent Team Operation
+
+Core role chain:
+
+```
+planner -> developer -> reviewer -> qa
+```
+
+Specialists can join per task (security, perf, migration, infra, docs), but must:
+- declare owner role,
+- define input/output contract,
+- return result back to core chain before `Done`.
+
+Handoff minimum artifact set:
+- Task intent and constraints
+- Changed scope (paths/modules)
+- Verification evidence (tests/check results)
+- Open risks and fallback plan
+
+---
+
+## 5) Sync + Done Workflow
+
+1. Edit harness sources/registries.
+2. Generate adapters:
+   - `pwsh -File scripts/sync-skills.ps1`
+3. Validate drift only:
+   - `pwsh -File scripts/sync-skills.ps1 -Check`
+4. Validate Done gate:
+   - `pwsh -File scripts/done-gate.ps1`
+
+If Done gate fails, do not declare completion until blockers are resolved or explicitly overridden by policy.
+
+---
+
+## 6) SDD Core Chain (Canonical IDs)
+
+```
+sdd-requirements -> sdd-read -> spec-to-skeleton -> skeleton-to-tests -> sdd-review
+```
+
+Legacy command names and tool-specific aliases are supported through adapter mappings in the skill registry.

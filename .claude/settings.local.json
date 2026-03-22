@@ -6,7 +6,8 @@
       "Bash(./gradlew :apps:chat:libs:chat-storage:build :apps:chat:chat-server:build --no-daemon -q)",
       "Bash(xargs grep:*)",
       "Bash(find c:/git/chat-application/chat-platform/apps/chat/chat-server/build -name TEST-*.xml)",
-      "Bash(./gradlew :apps:chat:chat-server:test)"
+      "Bash(./gradlew :apps:chat:chat-server:test)",
+      "WebFetch(domain:docs.github.com)"
     ],
     "deny": []
   }

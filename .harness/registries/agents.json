@@ -1,0 +1,64 @@
+﻿{
+  "version": 1,
+  "core_roles": [
+    {
+      "id": "planner",
+      "responsibility": "Clarify goals, non-goals, constraints, risks, open questions.",
+      "required_outputs": [
+        "task goal and success criteria",
+        "scope boundaries",
+        "risk and assumptions"
+      ]
+    },
+    {
+      "id": "developer",
+      "responsibility": "Implement with DDD/TDD discipline and minimal safe changes.",
+      "required_outputs": [
+        "code changes",
+        "test evidence",
+        "implementation notes"
+      ]
+    },
+    {
+      "id": "reviewer",
+      "responsibility": "Review design and implementation quality; issue score and findings.",
+      "required_outputs": [
+        "review score",
+        "severity-based findings",
+        "required fixes"
+      ]
+    },
+    {
+      "id": "qa",
+      "responsibility": "Validate functional behavior and regressions from user perspective.",
+      "required_outputs": [
+        "pass/fail verdict",
+        "repro steps for defects",
+        "ticket-ready bug reports"
+      ]
+    }
+  ],
+  "specialist_roles": {
+    "allowed": true,
+    "examples": [
+      "security-specialist",
+      "performance-specialist",
+      "migration-specialist",
+      "infra-specialist",
+      "docs-specialist"
+    ],
+    "rules": [
+      "Each specialist must declare owner role and scope.",
+      "Each specialist must provide explicit handoff artifact.",
+      "Specialist output must return to core role chain before Done."
+    ]
+  },
+  "handoff_contract": {
+    "required_fields": [
+      "intent_and_constraints",
+      "changed_scope",
+      "verification_evidence",
+      "open_risks_and_fallback"
+    ]
+  }
+}

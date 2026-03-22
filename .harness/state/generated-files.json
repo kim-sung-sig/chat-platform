@@ -1,0 +1,174 @@
+{
+    "generatedAt":  null,
+    "generator":  "scripts/sync-skills.ps1",
+    "files":  [
+                  {
+                      "skill":  "sdd-requirements",
+                      "path":  ".claude/commands/sdd-requirements/SKILL.md",
+                      "source":  ".harness/skills/sdd-requirements/SKILL.md",
+                      "sha256":  "9c3d821560014ad1e709ed229a0601f410cb2eca5608f716cb45d1152c2e0b37"
+                  },
+                  {
+                      "skill":  "sdd-requirements",
+                      "path":  ".codex/skills/sdd-requirements/SKILL.md",
+                      "source":  ".harness/skills/sdd-requirements/SKILL.md",
+                      "sha256":  "9c3d821560014ad1e709ed229a0601f410cb2eca5608f716cb45d1152c2e0b37"
+                  },
+                  {
+                      "skill":  "sdd-read",
+                      "path":  ".claude/commands/sdd-read/SKILL.md",
+                      "source":  ".harness/skills/sdd-read/SKILL.md",
+                      "sha256":  "497b07cc1f5e12144587842280b496677b0ab845d3f20072184fe3acbb5cfaff"
+                  },
+                  {
+                      "skill":  "sdd-read",
+                      "path":  ".codex/skills/sdd-read/SKILL.md",
+                      "source":  ".harness/skills/sdd-read/SKILL.md",
+                      "sha256":  "497b07cc1f5e12144587842280b496677b0ab845d3f20072184fe3acbb5cfaff"
+                  },
+                  {
+                      "skill":  "spec-to-skeleton",
+                      "path":  ".claude/commands/spec-to-skeleton/SKILL.md",
+                      "source":  ".harness/skills/spec-to-skeleton/SKILL.md",
+                      "sha256":  "daf9d698b5c1bb0bcb4b324130d5a746d47f5bf3d215d72dd1159d726ecb2ee9"
+                  },
+                  {
+                      "skill":  "spec-to-skeleton",
+                      "path":  ".codex/skills/spec-to-skeleton/SKILL.md",
+                      "source":  ".harness/skills/spec-to-skeleton/SKILL.md",
+                      "sha256":  "daf9d698b5c1bb0bcb4b324130d5a746d47f5bf3d215d72dd1159d726ecb2ee9"
+                  },
+                  {
+                      "skill":  "skeleton-to-tests",
+                      "path":  ".claude/commands/skeleton-to-tests/SKILL.md",
+                      "source":  ".harness/skills/skeleton-to-tests/SKILL.md",
+                      "sha256":  "0d8089c6cf0eb58f1b8e0124ff05a8371dbf4ef156d6384edf93977c85701c4a"
+                  },
+                  {
+                      "skill":  "skeleton-to-tests",
+                      "path":  ".codex/skills/skeleton-to-tests/SKILL.md",
+                      "source":  ".harness/skills/skeleton-to-tests/SKILL.md",
+                      "sha256":  "0d8089c6cf0eb58f1b8e0124ff05a8371dbf4ef156d6384edf93977c85701c4a"
+                  },
+                  {
+                      "skill":  "sdd-review",
+                      "path":  ".claude/commands/sdd-review/SKILL.md",
+                      "source":  ".harness/skills/sdd-review/SKILL.md",
+                      "sha256":  "4490a4e442b16d6469a3a9d718d7773636bd77742fa769fa40d0ccfb8595b852"
+                  },
+                  {
+                      "skill":  "sdd-review",
+                      "path":  ".codex/skills/sdd-review/SKILL.md",
+                      "source":  ".harness/skills/sdd-review/SKILL.md",
+                      "sha256":  "4490a4e442b16d6469a3a9d718d7773636bd77742fa769fa40d0ccfb8595b852"
+                  },
+                  {
+                      "skill":  "docs",
+                      "path":  ".claude/commands/docs/SKILL.md",
+                      "source":  ".harness/skills/docs/SKILL.md",
+                      "sha256":  "93d073e292299d031de131cd2a4f4950cb40ee39570b41a2486bd57852c49377"
+                  },
+                  {
+                      "skill":  "docs",
+                      "path":  ".codex/skills/docs/SKILL.md",
+                      "source":  ".harness/skills/docs/SKILL.md",
+                      "sha256":  "93d073e292299d031de131cd2a4f4950cb40ee39570b41a2486bd57852c49377"
+                  },
+                  {
+                      "skill":  "explain",
+                      "path":  ".claude/commands/explain/SKILL.md",
+                      "source":  ".harness/skills/explain/SKILL.md",
+                      "sha256":  "0f3b747f108d39ed90208f91bdc9c30711a624b37bf3fad355eceabc9304680e"
+                  },
+                  {
+                      "skill":  "explain",
+                      "path":  ".codex/skills/explain/SKILL.md",
+                      "source":  ".harness/skills/explain/SKILL.md",
+                      "sha256":  "0f3b747f108d39ed90208f91bdc9c30711a624b37bf3fad355eceabc9304680e"
+                  },
+                  {
+                      "skill":  "jpa",
+                      "path":  ".claude/commands/jpa/SKILL.md",
+                      "source":  ".harness/skills/jpa/SKILL.md",
+                      "sha256":  "82bda315d87ac4e1e8c0a25294bcfe7cd7c9dc9f54e405eb82ddfa153e05677a"
+                  },
+                  {
+                      "skill":  "jpa",
+                      "path":  ".codex/skills/jpa/SKILL.md",
+                      "source":  ".harness/skills/jpa/SKILL.md",
+                      "sha256":  "82bda315d87ac4e1e8c0a25294bcfe7cd7c9dc9f54e405eb82ddfa153e05677a"
+                  },
+                  {
+                      "skill":  "patch",
+                      "path":  ".claude/commands/patch/SKILL.md",
+                      "source":  ".harness/skills/patch/SKILL.md",
+                      "sha256":  "d0ef9ad5b50573d9be0ddc3e56ce443e5a7d9ccf2d73f9deb641fa72c2899d1b"
+                  },
+                  {
+                      "skill":  "patch",
+                      "path":  ".codex/skills/patch/SKILL.md",
+                      "source":  ".harness/skills/patch/SKILL.md",
+                      "sha256":  "d0ef9ad5b50573d9be0ddc3e56ce443e5a7d9ccf2d73f9deb641fa72c2899d1b"
+                  },
+                  {
+                      "skill":  "perf",
+                      "path":  ".claude/commands/perf/SKILL.md",
+                      "source":  ".harness/skills/perf/SKILL.md",
+                      "sha256":  "8491f79fbe99bac2651cec2223bd76e2ae183e110955e9464cb1acc65faa9ace"
+                  },
+                  {
+                      "skill":  "perf",
+                      "path":  ".codex/skills/perf/SKILL.md",
+                      "source":  ".harness/skills/perf/SKILL.md",
+                      "sha256":  "8491f79fbe99bac2651cec2223bd76e2ae183e110955e9464cb1acc65faa9ace"
+                  },
+                  {
+                      "skill":  "refactor",
+                      "path":  ".claude/commands/refactor/SKILL.md",
+                      "source":  ".harness/skills/refactor/SKILL.md",
+                      "sha256":  "80a92fa5711330135dc5d47eae15ca4098e5262e696279602766e9d7d72fb1b4"
+                  },
+                  {
+                      "skill":  "refactor",
+                      "path":  ".codex/skills/refactor/SKILL.md",
+                      "source":  ".harness/skills/refactor/SKILL.md",
+                      "sha256":  "80a92fa5711330135dc5d47eae15ca4098e5262e696279602766e9d7d72fb1b4"
+                  },
+                  {
+                      "skill":  "security",
+                      "path":  ".claude/commands/security/SKILL.md",
+                      "source":  ".harness/skills/security/SKILL.md",
+                      "sha256":  "7b98c4d88f7ce91ebc68ba7852afd8b67b37147ba012fcfa2ffcac28e59f3f00"
+                  },
+                  {
+                      "skill":  "security",
+                      "path":  ".codex/skills/security/SKILL.md",
+                      "source":  ".harness/skills/security/SKILL.md",
+                      "sha256":  "7b98c4d88f7ce91ebc68ba7852afd8b67b37147ba012fcfa2ffcac28e59f3f00"
+                  },
+                  {
+                      "skill":  "spring-boot",
+                      "path":  ".claude/commands/spring-boot/SKILL.md",
+                      "source":  ".harness/skills/spring-boot/SKILL.md",
+                      "sha256":  "aa618f056fcc298305382a39f44cecc3022b2a075ba350505c1b172f648053ba"
+                  },
+                  {
+                      "skill":  "spring-boot",
+                      "path":  ".codex/skills/spring-boot/SKILL.md",
+                      "source":  ".harness/skills/spring-boot/SKILL.md",
+                      "sha256":  "aa618f056fcc298305382a39f44cecc3022b2a075ba350505c1b172f648053ba"
+                  },
+                  {
+                      "skill":  "done-gate",
+                      "path":  ".claude/commands/done-gate/SKILL.md",
+                      "source":  ".harness/skills/done-gate/SKILL.md",
+                      "sha256":  "0291f5f001e1cc7a124f91ab08d016ea881b59f55e44b3728c7b1ddfa0a60952"
+                  },
+                  {
+                      "skill":  "done-gate",
+                      "path":  ".codex/skills/done-gate/SKILL.md",
+                      "source":  ".harness/skills/done-gate/SKILL.md",
+                      "sha256":  "0291f5f001e1cc7a124f91ab08d016ea881b59f55e44b3728c7b1ddfa0a60952"
+                  }
+              ]
+}
