@@ -1,5 +1,9 @@
 package com.example.chat.voice.application.service;
 
+import java.time.Instant;
+
+import org.springframework.stereotype.Service;
+
 import com.example.chat.common.core.exception.ChatErrorCode;
 import com.example.chat.shared.exception.ChatException;
 import com.example.chat.shared.exception.ResourceNotFoundException;
@@ -8,15 +12,13 @@ import com.example.chat.storage.domain.repository.JpaChannelMemberRepository;
 import com.example.chat.storage.domain.repository.JpaChannelRepository;
 import com.example.chat.voice.domain.model.VoiceRoom;
 import com.example.chat.voice.domain.repository.VoiceRoomRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
-import java.time.Instant;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
+@RequiredArgsConstructor
 public class VoiceRoomCommandService {
 
     private final VoiceRoomRepository voiceRoomRepository;

@@ -7,7 +7,12 @@
       "Bash(xargs grep:*)",
       "Bash(find c:/git/chat-application/chat-platform/apps/chat/chat-server/build -name TEST-*.xml)",
       "Bash(./gradlew :apps:chat:chat-server:test)",
-      "WebFetch(domain:docs.github.com)"
+      "WebFetch(domain:docs.github.com)",
+      "Bash(git -C ~/.claude/skills/gstack fetch origin)",
+      "Bash(git -C ~/.claude/skills/gstack log HEAD..origin/main --oneline)",
+      "Bash(git -C ~/.claude/skills/gstack log --oneline -3)",
+      "Bash(git -C ~/.claude/skills/gstack status)",
+      "Bash(find /c/git/chat-application/chat-platform/.claude -type f -name *.md -o -name *.json)"
     ],
     "deny": []
   }
