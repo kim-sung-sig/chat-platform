@@ -3,67 +3,160 @@ source: .harness/skills/spring-boot/SKILL.md
 skill: spring-boot
 generated-by: scripts/sync-skills.ps1
 -->
+
 ---
-name: spring-boot-skill
+name: spring-boot
 description: >
-  Build Spring Boot 4.x applications following the best practices. 
+  Build Spring Boot 3.x applications for this Chat Platform project.
   Use this skill:
-    * When developing Spring Boot applications using Spring MVC, Spring Data JPA, Spring Modulith, Spring Security
-    * To create recommended Spring Boot package structure
-    * To implement REST APIs, entities/repositories, service layer, modular monoliths
-    * To use Thymeleaf view templates for building web applications
-    * To write tests for REST APIs and Web applications
-    * To write ArchUnit tests for testing architecture
-    * To configure the recommended plugins and configurations to improve code quality, and testing while using Maven.
-    * To use Spring Boot's Docker Compose support for local development
-    * To create Taskfile for easier execution of common tasks while working with a Spring Boot application
+    * When developing new bounded contexts following DDD layering (domain/application/event/infrastructure/api)
+    * When implementing CQRS: CommandService vs QueryService split
+    * When writing REST controllers, JPA entities, repositories, application services
+    * When integrating WebSocket/STOMP, Kafka, Redis, Quartz scheduler
+    * When writing Flyway migration scripts
+    * When configuring Gradle build files or adding dependencies
+    * When writing unit/integration tests (JUnit5 + Mockito + Testcontainers)
+    * When applying Lombok, SpringDoc OpenAPI, Micrometer tracing
 ---
 
-# Spring Boot Skill
+# Spring Boot Skill (Chat Platform)
 
-Apply the practices below when developing Spring Boot applications. Read the linked reference only when working on that area.
+This project uses **Spring Boot 3.x + Java 21 + Gradle**. Apply the rules below for every bounded context.
 
-## Maven pom.xml Configuration
+---
 
-Read [references/spring-boot-maven-config.md](references/spring-boot-maven-config.md) for Maven `pom.xml` configuration with supporting plugins and configurations to improve code quality, and testing.
+## Tech Stack
 
-## Package structure
+| Layer | Tech |
+|-------|------|
+| Framework | Spring Boot 3.x, Java 21 (virtual threads enabled) |
+| Build | Gradle (multi-module monorepo) |
+| Persistence | Spring Data JPA + PostgreSQL + Flyway |
+| Cache / PubSub | Spring Data Redis |
+| Messaging | Spring Kafka |
+| WebSocket | Spring WebSocket + STOMP |
+| Scheduler | Spring Quartz |
+| Security | Spring Security 6 |
+| API Docs | SpringDoc OpenAPI 2.x |
+| Boilerplate | Lombok (`@Getter`, `@Builder`; avoid `@Data` on JPA entities) |
+| Testing | JUnit5, Mockito, Testcontainers (PostgreSQL, Kafka) |
 
-Read [references/code-organization.md](references/code-organization.md) for domain-driven, module-based package layout and naming conventions.
+---
 
-## Spring Data JPA
+## Package Structure (per bounded context)
 
-Implement the repository and entity layer using [references/spring-data-jpa.md](references/spring-data-jpa.md).
+```
+com.example.chat.<context>/
+├── domain/
+│   ├── model/        ← Entity, Value Object, Enum (JPA 어노테이션 허용, 책임 경계 명확)
+│   └── service/      ← Domain Service (단일 도메인 내 순수 비즈니스 규칙, 외부 I/O 금지)
+│
+├── application/
+│   ├── service/      ← XxxCommandService / XxxQueryService (interface + impl)
+│   ├── dto/          ← Application 경계 내부 DTO
+│   └── listener/     ← @EventListener 핸들러
+│
+├── event/
+│   └── model/        ← 도메인 이벤트 페이로드 (불변 record)
+│
+├── infrastructure/
+│   ├── datasource/   ← JPA Entity, JpaRepository, RepositoryAdapter
+│   ├── kafka/        ← Kafka consumer/producer
+│   └── redis/        ← Cache / Pub-Sub adapter
+│
+└── api/
+    ├── controller/   ← REST 컨트롤러 (얇게, application layer 위임만)
+    ├── request/      ← HTTP 요청 DTO (record + Bean Validation)
+    └── response/     ← HTTP 응답 DTO (record + static from() factory)
+```
 
-## Service layer
+**레이어 의존 방향**: `api → application → domain`, `infrastructure → application → domain`
 
-Implement business logic in the service layer using [references/spring-service-layer.md](references/spring-service-layer.md).
+---
 
-## Spring MVC REST APIs
+## CQRS Rules
 
-Implement REST APIs with Spring MVC using [references/spring-webmvc-rest-api.md](references/spring-webmvc-rest-api.md).
+- Write operations → `XxxCommandService` / `XxxCommandServiceImpl`
+- Read operations → `XxxQueryService` / `XxxQueryServiceImpl`
+- Read queries: cursor-based pagination (offset 금지)
+- CommandService는 side effect 허용 (저장, 이벤트 발행)
+- QueryService는 순수 조회만 (상태 변경 금지)
 
-## Spring Modulith
+---
 
-Build a modular monolith with Spring Modulith using [references/spring-modulith.md](references/spring-modulith.md).
+## DDD Layer Rules
 
-## Thymeleaf
+- `domain/model/`: JPA `@Entity`, `@Column` 등 허용. **책임 경계 원칙**: 도메인 불변식(invariant)은 반드시 이 레이어에 위치
+- `domain/service/`: 단일 도메인 내 순수 계산/검증 로직. **외부 I/O(Kafka, Redis, HTTP) 금지**
+- `application/service/`: `@Service` + `@Transactional` 허용. Use Case 오케스트레이션 (저장, 이벤트 발행 포함)
+- `api/controller/`: 비즈니스 로직 **완전 금지** — application service에만 위임
+- Response DTO: `public static XxxResponse from(DomainObj)` factory method 필수
 
-If Thymeleaf is used for view templates, refer [references/thymeleaf.md](references/thymeleaf.md)
+---
 
-## REST API Testing
+## Flyway Convention
 
-If building a REST API using Spring WebMVC, test Spring Boot REST APIs using [references/spring-boot-rest-api-testing.md](references/spring-boot-rest-api-testing.md).
+- Migration 파일: `apps/chat/libs/chat-storage/src/main/resources/db/migration/`
+- 파일명: `V{N}__{snake_case_description}.sql`
+- 새 마이그레이션은 현재 최대 V번호 + 1
 
-### Web App Controller Testing
-If building a web application using view rendering controllers, test the controller layer using [references/spring-boot-webapp-testing-with-mockmvctester.md](references/spring-boot-webapp-testing-with-mockmvctester.md).
+---
 
-### Write ArchUnit Tests
-To write tests for testing the architecture using ArchUnit, refer [references/archunit.md](references/archunit.md)
+## Testing Rules
 
-### Spring Boot Docker Compose Support
-To use Docker Compose support for local development, refer [references/spring-boot-docker-compose.md](references/spring-boot-docker-compose.md).
+```java
+// 단위 테스트 구조
+@ExtendWith(MockitoExtension.class)
+@DisplayName("XxxCommandServiceImpl")
+class XxxCommandServiceImplTest {
+    @Mock XxxRepository repository;
+    @InjectMocks XxxCommandServiceImpl sut;
 
-## Taskfile
+    @Nested
+    @DisplayName("create() 메서드")
+    class Create {
+        @Test @DisplayName("정상 생성 - HappyPath")
+        void happyPath() { ... }
 
-Use [references/taskfile.md](references/taskfile.md) for easier commands execution.
+        @Test @DisplayName("중복 이름 - Failure")
+        void duplicateName() { ... }
+    }
+}
+```
+
+- Mockito: `@Mock` + `@InjectMocks`, 도메인 자체는 mock 금지
+- `@DisplayName` 한국어 필수
+- Testcontainers: PostgreSQL/Kafka 통합 테스트에 사용
+
+---
+
+## Quartz Scheduler Pattern
+
+```java
+// Job 클래스
+@Component
+public class XxxJob implements Job {
+    @Override
+    public void execute(JobExecutionContext context) throws JobExecutionException {
+        // JobDataMap에서 파라미터 추출
+    }
+}
+
+// Scheduler 서비스: QuartzJobScheduler 참조
+```
+
+---
+
+## Common Error Codes
+
+- `ChatErrorCode` enum (`common/core`)에 에러 코드 추가
+- HTTP status는 annotation으로 지정: `@ResponseStatus(HttpStatus.NOT_FOUND)`
+
+---
+
+## Skill Connection
+
+- SDD 작성: `/sdd-requirements`
+- 코드 뼈대: `/spec-to-skeleton`
+- 테스트 작성: `/skeleton-to-tests`
+- 완료 검증: `/done-gate`

@@ -50,6 +50,13 @@ dependencies {
     // Kafka
     implementation 'org.springframework.kafka:spring-kafka'
 
+    // Quartz Scheduler (예약 발송)
+    implementation 'org.springframework.boot:spring-boot-starter-quartz'
+
+    // AWS SDK v2 (파일 업로드)
+    implementation 'software.amazon.awssdk:s3:2.25.0'
+    implementation 'software.amazon.awssdk:auth:2.25.0'
+
     // DB
     runtimeOnly 'org.postgresql:postgresql'
     runtimeOnly 'org.flywaydb:flyway-database-postgresql'

@@ -257,6 +257,62 @@
         "claude_command_dir": "done-gate",
         "codex_skill_dir": "done-gate"
       }
+    },
+    {
+      "id": "sdd-craft",
+      "source": ".harness/skills/sdd-craft/SKILL.md",
+      "tier": "optional",
+      "mutable": true,
+      "tool_aliases": {
+        "claude": ["sdd-craft"],
+        "codex": ["sdd-craft"]
+      },
+      "adapters": {
+        "claude_command_dir": "sdd-craft",
+        "codex_skill_dir": "sdd-craft"
+      }
+    },
+    {
+      "id": "tdd-cycle",
+      "source": ".harness/skills/tdd-cycle/SKILL.md",
+      "tier": "optional",
+      "mutable": true,
+      "tool_aliases": {
+        "claude": ["tdd-cycle"],
+        "codex": ["tdd-cycle"]
+      },
+      "adapters": {
+        "claude_command_dir": "tdd-cycle",
+        "codex_skill_dir": "tdd-cycle"
+      }
+    },
+    {
+      "id": "arch-policy",
+      "source": ".harness/skills/arch-policy/SKILL.md",
+      "tier": "optional",
+      "mutable": true,
+      "tool_aliases": {
+        "claude": ["arch-policy"],
+        "codex": ["arch-policy"]
+      },
+      "adapters": {
+        "claude_command_dir": "arch-policy",
+        "codex_skill_dir": "arch-policy"
+      }
+    },
+    {
+      "id": "skill-mgr",
+      "source": ".harness/skills/skill-mgr/SKILL.md",
+      "tier": "optional",
+      "mutable": true,
+      "tool_aliases": {
+        "claude": ["skill-mgr"],
+        "codex": ["skill-mgr"]
+      },
+      "adapters": {
+        "claude_command_dir": "skill-mgr",
+        "codex_skill_dir": "skill-mgr"
+      }
     }
   ]
 }

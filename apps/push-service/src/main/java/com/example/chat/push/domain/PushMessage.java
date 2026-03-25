@@ -3,7 +3,6 @@ package com.example.chat.push.domain;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -31,7 +30,6 @@ public class PushMessage {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    @Setter
     private PushStatus status = PushStatus.PENDING;
 
     @Column(nullable = false)
@@ -41,15 +39,12 @@ public class PushMessage {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column
-    @Setter
     private LocalDateTime processedAt;
 
     @Column
-    @Setter
     private String errorMessage;
 
     @Version
-    @Setter
     private Long version = 0L;
 
     private PushMessage(String targetUserId, String title, String content, String pushType) {

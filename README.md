@@ -9,7 +9,7 @@
 [![Java](https://img.shields.io/badge/Java-21-orange)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.6-brightgreen)](https://spring.io/projects/spring-boot)
 [![Spring Cloud](https://img.shields.io/badge/Spring%20Cloud-2024.0.0-blue)](https://spring.io/projects/spring-cloud)
-[![Kotlin](https://img.shields.io/badge/Kotlin-1.9.25-7F52FF)](https://kotlinlang.org/)
+[![Kotlin](/login/https://img.shields.io/badge/Kotlin-1.9.25-7F52FF)](https://kotlinlang.org/)
 
 ---
 

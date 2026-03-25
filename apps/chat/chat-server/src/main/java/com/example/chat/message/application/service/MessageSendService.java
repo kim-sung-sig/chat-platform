@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.chat.auth.core.util.SecurityUtils;
 import com.example.chat.shared.cache.UnreadCacheService;
+import com.example.chat.common.core.enums.MessageType;
 import com.example.chat.common.core.exception.ChatErrorCode;
 import com.example.chat.shared.exception.ChatException;
 import com.example.chat.message.rest.dto.request.SendMessageRequest;
@@ -104,6 +105,56 @@ public class MessageSendService {
 
         log.info("Message sent: messageId={}, channelId={}, senderId={}, memberCount={}",
                 saved.getId(), channel.getId(), senderId, memberCount);
+        return MessageResponse.fromEntity(saved);
+    }
+
+    /**
+     * 예약 발송 전용 — SecurityContext 없이 senderId를 직접 수신한다.
+     * Quartz 백그라운드 스레드에서 호출되므로 SecurityUtils 를 사용할 수 없다.
+     */
+    @Transactional
+    public MessageResponse sendScheduledMessage(String senderId, String channelId, MessageContent domainContent) {
+        log.info("Sending scheduled message: channelId={}, senderId={}", channelId, senderId);
+
+        ChatChannelEntity channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new ChatException(ChatErrorCode.CHANNEL_NOT_FOUND));
+
+        UserEntity sender = userRepository.findById(senderId)
+                .orElseThrow(() -> new ChatException(ChatErrorCode.USER_NOT_FOUND));
+
+        validateSendPermission(channel, sender, channelId);
+
+        List<ChatChannelMemberEntity> members = channelMemberRepository.findByChannelId(channelId);
+        List<String> memberIds = members.stream().map(ChatChannelMemberEntity::getUserId).toList();
+        int memberCount = memberIds.size();
+
+        MessageType messageType = switch (domainContent) {
+            case MessageContent.Text ignored -> MessageType.TEXT;
+            case MessageContent.Image ignored -> MessageType.IMAGE;
+            case MessageContent.File ignored -> MessageType.FILE;
+        };
+        com.example.chat.storage.domain.entity.MessageContent storageContent = switch (domainContent) {
+            case MessageContent.Text t ->
+                    com.example.chat.storage.domain.entity.MessageContent.of(t.text(), null, null, null, null);
+            case MessageContent.Image i ->
+                    com.example.chat.storage.domain.entity.MessageContent.of(null, i.mediaUrl(), i.fileName(), i.fileSize(), null);
+            case MessageContent.File f ->
+                    com.example.chat.storage.domain.entity.MessageContent.of(null, f.mediaUrl(), f.fileName(), f.fileSize(), f.mimeType());
+        };
+        ChatMessageEntity message = ChatMessageEntity.create(
+                UUID.randomUUID().toString(), channelId, senderId, messageType, storageContent);
+        ChatMessageEntity saved = messageRepository.save(message);
+        saved.markAsSent();
+        saved.initUnreadCount(memberCount);
+        messageRepository.save(saved);
+
+        channelMetadataRepository.bulkIncrementUnreadCount(channelId, senderId);
+        channelMetadataRepository.updateLastActivity(channelId, senderId);
+        unreadCacheService.incrementAllMembers(channelId, senderId, memberIds);
+        publishEvent(saved, memberCount);
+        sendPushNotifications(senderId, memberIds, saved);
+
+        log.info("Scheduled message sent: messageId={}, channelId={}, senderId={}", saved.getId(), channelId, senderId);
         return MessageResponse.fromEntity(saved);
     }
 
