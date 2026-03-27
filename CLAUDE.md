@@ -5,15 +5,15 @@ This file is an index for Claude in this repository.
 Primary governance and workflow:
 - [`AGENTS.md`](AGENTS.md)
 - [`docs/conventions/CONVENTIONS.md`](docs/conventions/CONVENTIONS.md)
-- [`/.harness/README.md`](.harness/README.md)
+- [`.claude/.harness/`](.claude/.harness/)
 
 ---
 
 ## Claude Adapter Rules
 
-- `.claude/commands/*/SKILL.md` for managed skills are generated artifacts.
-- Do not manually edit generated command skill files.
-- Update harness sources first, then run:
+- `.claude/skills/*/SKILL.md` — 스킬 파일은 `.claude/skills/` 하나에서 직접 관리합니다.
+- 외부에서 가져온(import) 스킬만 sync-skills.ps1 으로 생성됩니다.
+- 스킬 수정 후 레지스트리 반영:
   - `pwsh -File scripts/sync-skills.ps1`
 
 ---
@@ -21,14 +21,15 @@ Primary governance and workflow:
 ## Command Index Source
 
 Canonical command IDs and aliases are defined in:
-- `/.harness/registries/skills.json`
+- `.claude/.harness/registries/skills.json`
 - [`AGENT_COMMANDS.md`](AGENT_COMMANDS.md)
 
 ---
 
 ## Context Reminder
 
-- Use DDD layering and CQRS rules from `CONVENTIONS.md`.
+- DDD/CQRS 규칙: `docs/conventions/CONVENTIONS.md` + `.claude/.harness/rules/10-conventions.md`
+- Java 코딩 표준: `.claude/.harness/rules/11-java-coding.md` (베이스라인: `java-best-practices` 스킬)
 - Keep changes minimal and scoped.
 - Treat Done as valid only after Done gate passes:
   - `pwsh -File scripts/done-gate.ps1`
@@ -82,4 +83,4 @@ Canonical command IDs and aliases are defined in:
 | analyze   | `./gradlew compileJava` 선행 → `/pdca analyze` | Gap rate ≥ 90% |
 | report    | `/pdca report` | 완료 보고서 생성 |
 
-**참조 스킬 경로**: `.harness/skills/` (sdd-requirements, spec-to-skeleton, skeleton-to-tests)
+**참조 스킬 경로**: `.claude/skills/` (sdd-requirements, spec-to-skeleton, skeleton-to-tests)

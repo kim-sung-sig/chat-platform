@@ -71,11 +71,17 @@ public class ScheduledMessage {
 
     /** Job 실행 시작 — PENDING → EXECUTING */
     public void markExecuting() {
+        if (this.status != ScheduleStatus.PENDING) {
+            throw new IllegalStateException("PENDING 상태에서만 실행 시작 가능. 현재 상태: " + this.status);
+        }
         this.status = ScheduleStatus.EXECUTING;
     }
 
     /** 발송 완료 — EXECUTING → EXECUTED */
     public void markExecuted() {
+        if (this.status != ScheduleStatus.EXECUTING) {
+            throw new IllegalStateException("EXECUTING 상태에서만 완료 전이 가능. 현재 상태: " + this.status);
+        }
         this.status = ScheduleStatus.EXECUTED;
         this.executedAt = ZonedDateTime.now();
     }

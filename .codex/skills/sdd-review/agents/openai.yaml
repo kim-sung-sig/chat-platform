@@ -1,6 +1,0 @@
-interface:
-  display_name: "SDD Review"
-  short_description: "Review SDD, skeleton, and tests alignment"
-  default_prompt: "Use $sdd-review to review SDD, skeleton, and tests for alignment."
-policy:
-  allow_implicit_invocation: true

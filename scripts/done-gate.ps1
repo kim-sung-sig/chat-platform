@@ -9,7 +9,7 @@ function Get-RepoRoot {
 }
 
 $repoRoot = Get-RepoRoot
-$policyPath = Join-Path $repoRoot ".harness/registries/done-gate.json"
+$policyPath = Join-Path $repoRoot ".claude/.harness/registries/done-gate.json"
 
 if (-not (Test-Path $policyPath)) {
   throw "Missing done-gate policy: $policyPath"

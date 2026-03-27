@@ -154,6 +154,41 @@ public class WebSocketBroadcastService {
                 roomId, event.getUserId(), successCount);
     }
 
+    /**
+     * 타이핑 이벤트를 채팅방의 모든 세션에 브로드캐스트
+     *
+     * @param roomId      채팅방 ID (channelId)
+     * @param typingEvent 타이핑 이벤트 DTO
+     */
+    public void broadcastTypingEvent(String roomId, com.example.chat.websocket.infrastructure.redis.TypingEvent typingEvent) {
+        if (roomId == null || typingEvent == null) {
+            log.warn("Cannot broadcast typing event: roomId or typingEvent is null");
+            return;
+        }
+
+        List<ChatSession> activeSessions = sessionManager.getActiveSessionsByRoom(roomId);
+        if (activeSessions.isEmpty()) {
+            log.debug("No active sessions for typing event in room: {}", roomId);
+            return;
+        }
+
+        String json;
+        try {
+            json = objectMapper.writeValueAsString(typingEvent);
+        } catch (Exception e) {
+            log.error("Failed to serialize typing event", e);
+            return;
+        }
+
+        int successCount = 0;
+        for (ChatSession session : activeSessions) {
+            if (sendMessageToSession(session, json)) successCount++;
+        }
+
+        log.debug("Typing event broadcast completed: roomId={}, eventType={}, sent={}",
+                roomId, typingEvent.getEventType(), successCount);
+    }
+
     // ========== Private Helper Methods ==========
 
     /**

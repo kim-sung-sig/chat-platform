@@ -3,6 +3,8 @@ package com.example.chat.websocket.presentation.handler;
 import java.time.Instant;
 import java.util.Map;
 
+import com.example.chat.websocket.infrastructure.redis.TypingEvent;
+
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -30,6 +32,9 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     private static final String READ_RECEIPT_TYPE = "READ_RECEIPT";
     private static final String READ_CHANNEL_PREFIX = "chat:read:";
+    private static final String TYPING_START_TYPE = "TYPING_START";
+    private static final String TYPING_STOP_TYPE = "TYPING_STOP";
+    private static final String TYPING_CHANNEL_PREFIX = "chat:typing:";
 
     private final ChatRoomSessionManager sessionManager;
     private final RedisTemplate<String, String> redisTemplate;
@@ -81,6 +86,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
             if (READ_RECEIPT_TYPE.equals(type)) {
                 handleReadReceipt(session, node);
+            } else if (TYPING_START_TYPE.equals(type) || TYPING_STOP_TYPE.equals(type)) {
+                handleTypingEvent(session, node, type);
             } else {
                 log.debug("Ignored unsupported message type: {}", type);
             }
@@ -148,6 +155,40 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             } catch (Exception e) {
                 log.error("Failed to close session on transport error", e);
             }
+        }
+    }
+
+    /**
+     * 타이핑 이벤트 처리
+     * 클라이언트 → websocket-server → Redis(chat:typing:{channelId}) → 전체 채널 브로드캐스트
+     *
+     * @param session WebSocket 세션
+     * @param node    파싱된 JSON 노드
+     * @param type    "TYPING_START" | "TYPING_STOP"
+     */
+    private void handleTypingEvent(WebSocketSession session, JsonNode node, String type) {
+        String channelId = node.path("channelId").asText(null);
+        String userId = extractUserIdAsString(session);
+
+        if (channelId == null || userId == null) {
+            log.warn("Invalid typing event: missing channelId or userId (channelId={}, userId={})",
+                    channelId, userId);
+            return;
+        }
+
+        try {
+            TypingEvent event = TypingEvent.builder()
+                    .eventType(type)
+                    .channelId(channelId)
+                    .senderId(userId)
+                    .build();
+
+            String redisPayload = objectMapper.writeValueAsString(event);
+            redisTemplate.convertAndSend(TYPING_CHANNEL_PREFIX + channelId, redisPayload);
+
+            log.debug("Typing event published: type={}, channelId={}, userId={}", type, channelId, userId);
+        } catch (Exception e) {
+            log.error("Failed to handle typing event: type={}, channelId={}, userId={}", type, channelId, userId, e);
         }
     }
 

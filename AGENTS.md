@@ -8,44 +8,42 @@ Core coding and architecture conventions remain in [`docs/conventions/CONVENTION
 
 ## 1) Governance Model
 
-- Single source of truth for agent governance is `/.harness`.
-- Tool-specific directories (`.claude`, `.codex`) are adapter outputs generated from `/.harness`.
+- Single source of truth for agent governance is `.claude/.harness/`.
+- Skills live directly in `.claude/skills/<id>/SKILL.md` — no separate adapter generation needed.
 - Canonical command/skill IDs use kebab-case (for example `sdd-requirements`).
-- Tool aliases are allowed only at adapter level, not in harness registries.
+- Tool aliases are defined in `.claude/.harness/registries/skills.json`.
 
 ---
 
 ## 2) Fixed vs Mutable Boundaries
 
 ### Fixed (Harness-controlled)
-- Policy files under `/.harness/registries/`
-- Done gate rules under `/.harness/registries/done-gate.json`
-- Generated adapter outputs:
-  - `.claude/commands/<managed-command>/SKILL.md`
-  - `.codex/skills/<managed-skill>/SKILL.md`
+- Policy files under `.claude/.harness/registries/`
+- Done gate rules under `.claude/.harness/registries/done-gate.json`
+- Skills with `"mutable": false` in the registry must not be manually edited.
 
 ### Mutable (Team-owned extensions)
-- Any skill not registered in `/.harness/registries/skills.json` is unmanaged.
+- Any skill not registered in `.claude/.harness/registries/skills.json` is unmanaged.
 - Unmanaged skills may be added/updated/removed freely.
-- Optional managed skills may be edited at their harness source path when `mutable=true`.
+- Optional managed skills (`"mutable": true`) may be edited directly in `.claude/skills/<id>/SKILL.md`.
 
 ---
 
 ## 3) Registries (Public Interfaces)
 
 ### Skill Registry
-Path: `/.harness/registries/skills.json`
+Path: `.claude/.harness/registries/skills.json`
 
 Skill entry fields:
 - `id`: canonical skill ID (kebab-case)
-- `source`: harness source markdown path
+- `source`: skill SKILL.md path under `.claude/skills/`
 - `tier`: `core | optional`
 - `mutable`: whether source is editable by team
 - `tool_aliases`: aliases per tool runtime
-- `adapters`: target output directory names for each tool
+- `adapters`: target directory name for the skill
 
 ### Agent Registry
-Path: `/.harness/registries/agents.json`
+Path: `.claude/.harness/registries/agents.json`
 
 Defines:
 - Core roles: `planner`, `developer`, `reviewer`, `qa`
@@ -53,7 +51,7 @@ Defines:
 - Handoff contract: required artifacts and ownership transfer
 
 ### Done-Gate Registry
-Path: `/.harness/registries/done-gate.json`
+Path: `.claude/.harness/registries/done-gate.json`
 
 Defines:
 - Mandatory checks and severity (`block | warn`)
@@ -85,10 +83,10 @@ Handoff minimum artifact set:
 
 ## 5) Sync + Done Workflow
 
-1. Edit harness sources/registries.
-2. Generate adapters:
-   - `pwsh -File scripts/sync-skills.ps1`
-3. Validate drift only:
+1. Edit skills in `.claude/skills/<id>/SKILL.md` directly.
+2. Update registry if adding a new skill:
+   - `.claude/.harness/registries/skills.json`
+3. Validate registry drift:
    - `pwsh -File scripts/sync-skills.ps1 -Check`
 4. Validate Done gate:
    - `pwsh -File scripts/done-gate.ps1`

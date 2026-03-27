@@ -3,11 +3,10 @@
 Canonical command catalog for harness-managed skills.
 
 Source of truth:
-- `/.harness/registries/skills.json`
+- `.claude/.harness/registries/skills.json`
 
-Generated adapters:
-- `.claude/commands/<command>/SKILL.md`
-- `.codex/skills/<skill>/SKILL.md`
+Skills directory:
+- `.claude/skills/<id>/SKILL.md`
 
 ---
 

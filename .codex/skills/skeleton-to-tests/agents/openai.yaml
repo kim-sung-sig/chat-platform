@@ -1,6 +1,0 @@
-interface:
-  display_name: "Skeleton To Tests"
-  short_description: "Write TDD tests from SDD and code skeleton"
-  default_prompt: "Use $skeleton-to-tests to write tests from this SDD and skeleton."
-policy:
-  allow_implicit_invocation: true

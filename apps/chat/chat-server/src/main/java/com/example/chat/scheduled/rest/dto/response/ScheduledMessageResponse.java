@@ -1,5 +1,6 @@
 package com.example.chat.scheduled.rest.dto.response;
 
+import com.example.chat.message.domain.MessageContent;
 import com.example.chat.scheduled.domain.model.ScheduledMessage;
 import com.example.chat.scheduled.domain.model.ScheduleStatus;
 import com.example.chat.scheduled.domain.model.ScheduleType;
@@ -27,11 +28,27 @@ public record ScheduledMessageResponse(
 ) {
     public static ScheduledMessageResponse from(ScheduledMessage domain) {
         var content = domain.getContent();
-        String contentType = switch (content) {
-            case com.example.chat.message.domain.MessageContent.Text ignored -> "TEXT";
-            case com.example.chat.message.domain.MessageContent.Image ignored -> "IMAGE";
-            case com.example.chat.message.domain.MessageContent.File ignored -> "FILE";
-        };
+        String contentType;
+        String text = null;
+        String mediaUrl = null;
+        String fileName = null;
+
+        switch (content) {
+            case MessageContent.Text t -> {
+                contentType = "TEXT";
+                text = t.getText();
+            }
+            case MessageContent.Image img -> {
+                contentType = "IMAGE";
+                mediaUrl = img.getMediaUrl();
+                fileName = img.getFileName();
+            }
+            case MessageContent.File f -> {
+                contentType = "FILE";
+                mediaUrl = f.getMediaUrl();
+                fileName = f.getFileName();
+            }
+        }
 
         return new ScheduledMessageResponse(
                 domain.getId(),
@@ -45,9 +62,9 @@ public record ScheduledMessageResponse(
                 domain.getCancelledAt(),
                 domain.getRetryCount(),
                 contentType,
-                content.getText(),
-                content.getMediaUrl(),
-                content.getFileName()
+                text,
+                mediaUrl,
+                fileName
         );
     }
 }

@@ -11,11 +11,15 @@ import com.example.chat.scheduled.domain.repository.ScheduledMessageRepository;
 import com.example.chat.scheduled.infrastructure.quartz.QuartzJobScheduler;
 import com.example.chat.scheduled.rest.dto.request.CreateScheduledMessageRequest;
 import com.example.chat.scheduled.rest.dto.response.ScheduledMessageResponse;
-import com.example.chat.storage.domain.repository.JpaChannelMemberRepository;
+import com.example.chat.scheduled.domain.repository.ChannelMemberRepository;
+import com.example.chat.scheduled.event.MessageScheduledEvent;
+import com.example.chat.scheduled.event.ScheduledMessageExecutedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.SchedulerException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
@@ -37,9 +41,10 @@ public class ScheduledMessageCommandServiceImpl implements ScheduledMessageComma
     private static final int RETRY_DELAY_SECONDS = 30;
 
     private final ScheduledMessageRepository scheduleRepository;
-    private final JpaChannelMemberRepository channelMemberRepository;
+    private final ChannelMemberRepository channelMemberRepository;
     private final QuartzJobScheduler quartzJobScheduler;
     private final MessageSendService messageSendService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public ScheduledMessageResponse createScheduledMessage(String senderId, CreateScheduledMessageRequest request) {
@@ -91,9 +96,11 @@ public class ScheduledMessageCommandServiceImpl implements ScheduledMessageComma
             quartzJobScheduler.schedule(saved);
         } catch (SchedulerException e) {
             log.error("Quartz schedule failed for id={}", saved.getId(), e);
-            throw new RuntimeException("예약 등록 중 오류가 발생했습니다.", e);
+            throw new ChatException(ChatErrorCode.SCHEDULE_SCHEDULER_ERROR);
         }
 
+        eventPublisher.publishEvent(MessageScheduledEvent.of(
+                saved.getId(), saved.getChannelId(), saved.getSenderId(), saved.getScheduledAt()));
         log.info("ScheduledMessage created: id={}, senderId={}, channelId={}, scheduledAt={}",
                 saved.getId(), senderId, request.channelId(), request.scheduledAt());
         return ScheduledMessageResponse.from(saved);
@@ -129,9 +136,18 @@ public class ScheduledMessageCommandServiceImpl implements ScheduledMessageComma
     }
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW, noRollbackFor = Exception.class)
     public void executeScheduledMessage(String scheduledMessageId) {
         ScheduledMessage domain = scheduleRepository.findById(scheduledMessageId)
                 .orElseThrow(() -> new ChatException(ChatErrorCode.SCHEDULE_NOT_FOUND));
+
+        // 채널 멤버십 재확인 — 발신자가 채널을 떠난 경우 재시도 없이 취소 (PENDING 상태에서 cancel)
+        if (!channelMemberRepository.existsByChannelIdAndUserId(domain.getChannelId(), domain.getSenderId())) {
+            domain.cancel();
+            scheduleRepository.save(domain);
+            log.warn("ScheduledMessage cancelled: sender left channel. id={}", scheduledMessageId);
+            return;
+        }
 
         domain.markExecuting();
         scheduleRepository.save(domain);
@@ -146,6 +162,8 @@ public class ScheduledMessageCommandServiceImpl implements ScheduledMessageComma
 
             domain.markExecuted();
             scheduleRepository.save(domain);
+            eventPublisher.publishEvent(ScheduledMessageExecutedEvent.of(
+                    scheduledMessageId, domain.getChannelId(), domain.getSenderId(), domain.getExecutedAt()));
             log.info("ScheduledMessage executed: id={}", scheduledMessageId);
         } catch (Exception e) {
             log.error("ScheduledMessage execution failed: id={}", scheduledMessageId, e);

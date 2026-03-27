@@ -10,6 +10,7 @@ import org.springframework.lang.NonNull;
 
 import com.example.chat.websocket.infrastructure.redis.ReadReceiptRedisSubscriber;
 import com.example.chat.websocket.infrastructure.redis.RedisMessageSubscriber;
+import com.example.chat.websocket.infrastructure.redis.TypingRedisSubscriber;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,6 +23,7 @@ public class RedisConfig {
 
 	private final @NonNull RedisMessageSubscriber redisMessageSubscriber;
 	private final @NonNull ReadReceiptRedisSubscriber readReceiptRedisSubscriber;
+	private final @NonNull TypingRedisSubscriber typingRedisSubscriber;
 
 	/**
 	 * Redis 메시지 리스너 컨테이너
@@ -44,6 +46,11 @@ public class RedisConfig {
 				readReceiptListenerAdapter(),
 				new PatternTopic("chat:read:event:*"));
 
+		// 타이핑 이벤트 수신 (websocket-server 내부 발행)
+		container.addMessageListener(
+				typingListenerAdapter(),
+				new PatternTopic("chat:typing:*"));
+
 		return container;
 	}
 
@@ -55,5 +62,10 @@ public class RedisConfig {
 	@Bean
 	public @NonNull MessageListenerAdapter readReceiptListenerAdapter() {
 		return new MessageListenerAdapter(readReceiptRedisSubscriber);
+	}
+
+	@Bean
+	public @NonNull MessageListenerAdapter typingListenerAdapter() {
+		return new MessageListenerAdapter(typingRedisSubscriber);
 	}
 }

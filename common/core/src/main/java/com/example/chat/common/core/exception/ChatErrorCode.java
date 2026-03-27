@@ -38,9 +38,10 @@ public enum ChatErrorCode implements ErrorCode {
     // Scheduled Message
     SCHEDULE_NOT_FOUND("CHAT-SCH-001", "예약 메시지를 찾을 수 없습니다.", 404),
     SCHEDULE_INVALID_TIME("CHAT-SCH-002", "예약 시각은 현재 시각 기준 5분 후부터 30일 이내여야 합니다.", 400),
-    SCHEDULE_LIMIT_EXCEEDED("CHAT-SCH-003", "채널당 하루 예약 한도(10개)를 초과하였습니다.", 400),
+    SCHEDULE_LIMIT_EXCEEDED("CHAT-SCH-003", "채널당 하루 예약 한도(10개)를 초과하였습니다.", 429),
     SCHEDULE_CANCEL_FORBIDDEN("CHAT-SCH-004", "본인의 예약만 취소할 수 있습니다.", 403),
     SCHEDULE_NOT_CANCELLABLE("CHAT-SCH-005", "PENDING 상태의 예약만 취소할 수 있습니다.", 400),
+    SCHEDULE_SCHEDULER_ERROR("CHAT-SCH-006", "예약 등록 중 스케줄러 오류가 발생했습니다.", 500),
 
     // File
     FILE_EMPTY("CHAT-FILE-001", "파일이 비어 있습니다.", 400),

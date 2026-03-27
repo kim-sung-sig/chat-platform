@@ -1,0 +1,63 @@
+# 피드백 루프 정책
+
+## 목적
+- 작업 중 발생하는 피드백을 구조적으로 수집하고 rules/skills에 반영하여
+  "맞춤형"과 "일관성"을 달성하는 자기개선 순환 사이클을 운영한다.
+
+## 사이클 구조
+
+```
+[새 피처 시작]
+      ↓
+/pre-feature-check → 현재 스킬 조회 + skills.sh 검색 → 도입 여부 결정
+      ↓
+[작업 진행 중]
+사용자 피드백 발생 시 → /feedback {내용} → .skill-lab/feedback/ append
+      ↓
+[주간 or /feedback apply]
+미처리 피드백 분석 → rules/skills 수정 제안 → 사용자 확인 → 적용
+      ↓
+[다음 피처] → 루프 반복
+```
+
+## 피처 시작 전 스킬 발굴
+
+- 새 작업을 시작하기 전에 `/pre-feature-check <키워드>`를 실행한다.
+- 검색 대상: `.agents/skills/`, `.skill-lab/skills/`, skills.sh (`npx skills find`)
+- 기존 스킬과 중복되면 "기존 활용 권장", 보완이 되면 "도입 검토"를 제안한다.
+- 도입 결정은 사용자가 내린다. 에이전트는 설치 명령과 이유만 제공한다.
+
+## 피드백 캡처 기준
+
+다음 발언 패턴을 피드백으로 간주한다:
+- "그건 하지 마", "~하지 말아줘" → rule/behavior 카테고리
+- "앞으로 ~해줘", "~해줘" → rule/behavior 카테고리
+- "이 방식 말고 ~" → convention/skill 카테고리
+- "왜 이렇게 했어?", "이건 잘못된 것 같아" → rule/skill 카테고리
+
+자동 감지 시 사용자에게 피드백으로 저장할지 확인 후 `/feedback` 실행을 제안한다.
+강제로 저장하지 않는다.
+
+## 피드백 저장 위치
+
+- 실험 단계: `.skill-lab/feedback/YYYY-MM-DD-session.md`
+- 병합 후: `docs/feedback/YYYY-MM-DD-session.md`
+
+## 적용 주기
+
+- 수동: `/feedback apply` 명시 실행
+- 권장 자동: 주 1회 (`0 9 * * 1`) `/schedule` 스킬로 등록
+- 미처리 피드백 5개 이상 누적 시 적용 권장 알림
+
+## 적용 원칙
+
+- 단일 피드백 1건으로 규칙을 뒤집지 않는다.
+- 같은 카테고리에서 2건 이상 반복되면 규칙 변경 후보로 올린다.
+- 변경 제안은 항상 사용자 확인 후 적용한다.
+- 적용된 피드백은 `applied-log.md`에 이력을 남긴다.
+
+## 금지 사항
+
+- 사용자 확인 없이 `agent-instructions/rules/*.md` 또는 `agent-instructions/skills/*/SKILL.md`를 자동으로 수정하지 않는다.
+- 피드백 내용을 과장하거나 의도를 확대 해석하여 무관한 규칙을 변경하지 않는다.
+- 실험 단계에서는 `.skill-lab/` 외부 파일을 수정하지 않는다.

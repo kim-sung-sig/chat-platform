@@ -31,8 +31,8 @@ Each bounded context follows this strict layering:
 ```
 <context>/
 ├── domain/
-│   ├── model/        ← Entity, Value Object, Enum (pure Java, 프레임워크 의존 금지)
-│   └── service/      ← Domain Service (비즈니스 규칙, 상태 없는 순수 로직)
+│   ├── model/        ← Entity, Value Object, Enum (JPA @Entity/@Column 허용 — Layered Arch)
+│   └── service/      ← Domain Service (비즈니스 규칙, 순수 로직, 외부 I/O 금지)
 │
 ├── application/
 │   ├── service/      ← CommandService / QueryService (Use Case, Facade)
@@ -60,9 +60,10 @@ infrastructure/ → application/ → domain/
 application/listener/ → event/model/ (이벤트 페이로드 참조)
 ```
 
-**레이어 규칙**:
-- `domain/` : 프레임워크 의존 **완전 금지** (순수 Java 객체만)
-- `application/` : Spring `@Service` 허용, JPA 직접 의존 금지
+**레이어 규칙** (Layered Architecture — Clean/Hexagonal 아님):
+- `domain/model/` : JPA `@Entity`, `@Column` 등 허용. 단, **책임과 경계는 명확히** 유지
+- `domain/service/` : 순수 비즈니스 규칙만. Kafka/Redis/HTTP 등 **외부 I/O 절대 금지**
+- `application/` : Spring `@Service` 허용, Use Case 오케스트레이션. Repository/Kafka/Redis 사용 가능
 - `infrastructure/` : 외부 기술 어댑터, domain port 인터페이스 구현
 - `api/` : 비즈니스 로직 **완전 금지**, application layer 위임만
 
@@ -130,9 +131,12 @@ response.setId(channel.getId());  // record는 setter 없음 (컴파일 에러)
 
 ## Code Style
 
+> **Java 코딩 표준**: `java-best-practices` 스킬이 베이스라인입니다. 아래 규칙은 프로젝트 특화 오버라이드입니다.
+
 - All source files and documents: **UTF-8** encoding.
 - Language: Java 21 + Kotlin 1.9; virtual threads are enabled — avoid `ThreadLocal` patterns.
-- Lombok (`@Getter`, `@Builder`, etc.) for boilerplate reduction; avoid `@Data` on JPA entities.
+- **Lombok**: JPA 엔티티에는 `@Getter`, `@Builder` 허용 (record는 JPA no-arg constructor 불가). 데이터 DTO는 `record` 사용.
+- `api/request/`, `api/response/` 클래스는 반드시 Java `record` 사용 (`java-best-practices` 일치).
 - SDD (`docs/specs/SDD_<slug>.md`) is the authoritative spec for every feature; keep domain language consistent with the SDD.
 
 ---

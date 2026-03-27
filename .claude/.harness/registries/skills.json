@@ -1,0 +1,221 @@
+{
+  "version": 2,
+  "managedSkills": [
+    {
+      "id": "sdd-requirements",
+      "source": ".claude/skills/sdd-requirements/SKILL.md",
+      "tier": "core",
+      "mutable": false,
+      "tool_aliases": {
+        "claude": ["sdd:requirements", "sdd-requirements"]
+      },
+      "adapters": {
+        "claude_command_dir": "sdd-requirements"
+      }
+    },
+    {
+      "id": "sdd-read",
+      "source": ".claude/skills/sdd-read/SKILL.md",
+      "tier": "core",
+      "mutable": false,
+      "tool_aliases": {
+        "claude": ["sdd:read", "sdd-read"]
+      },
+      "adapters": {
+        "claude_command_dir": "sdd-read"
+      }
+    },
+    {
+      "id": "spec-to-skeleton",
+      "source": ".claude/skills/spec-to-skeleton/SKILL.md",
+      "tier": "core",
+      "mutable": false,
+      "tool_aliases": {
+        "claude": ["sdd:skeleton", "spec-to-skeleton"]
+      },
+      "adapters": {
+        "claude_command_dir": "spec-to-skeleton"
+      }
+    },
+    {
+      "id": "skeleton-to-tests",
+      "source": ".claude/skills/skeleton-to-tests/SKILL.md",
+      "tier": "core",
+      "mutable": false,
+      "tool_aliases": {
+        "claude": ["sdd:tests", "skeleton-to-tests"]
+      },
+      "adapters": {
+        "claude_command_dir": "skeleton-to-tests"
+      }
+    },
+    {
+      "id": "sdd-review",
+      "source": ".claude/skills/sdd-review/SKILL.md",
+      "tier": "core",
+      "mutable": false,
+      "tool_aliases": {
+        "claude": ["sdd:review", "sdd-review"]
+      },
+      "adapters": {
+        "claude_command_dir": "sdd-review"
+      }
+    },
+    {
+      "id": "done-gate",
+      "source": ".claude/skills/done-gate/SKILL.md",
+      "tier": "core",
+      "mutable": false,
+      "tool_aliases": {
+        "claude": ["done-gate"]
+      },
+      "adapters": {
+        "claude_command_dir": "done-gate"
+      }
+    },
+    {
+      "id": "docs",
+      "source": ".claude/skills/docs/SKILL.md",
+      "tier": "optional",
+      "mutable": true,
+      "tool_aliases": {
+        "claude": ["docs"]
+      },
+      "adapters": {
+        "claude_command_dir": "docs"
+      }
+    },
+    {
+      "id": "explain",
+      "source": ".claude/skills/explain/SKILL.md",
+      "tier": "optional",
+      "mutable": true,
+      "tool_aliases": {
+        "claude": ["explain"]
+      },
+      "adapters": {
+        "claude_command_dir": "explain"
+      }
+    },
+    {
+      "id": "jpa",
+      "source": ".claude/skills/jpa/SKILL.md",
+      "tier": "optional",
+      "mutable": true,
+      "tool_aliases": {
+        "claude": ["jpa"]
+      },
+      "adapters": {
+        "claude_command_dir": "jpa"
+      }
+    },
+    {
+      "id": "patch",
+      "source": ".claude/skills/patch/SKILL.md",
+      "tier": "optional",
+      "mutable": true,
+      "tool_aliases": {
+        "claude": ["patch"]
+      },
+      "adapters": {
+        "claude_command_dir": "patch"
+      }
+    },
+    {
+      "id": "perf",
+      "source": ".claude/skills/perf/SKILL.md",
+      "tier": "optional",
+      "mutable": true,
+      "tool_aliases": {
+        "claude": ["perf"]
+      },
+      "adapters": {
+        "claude_command_dir": "perf"
+      }
+    },
+    {
+      "id": "refactor",
+      "source": ".claude/skills/refactor/SKILL.md",
+      "tier": "optional",
+      "mutable": true,
+      "tool_aliases": {
+        "claude": ["refactor"]
+      },
+      "adapters": {
+        "claude_command_dir": "refactor"
+      }
+    },
+    {
+      "id": "security",
+      "source": ".claude/skills/security/SKILL.md",
+      "tier": "optional",
+      "mutable": true,
+      "tool_aliases": {
+        "claude": ["security"]
+      },
+      "adapters": {
+        "claude_command_dir": "security"
+      }
+    },
+    {
+      "id": "spring-boot",
+      "source": ".claude/skills/spring-boot/SKILL.md",
+      "tier": "optional",
+      "mutable": true,
+      "tool_aliases": {
+        "claude": ["spring-boot"]
+      },
+      "adapters": {
+        "claude_command_dir": "spring-boot"
+      }
+    },
+    {
+      "id": "sdd-craft",
+      "source": ".claude/skills/sdd-craft/SKILL.md",
+      "tier": "optional",
+      "mutable": true,
+      "tool_aliases": {
+        "claude": ["sdd-craft"]
+      },
+      "adapters": {
+        "claude_command_dir": "sdd-craft"
+      }
+    },
+    {
+      "id": "tdd-cycle",
+      "source": ".claude/skills/tdd-cycle/SKILL.md",
+      "tier": "optional",
+      "mutable": true,
+      "tool_aliases": {
+        "claude": ["tdd-cycle"]
+      },
+      "adapters": {
+        "claude_command_dir": "tdd-cycle"
+      }
+    },
+    {
+      "id": "arch-policy",
+      "source": ".claude/skills/arch-policy/SKILL.md",
+      "tier": "optional",
+      "mutable": true,
+      "tool_aliases": {
+        "claude": ["arch-policy"]
+      },
+      "adapters": {
+        "claude_command_dir": "arch-policy"
+      }
+    },
+    {
+      "id": "skill-mgr",
+      "source": ".claude/skills/skill-mgr/SKILL.md",
+      "tier": "optional",
+      "mutable": true,
+      "tool_aliases": {
+        "claude": ["skill-mgr"]
+      },
+      "adapters": {
+        "claude_command_dir": "skill-mgr"
+      }
+    }
+  ]
+}

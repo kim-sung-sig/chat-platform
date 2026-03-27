@@ -21,8 +21,8 @@ function New-Sha256([string]$Text) {
 }
 
 $repoRoot = Get-RepoRoot
-$registryPath = Join-Path $repoRoot ".harness/registries/skills.json"
-$manifestPath = Join-Path $repoRoot ".harness/state/generated-files.json"
+$registryPath = Join-Path $repoRoot ".claude/.harness/registries/skills.json"
+$manifestPath = Join-Path $repoRoot ".claude/.harness/state/generated-files.json"
 
 if (-not (Test-Path $registryPath)) {
   throw "Missing registry: $registryPath"
@@ -88,11 +88,9 @@ generated-by: scripts/sync-skills.ps1
 }
 
 foreach ($skill in $registry.managedSkills) {
-  $claudeDir = if ($skill.adapters.claude_command_dir) { $skill.adapters.claude_command_dir } else { $skill.id }
-  $codexDir = if ($skill.adapters.codex_skill_dir) { $skill.adapters.codex_skill_dir } else { $skill.id }
+  $skillDir = if ($skill.adapters.claude_command_dir) { $skill.adapters.claude_command_dir } else { $skill.id }
 
-  Write-GeneratedSkill -Skill $skill -TargetRelativePath ".claude/commands/$claudeDir/SKILL.md"
-  Write-GeneratedSkill -Skill $skill -TargetRelativePath ".codex/skills/$codexDir/SKILL.md"
+  Write-GeneratedSkill -Skill $skill -TargetRelativePath ".claude/skills/$skillDir/SKILL.md"
 }
 
 $manifestObject = [ordered]@{
@@ -134,7 +132,7 @@ if (Test-Path $manifestPath) {
 if ($manifestChanged) {
   $changes.Add([pscustomobject]@{
     skill = "_manifest"
-    path = ".harness/state/generated-files.json"
+    path = ".claude/.harness/state/generated-files.json"
   }) | Out-Null
 
   if (-not $Check -and -not $DryRun) {
