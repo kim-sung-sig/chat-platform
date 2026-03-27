@@ -21,7 +21,7 @@ include('apps:chat:websocket-server')
 // ============================================
 // Phase 5: chat-domain 모든 서버에서 의존성 제거 완료, 아래 주석 확인 후 디렉토리 삭제
 // include('apps:chat:libs:chat-domain')
-include('apps:chat:libs:chat-storage')
+// include('apps:chat:libs:chat-storage')   ← chat-server로 이관 완료 (2026-03-27)
 // ============================================
 // Common - 유틸리티 & 횡단 관심사
 // ============================================

@@ -8,9 +8,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties(prefix = "spring.datasource.source")
 public record SourceDataSourceProperties(
-        String driverClassName,
-        String url,
-        String username,
-        String password
+		String driverClassName,
+		String url,
+		String username,
+		String password
 ) {
 }

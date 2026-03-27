@@ -11,7 +11,7 @@ import javax.sql.DataSource;
 
 /**
  * Flyway 마이그레이션 설정 — Source(Write) DataSource 직접 사용
- *
+ * <p>
  * LazyConnectionDataSourceProxy / RoutingDataSource 를 거치지 않고
  * sourceDataSource 에 직접 연결하여 DDL 을 실행한다.
  * Spring Boot 의 FlywayAutoConfiguration 은 spring.flyway.enabled=false 로 비활성화 필요.
@@ -21,13 +21,13 @@ import javax.sql.DataSource;
 @ConditionalOnProperty(name = "spring.datasource.source.url")
 public class FlywayRoutingConfig {
 
-    @Bean(initMethod = "migrate")
-    public Flyway flyway(@Qualifier("sourceDataSource") DataSource sourceDataSource) {
-        return Flyway.configure()
-                .dataSource(sourceDataSource)
-                .locations("classpath:db/migration")
-                .baselineOnMigrate(true)
-                .baselineVersion("0")
-                .load();
-    }
+	@Bean(initMethod = "migrate")
+	public Flyway flyway(@Qualifier("sourceDataSource") DataSource sourceDataSource) {
+		return Flyway.configure()
+				.dataSource(sourceDataSource)
+				.locations("classpath:db/migration")
+				.baselineOnMigrate(true)
+				.baselineVersion("0")
+				.load();
+	}
 }

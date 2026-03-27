@@ -31,8 +31,11 @@ dependencies {
     implementation project(':common:web')
     implementation project(':common:logging')
 
-    // Chat 스토리지 (Phase 4: chat-domain 의존성 제거 완료)
-    implementation project(':apps:chat:libs:chat-storage')
+    // QueryDSL (chat-storage 이관)
+    implementation "com.querydsl:querydsl-jpa:5.0.0:jakarta"
+    annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
+    annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
+    annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
 
     // Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter-web'
