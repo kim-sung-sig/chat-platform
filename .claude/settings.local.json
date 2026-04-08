@@ -1,25 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:bcho.tistory.com)",
-      "Bash(chmod +x c:/git/chat-application/chat-platform/.claude/hooks/*.sh)",
-      "Bash(./gradlew :apps:chat:libs:chat-storage:build :apps:chat:chat-server:build --no-daemon -q)",
-      "Bash(xargs grep:*)",
-      "Bash(find c:/git/chat-application/chat-platform/apps/chat/chat-server/build -name TEST-*.xml)",
-      "Bash(./gradlew :apps:chat:chat-server:test)",
-      "WebFetch(domain:docs.github.com)",
-      "Bash(git -C ~/.claude/skills/gstack fetch origin)",
-      "Bash(git -C ~/.claude/skills/gstack log HEAD..origin/main --oneline)",
-      "Bash(git -C ~/.claude/skills/gstack log --oneline -3)",
-      "Bash(git -C ~/.claude/skills/gstack status)",
-      "Bash(find /c/git/chat-application/chat-platform/.claude -type f -name *.md -o -name *.json)",
       "Skill(bkit:pdca)",
-      "WebSearch",
-      "WebFetch(domain:skills.sh)",
-      "Bash(./gradlew :apps:chat:chat-server:compileJava :apps:chat:chat-server:compileTestJava --no-daemon -q 2>&1)",
-      "Bash(pwsh -File \"C:/git/chat-application/chat-platform/scripts/sync-skills.ps1\" 2>&1)",
       "Bash(npx --version)",
-      "Bash(npx skills:*)"
+      "Bash(npx skills:*)",
     ],
     "deny": []
   }
