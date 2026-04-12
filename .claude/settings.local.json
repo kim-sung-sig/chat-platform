@@ -1,9 +1,6 @@
 {
   "permissions": {
     "allow": [
-      "Skill(bkit:pdca)",
-      "Bash(npx --version)",
-      "Bash(npx skills:*)",
     ],
     "deny": []
   }

@@ -1,4 +1,4 @@
-﻿---
+---
 name: done-gate
 description: "Validate harness policy and generated adapter consistency before declaring Done."
 ---

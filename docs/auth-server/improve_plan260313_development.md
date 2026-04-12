@@ -1,4 +1,4 @@
-﻿# improve_plan260313 Development Report
+# improve_plan260313 Development Report
 
 ## Overview
 This document describes what was designed and implemented for `auth-server` based on `improve_plan260313.md`.

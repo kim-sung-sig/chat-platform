@@ -1,4 +1,4 @@
-﻿{
+{
   "version": 1,
   "checks": {
     "skill_sync_drift": {

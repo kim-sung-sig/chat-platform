@@ -1,0 +1,7 @@
+{
+  "feature": "ops-orchestrator-github-v1",
+  "phase": "check",
+  "updatedAt": "2026-04-10T23:25:00+09:00",
+  "matchRate": 54,
+  "summary": "v1 gap analysis completed. Foundation done; Week2-4 hardening/integration/e2e gaps remain."
+}

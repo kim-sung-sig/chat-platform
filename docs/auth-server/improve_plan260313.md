@@ -1,4 +1,4 @@
-﻿# Planning Template (Planner)
+# Planning Template (Planner)
 
 ## 1. Problem Statement
 - auth-server는 기본 인증 기능을 제공하지만, 토큰/키 관리, MFA/OTP, WebAuthn, CSRF 등 핵심 보안 영역에 미완성/취약 지점이 존재한다.

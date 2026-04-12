@@ -13,6 +13,16 @@ include('apps:push-service')
 include('apps:chat:chat-server')          // ← message-server + system-server 통합
 
 include('apps:chat:websocket-server')
+// ============================================
+// Apps - Ops Orchestrator (GitHub-first, plugin-ready)
+// ============================================
+include('apps:ops:ops-contract')
+include('apps:ops:plugin-registry-service')
+include('apps:ops:github-connector-service')
+include('apps:ops:plan-service')
+include('apps:ops:approval-service')
+include('apps:ops:notification-service')
+include('apps:ops:governance-service')
 // ※ 아래 두 서버는 chat-server 로 통합됨 - 이전 완료 후 디렉토리 삭제 예정
 // include('apps:chat:message-server')
 // include('apps:chat:system-server')

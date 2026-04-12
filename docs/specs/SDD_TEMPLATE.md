@@ -1,4 +1,4 @@
-﻿# SDD Template
+# SDD Template
 
 ## 1. Title / Version / Status / Owners
 - Title:

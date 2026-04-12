@@ -1,0 +1,32 @@
+{
+  "ops-orchestrator-github-v1": {
+    "phase": "check",
+    "startedAt": "2026-04-10T22:00:00+09:00",
+    "updatedAt": "2026-04-10T23:25:00+09:00",
+    "matchRate": 54,
+    "progress": {
+      "plan": "completed",
+      "design": "completed",
+      "do": "in_progress",
+      "check": "completed"
+    },
+    "analysis": "docs/03-analysis/ops-orchestrator-github-v1.analysis.md",
+    "chapter": "chapter-1",
+    "week": "week-1",
+    "next": "week2-hardening"
+  },
+  "ops-orchestrator-github-v2": {
+    "phase": "check",
+    "startedAt": "2026-04-10T23:00:00+09:00",
+    "updatedAt": "2026-04-10T23:05:00+09:00",
+    "matchRate": 54,
+    "progress": {
+      "plan": "completed",
+      "design": "completed",
+      "do": "in_progress",
+      "check": "completed"
+    },
+    "analysis": "docs/03-analysis/ops-orchestrator-github-v2.analysis.md",
+    "next": "week2-hardening"
+  }
+}
